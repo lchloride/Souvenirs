@@ -2,6 +2,12 @@
     <wb-module deploy-name="Souvenirs">
         <wb-resource deploy-path="/" source-path="/WebContent" tag="defaultRootSource"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src"/>
+        <dependent-module archiveName="standard.jar" deploy-path="/WEB-INF/lib" handle="module:/classpath/lib/C:/Users/liche/Desktop/部署/jakarta-taglibs-standard-1.1.2/lib/standard.jar">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="jstl.jar" deploy-path="/WEB-INF/lib" handle="module:/classpath/lib/C:/Users/liche/Desktop/部署/jakarta-taglibs-standard-1.1.2/lib/jstl.jar">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <property name="context-root" value="Souvenirs"/>
         <property name="java-output-path" value="/Souvenirs/build/classes"/>
     </wb-module>
