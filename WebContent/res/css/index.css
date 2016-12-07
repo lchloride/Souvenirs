@@ -1,0 +1,119 @@
+body {
+	background-color: #4b4a4a;
+	background-image: url('/Souvenirs/res/image/index_bg.jpg');
+	background-size: cover;
+	background-position: center center;
+	background-repeat: no-repeat;
+	background-attachment: fixed;
+}
+
+.mainbody {
+	margin-left: 10%;
+	margin-top: 10%;
+	margin-right: 10%;
+	font-family: "Microsoft YaHei UI", Arial, sans-serif;
+	background-color: transparent;
+}
+
+.user-info {
+	display: block;
+	position: fixed;
+	width: 200px;
+	height: 50px;
+	bottom: 38px;
+	left: 8px;
+	font-family: "Microsoft YaHei UI", Arial, sans-serif;
+	border-radius: 4px;
+	background-color: rgba(22, 22, 22, .4);
+	color: #ffffff;
+}
+
+.user-info .user-icon {
+	display: inline-block;
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	margin-top: 5px;
+	margin-left: 10px;
+}
+
+.user-info .description {
+	display: inline-block;
+	margin-top: 8px;
+	margin-left: 8px;
+	vertical-align: top;
+	width: 132px;
+}
+
+.user-info .description .illust-title {
+	display: block;
+	font-size: 12px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-weight: bold;
+}
+
+.user-info .description .user-name {
+	display: block;
+	font-size: 11px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+div.bottom-pos {
+	position: fixed;
+	bottom: 0px;
+	right: 0px;
+	width: 100%;
+	height: 20px;
+	background-color: rgba(69, 69, 69, .5);
+	color: #fff;
+	text-align: center;
+}
+
+div.login {
+	position: fixed;
+	top: 25%;
+	right: 15%;
+	width: 20%;
+	height: 50%;
+	min-width: 250px;
+	min-height: 270px;
+	background-color: rgba(192, 192, 192, .9);
+	border-radius: 5%;
+/* 	padding-left:1%;
+	padding-right:1%; */
+}
+
+div.login div button {
+	width: 49%;
+}
+
+div.login-form {
+	position: absolute;
+	top: 50%;
+	width:90%;
+	height: 250px;
+	margin-top: -125px;
+	margin-left:5%;
+	margin-right:5%;
+}
+
+a:link {
+	text-decoration: none;
+	color: #fff;
+} /* unvisited link */
+a:visited {
+	text-decoration: none;
+	color: #fff;
+} /* visited link */
+a:hover {
+	text-decoration: none;
+	color: #fff;
+} /* mouse over link */
+a:active {
+	text-decoration: none;
+	color: #fff;
+} /* selected link */
