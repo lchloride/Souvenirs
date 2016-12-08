@@ -16,9 +16,10 @@
 <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
 <script src="/Souvenirs/res/bootstrap/js/bootstrap.min.js"></script>
 
+<link href="/Souvenirs/res/css/website.css" rel="stylesheet"
+	type="text/css">
 <link href="/Souvenirs/res/css/register.css" rel="stylesheet"
 	type="text/css">
-
 <!-- <script src="/Souvenirs/res/js/register.js"> </script> -->
 <title>Register</title>
 <style type="text/css"></style>
@@ -123,12 +124,12 @@
 		<nav class="navbar navbar-default" role="navigation">
 		<div class="container-fluid">
 			<div class="navbar-header">
-				<a class="navbar-brand" href="#">Souvenirs</a>
+				<a class="navbar-brand" href="index.jsp">Souvenirs</a>
 			</div>
 			<div>
 				<ul class="nav navbar-nav">
-					<li><a href="index.jsp">HomePage</a></li>
-					<li><a href="#">Group</a></li>
+					<li class="disabled"><a href="#">HomePage</a></li>
+					<li class="disabled"><a href="#">Group</a></li>
 				</ul>
 
 

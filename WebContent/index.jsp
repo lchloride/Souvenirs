@@ -28,7 +28,7 @@
 				<h6 style="text-align: center; color: #606060">In memory of our
 					graduation season</h6>
 				<br />
-				<form action="#" method="POST" id="form_login"
+				<form action="homepage.jsp" method="POST" id="form_login"
 					onsubmit="return checkSubmit()">
 					<div class="form-group">
 						<input type="text" class="form-control" id="username"
