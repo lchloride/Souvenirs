@@ -24,7 +24,8 @@
 }
 
 .step {
-	height: 180px; padding : 5px;
+	height: 180px;
+	padding: 5px;
 	margin-top: 20px;
 	padding: 5px;
 	/* 		border-style:solid; */
@@ -74,11 +75,69 @@
 .step img {
 	vericle-align: middle;
 	height: 50px;
-	margin:0 auto;
+	margin: 0 auto;
 }
 
 .album_manage {
 	margin-top: 50px;
+}
+
+div.img {
+	margin: 5px;
+	padding: 3px;
+	border: 2px solid #ffffff;
+	border-radius: 5px;
+	height: auto;
+	width: auto;
+	float: left;
+	text-align: center;
+	height: auto;
+	border: 2px solid #ffffff;
+}
+
+div.img img {
+	display: inline;
+	margin: 3px;
+	border: 1px solid #ffffff;
+}
+
+div.img:hover {
+	background-color: rgba(232, 232, 232, .8);
+	border: 2px solid #cccccc;
+}
+
+div.desc {
+	text-align: center;
+	font-weight: normal;
+	width: 120px;
+	margin: 2px;
+	margin-top: 5px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+div.desc:hover {
+	text-overflow: inherit;
+	overflow: visible;
+}
+
+div.desc a:link {
+	color: #000000;
+} /* 未访问链接*/
+div.desc a:visited {
+	color: #000000;
+} /* 已访问链接 */
+div.desc a:hover {
+	color: #000000;
+} /* 鼠标移动到链接上 */
+div.desc a:active {
+	color: #000000;
+} /* 鼠标点击时 */
+.manage-content {
+	border-left-style: solid;
+	border-width: 1px;
 }
 </style>
 </head>
@@ -137,7 +196,9 @@
 						<div class="step-title">Step Two</div>
 					</div>
 					<div class="step-down">
-						<div class="step-content">Choose Style<br/> You Like</div>
+						<div class="step-content">
+							Choose Style<br /> You Like
+						</div>
 					</div>
 				</div>
 				<div class="col-md-2 step">
@@ -149,7 +210,9 @@
 						<div class="step-title">Step Three</div>
 					</div>
 					<div class="step-down">
-						<div class="step-content">Make Your <br/>Souvenirs</div>
+						<div class="step-content">
+							Make Your <br />Souvenirs
+						</div>
 					</div>
 				</div>
 				<div class="col-md-1"></div>
@@ -168,16 +231,110 @@
 						style="padding-left: 15%; font-size: 1.2em">Create Album</a></li>
 				</ul>
 			</div>
-			<div class=" col-lg-9 col-md-9 col-sm-9 col-xs-10 " style="">
-				<div id="myTabContent" class="tab-content">
+
+			<div class=" col-lg-9 col-md-9 col-sm-9 col-xs-10 manage-content">
+				<div id="TabContent" class="tab-content">
 					<div class="tab-pane fade" id="my_albums">
-						<p>W3Cschoool菜鸟教程是一个提供最新的web技术站点，本站免费提供了建站相关的技术文档，帮助广大web技术爱好者快速入门并建立自己的网站。菜鸟先飞早入行——学的不仅是技术，更是梦想。</p>
+
+						<div class="img">
+							<a target="_blank" href="#"><img
+								src="/Souvenirs/res/image/default_avatar.png"
+								alt="default_avatar" width="120" height="120"></a>
+							<div class="desc">
+								<a target="_blank" href="#">My Album1</a>
+							</div>
+						</div>
+
+						<div class="img">
+							<a target="_blank" href="#"><img
+								src="/Souvenirs/res/image/Carousel_1.png" alt="Carousel_1"
+								width="120" height="120"></a>
+							<div class="desc">
+								<a target="_blank" href="#">My Album2</a>
+							</div>
+						</div>
+
+						<div class="img">
+							<a target="_blank" href="#"><img
+								src="/Souvenirs/res/image/Carousel_2.png" alt="Carousel_2"
+								width="120" height="120"></a>
+							<div class="desc">
+								<a target="_blank" href="#">My Album3</a>
+							</div>
+						</div>
+
+						<div class="img">
+							<a target="_blank" href="#"><img
+								src="/Souvenirs/res/image/Carousel_3.png" alt="Carousel_3"
+								width="120" height="120"></a>
+							<div class="desc">
+								<a target="_blank" href="#">My Album4</a>
+							</div>
+						</div>
+
+						<div class="img">
+							<a target="_blank" href="#"><img
+								src="/Souvenirs/res/image/Carousel_4.png" alt="Carousel_4"
+								width="120" height="120"></a>
+							<div class="desc">
+								<a target="_blank" href="#">My Album5</a>
+							</div>
+						</div>
+
+						<div style="clear: both; padding-top: 5px;">
+							<ul class="pager">
+								<li style="margin-right: 10%"><a href="#">&larr;
+										Previous</a></li>
+								<li style="margin-left: 10%"><a href="#">Next &rarr;</a></li>
+							</ul>
+						</div>
 					</div>
+
 					<div class="tab-pane fade" id="shared_albums">
-						<p>iOS 是一个由苹果公司开发和发布的手机操作系统。最初是于 2007 年首次发布 iPhone、iPod Touch
-							和 Apple TV。iOS 派生自 OS X，它们共享 Darwin 基础。OS X 操作系统是用在苹果电脑上，iOS
-							是苹果的移动版本。</p>
+						<div class="img">
+							<a target="_blank" href="#"><img
+								src="/Souvenirs/res/image/default_avatar.png"
+								alt="default_avatar" width="120" height="120"></a>
+							<div class="desc">Shared Album1</div>
+						</div>
+
+						<div class="img">
+							<a target="_blank" href="#"><img
+								src="/Souvenirs/res/image/Carousel_1.png" alt="Carousel_1"
+								width="120" height="120"></a>
+							<div class="desc">Shared Album2</div>
+						</div>
+
+						<div class="img">
+							<a target="_blank" href="#"><img
+								src="/Souvenirs/res/image/Carousel_2.png" alt="Carousel_2"
+								width="120" height="120"></a>
+							<div class="desc">Shared Album3</div>
+						</div>
+
+						<div class="img">
+							<a target="_blank" href="#"><img
+								src="/Souvenirs/res/image/Carousel_3.png" alt="Carousel_3"
+								width="120" height="120"></a>
+							<div class="desc">Shared Album4</div>
+						</div>
+
+						<div class="img">
+							<a target="_blank" href="#"><img
+								src="/Souvenirs/res/image/Carousel_4.png" alt="Carousel_4"
+								width="120" height="120"></a>
+							<div class="desc">Shared Album5</div>
+						</div>
+
+						<div style="clear: both; padding-top: 5px;">
+							<ul class="pager">
+								<li style="margin-right: 10%"><a href="#">&larr;
+										Previous</a></li>
+								<li style="margin-left: 10%"><a href="#">Next &rarr;</a></li>
+							</ul>
+						</div>
 					</div>
+
 					<div class="tab-pane fade" id="create_album">
 						<p>jMeter 是一款开源的测试软件。它是 100% 纯 Java 应用程序，用于负载和性能测试。</p>
 					</div>
