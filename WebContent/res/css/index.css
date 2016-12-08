@@ -87,6 +87,10 @@ div.login {
 	padding-right:1%; */
 }
 
+div.login div a {
+	width: 49%;
+}
+
 div.login div button {
 	width: 49%;
 }

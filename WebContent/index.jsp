@@ -39,7 +39,8 @@
 							name="Text_password" placeholder="Password" value="">
 					</div>
 					<button type="submit" class="btn btn-primary">Login</button>
-					<button type="button" class="btn btn-primary">Register</button>
+					<a href="register.jsp" class="btn btn-primary" role="button">Register</a>
+					<!-- <button type="button" class="btn btn-primary">Register</button> -->
 				</form>
 			</div>
 		</div>
