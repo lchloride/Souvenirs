@@ -6,6 +6,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
+<link href="/Souvenirs/res/image/logo.ico" rel="icon">
 <!-- 新 Bootstrap 核心 CSS 文件 -->
 <link href="/Souvenirs/res/bootstrap/css/bootstrap.min.css"
 	rel="stylesheet">
@@ -66,9 +67,11 @@
 			if (password.length >= 6 && password.length <= 15) {
 				_score += 2 * (password.length - 6 + 1);
 			} else {
-				if (password.length > 15) {
+				if (password.length > 15 && password.length <= 30) {
 					_score += 1 * (password.length - 15) + (2 * (15 - 6 + 1));
 				}
+				else
+					return 0;
 			}
 		}
 

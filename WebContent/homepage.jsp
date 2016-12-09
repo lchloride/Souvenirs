@@ -4,6 +4,8 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<link href="/Souvenirs/res/image/logo.ico" rel="icon">
 <!-- 新 Bootstrap 核心 CSS 文件 -->
 <link href="/Souvenirs/res/bootstrap/css/bootstrap.min.css"
 	rel="stylesheet">
@@ -80,6 +82,9 @@
 
 .album_manage {
 	margin-top: 50px;
+	margin-right: 0px;
+	padding-right: 3%;
+	width: 100%;
 }
 
 div.img {
@@ -138,6 +143,21 @@ div.desc a:active {
 .manage-content {
 	border-left-style: solid;
 	border-width: 1px;
+	text-align: center;
+}
+
+.small-grid {
+	padding-left: 0px;
+	padding-right: 5px;
+}
+
+.page-number {
+	background-color: rgba(30, 144, 255, 0.8);
+	color: white;
+	padding: 5px;
+	padding-left: 10px;
+	padding-right: 10px;
+	border-radius: 5px;
 }
 </style>
 </head>
@@ -220,130 +240,200 @@ div.desc a:active {
 		</div>
 
 		<div class="row album_manage">
-			<div class="col-lg-3 col-md-3 col-sm-3 col-xs-2">
+			<div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
 
 				<ul id="myTab" class="nav nav-tabs nav-stacked">
 					<li><a href="#my_albums" data-toggle="tab"
-						style="padding-left: 15%; font-size: 1.2em">My Albums</a></li>
+						style="padding-left: 15%; font-size: 1.0em">My Albums</a></li>
 					<li><a href="#shared_albums" data-toggle="tab"
-						style="padding-left: 15%; font-size: 1.2em">Shared Albums</a></li>
+						style="padding-left: 15%; font-size: 1.0em">Shared Albums</a></li>
 					<li><a href="#create_album" data-toggle="tab"
-						style="padding-left: 15%; font-size: 1.2em">Create Album</a></li>
+						style="padding-left: 15%; font-size: 1.0em">Create Album</a></li>
 				</ul>
 			</div>
 
-			<div class=" col-lg-9 col-md-9 col-sm-9 col-xs-10 manage-content">
-				<div id="TabContent" class="tab-content">
-					<div class="tab-pane fade" id="my_albums">
+			<div class=" col-lg-10 col-md-10 col-sm-10 col-xs-10 manage-content">
+				<form>
+					<div id="TabContent" class="tab-content">
+						<div class="tab-pane fade" id="my_albums">
 
-						<div class="img">
-							<a target="_blank" href="#"><img
-								src="/Souvenirs/res/image/default_avatar.png"
-								alt="default_avatar" width="120" height="120"></a>
-							<div class="desc">
-								<a target="_blank" href="#">My Album1</a>
+							<div class="img">
+								<a target="_blank" href="#"><img
+									src="/Souvenirs/res/image/default_avatar.png"
+									alt="default_avatar" width="120" height="120"></a>
+								<div class="desc">
+									<a target="_blank" href="#">My Album1</a>
+								</div>
+							</div>
+
+							<div class="img">
+								<a target="_blank" href="#"><img
+									src="/Souvenirs/res/image/Carousel_1.png" alt="Carousel_1"
+									width="120" height="120"></a>
+								<div class="desc">
+									<a target="_blank" href="#">My Album2</a>
+								</div>
+							</div>
+
+							<div class="img">
+								<a target="_blank" href="#"><img
+									src="/Souvenirs/res/image/Carousel_2.png" alt="Carousel_2"
+									width="120" height="120"></a>
+								<div class="desc">
+									<a target="_blank" href="#">My Album3</a>
+								</div>
+							</div>
+
+							<div class="img">
+								<a target="_blank" href="#"><img
+									src="/Souvenirs/res/image/Carousel_3.png" alt="Carousel_3"
+									width="120" height="120"></a>
+								<div class="desc">
+									<a target="_blank" href="#">My Album4</a>
+								</div>
+							</div>
+
+							<div class="img">
+								<a target="_blank" href="#"><img
+									src="/Souvenirs/res/image/Carousel_4.png" alt="Carousel_4"
+									width="120" height="120"></a>
+								<div class="desc">
+									<a target="_blank" href="#">My Album5</a>
+								</div>
+							</div>
+
+							<div style="clear: both; padding-top: 5px;">
+								<ul class="pager">
+									<li style="margin-right: 10%"><a href="#">&larr;
+											Previous</a></li>
+									<li class="page-number">Page 1 of 3</li>
+									<li style="margin-left: 10%"><a href="#">Next &rarr;</a></li>
+								</ul>
 							</div>
 						</div>
 
-						<div class="img">
-							<a target="_blank" href="#"><img
-								src="/Souvenirs/res/image/Carousel_1.png" alt="Carousel_1"
-								width="120" height="120"></a>
-							<div class="desc">
-								<a target="_blank" href="#">My Album2</a>
+						<div class="tab-pane fade" id="shared_albums">
+							<div class="img">
+								<a target="_blank" href="#"><img
+									src="/Souvenirs/res/image/default_avatar.png"
+									alt="default_avatar" width="120" height="120"></a>
+								<div class="desc">Shared Album1</div>
+							</div>
+
+							<div class="img">
+								<a target="_blank" href="#"><img
+									src="/Souvenirs/res/image/Carousel_1.png" alt="Carousel_1"
+									width="120" height="120"></a>
+								<div class="desc">Shared Album2</div>
+							</div>
+
+							<div class="img">
+								<a target="_blank" href="#"><img
+									src="/Souvenirs/res/image/Carousel_2.png" alt="Carousel_2"
+									width="120" height="120"></a>
+								<div class="desc">Shared Album3</div>
+							</div>
+
+							<div class="img">
+								<a target="_blank" href="#"><img
+									src="/Souvenirs/res/image/Carousel_3.png" alt="Carousel_3"
+									width="120" height="120"></a>
+								<div class="desc">Shared Album4</div>
+							</div>
+
+							<div class="img">
+								<a target="_blank" href="#"><img
+									src="/Souvenirs/res/image/Carousel_4.png" alt="Carousel_4"
+									width="120" height="120"></a>
+								<div class="desc">Shared Album5</div>
+							</div>
+
+							<div style="clear: both; padding-top: 5px;">
+								<ul class="pager">
+									<li style="margin-right: 10%"><a href="#">&larr;
+											Previous</a></li>
+									<li class="page-number">Page 1 of 3</li>
+									<li style="margin-left: 10%"><a href="#">Next &rarr;</a></li>
+								</ul>
 							</div>
 						</div>
 
-						<div class="img">
-							<a target="_blank" href="#"><img
-								src="/Souvenirs/res/image/Carousel_2.png" alt="Carousel_2"
-								width="120" height="120"></a>
-							<div class="desc">
-								<a target="_blank" href="#">My Album3</a>
-							</div>
-						</div>
+						<div class="tab-pane fade" id="create_album">
+							<div class="row">
 
-						<div class="img">
-							<a target="_blank" href="#"><img
-								src="/Souvenirs/res/image/Carousel_3.png" alt="Carousel_3"
-								width="120" height="120"></a>
-							<div class="desc">
-								<a target="_blank" href="#">My Album4</a>
-							</div>
-						</div>
+								<div class="col-sm-5">
+									<div class="form-group">
+										<label for="firstname"
+											class="col-sm-4 control-label small-grid">Album Name</label>
+										<div class="col-sm-8 small-grid">
+											<input type="text" class="form-control" id="firstname"
+												placeholder="Input album name">
+										</div>
+									</div>
+								</div>
 
-						<div class="img">
-							<a target="_blank" href="#"><img
-								src="/Souvenirs/res/image/Carousel_4.png" alt="Carousel_4"
-								width="120" height="120"></a>
-							<div class="desc">
-								<a target="_blank" href="#">My Album5</a>
-							</div>
-						</div>
+								<div class="col-sm-4">
+									<div class="form-group">
+										<label for="firstname"
+											class="col-sm-3 control-label small-grid">Cover</label>
+										<div class="col-sm-9 small-grid">
+											<input type="text" class="form-control" id="firstname"
+												placeholder="Choose its cover from file system">
+										</div>
+									</div>
+								</div>
 
-						<div style="clear: both; padding-top: 5px;">
-							<ul class="pager">
-								<li style="margin-right: 10%"><a href="#">&larr;
-										Previous</a></li>
-								<li style="margin-left: 10%"><a href="#">Next &rarr;</a></li>
-							</ul>
+								<div class="col-sm-3 small-grid" style="text-align:left">
+									<button class="btn btn-default btn-sm" type="submit">Choose
+										Cover</button>
+									<button class="btn btn-default btn-sm" type="submit">Upload</button>	
+								</div>
+
+							</div>
+
+							<br />
+							<div class="row">
+								<div class="col-sm-5">
+									<div class="form-group">
+										<label for="firstname"
+											class="col-sm-4 control-label small-grid">Description</label>
+										<div class="col-sm-8 small-grid">
+											<textarea class="form-control" rows="3"
+												placeholder="Enter description, no more than 200 letters"></textarea>
+										</div>
+									</div>
+								</div>
+
+								<div class="col-sm-4">
+									<div class="form-group">
+										<label for="firstname"
+											class="col-sm-3 control-label small-grid">Cover
+											Preview</label>
+										<div class="col-sm-9 small-grid">
+											<img class="img-rounded manage-content"
+												src="/Souvenirs/res/image/default_avatar.png" width="120"
+												height="120">
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<br />
+							<div class="row">
+								<div class="col-sm-2">
+									<button type="submit" class="btn btn-primary">Create</button>
+								</div>
+							</div>
+
 						</div>
+						<script>
+							$(function() {
+								$('#myTab li:eq(0) a').tab('show');
+							});
+						</script>
+
 					</div>
-
-					<div class="tab-pane fade" id="shared_albums">
-						<div class="img">
-							<a target="_blank" href="#"><img
-								src="/Souvenirs/res/image/default_avatar.png"
-								alt="default_avatar" width="120" height="120"></a>
-							<div class="desc">Shared Album1</div>
-						</div>
-
-						<div class="img">
-							<a target="_blank" href="#"><img
-								src="/Souvenirs/res/image/Carousel_1.png" alt="Carousel_1"
-								width="120" height="120"></a>
-							<div class="desc">Shared Album2</div>
-						</div>
-
-						<div class="img">
-							<a target="_blank" href="#"><img
-								src="/Souvenirs/res/image/Carousel_2.png" alt="Carousel_2"
-								width="120" height="120"></a>
-							<div class="desc">Shared Album3</div>
-						</div>
-
-						<div class="img">
-							<a target="_blank" href="#"><img
-								src="/Souvenirs/res/image/Carousel_3.png" alt="Carousel_3"
-								width="120" height="120"></a>
-							<div class="desc">Shared Album4</div>
-						</div>
-
-						<div class="img">
-							<a target="_blank" href="#"><img
-								src="/Souvenirs/res/image/Carousel_4.png" alt="Carousel_4"
-								width="120" height="120"></a>
-							<div class="desc">Shared Album5</div>
-						</div>
-
-						<div style="clear: both; padding-top: 5px;">
-							<ul class="pager">
-								<li style="margin-right: 10%"><a href="#">&larr;
-										Previous</a></li>
-								<li style="margin-left: 10%"><a href="#">Next &rarr;</a></li>
-							</ul>
-						</div>
-					</div>
-
-					<div class="tab-pane fade" id="create_album">
-						<p>jMeter 是一款开源的测试软件。它是 100% 纯 Java 应用程序，用于负载和性能测试。</p>
-					</div>
-				</div>
-				<script>
-					$(function() {
-						$('#myTab li:eq(0) a').tab('show');
-					});
-				</script>
+				</form>
 			</div>
 		</div>
 	</div>

@@ -5,6 +5,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
+<link href="/Souvenirs/res/image/logo.ico" rel="icon">
 <!-- 新 Bootstrap 核心 CSS 文件 -->
 <link href="/Souvenirs/res/bootstrap/css/bootstrap.min.css"
 	rel="stylesheet">
@@ -23,7 +24,7 @@
 <body>
 	<div class="mainbody">
 		<div class="login">
-			<div class="login-form" >
+			<div class="login-form">
 				<h2 style="text-align: center">Souvenirs</h2>
 				<h6 style="text-align: center; color: #606060">In memory of our
 					graduation season</h6>
@@ -37,6 +38,11 @@
 					<div class="form-group">
 						<input type="password" class="form-control" id="password"
 							name="Text_password" placeholder="Password" value="">
+					</div>
+					<div class="form-group">
+						<input type="text" class="form-control" id="verifycode"
+							name="Text_verifycode" placeholder="Case insensitive" value="" style="width:58%;display:inline">
+							<label for="verifycode" style="width:40%"><img src="/Souvenirs/res/image/verifycode/verifycode1.png" ></label>
 					</div>
 					<button type="submit" class="btn btn-primary">Login</button>
 					<a href="register.jsp" class="btn btn-primary" role="button">Register</a>
