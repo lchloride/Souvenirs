@@ -2,16 +2,19 @@ package user.web;
 
 import java.util.*;
 
+import org.apache.log4j.Logger;
+
 import user.dao.UserDAO;
 
 public class UserManager {
 	private static UserManager user_manager = new UserManager();
 	private Map<String, String> parameter = null;
 	private static UserDAO dao = new UserDAO();
+	private static Logger logger = Logger.getLogger(UserManager.class);
 
-	final int REGISTER_DEFAULT_PARA = 2;//login_username,login_password
-	final int LOGIN_DEFAULT_PARA = 2;//login_username, login_password
-	
+	final int REGISTER_DEFAULT_PARA = 2;// login_username,login_password
+	final int LOGIN_DEFAULT_PARA = 2;// login_username, login_password
+
 	public UserManager() {
 		// TODO Auto-generated constructor stub
 		// dao = new UserDAO();
@@ -31,7 +34,8 @@ public class UserManager {
 		if (checkLogin(parameter.get("login_username"), parameter.get("login_password"))) {
 			result.put("DispatchURL", "register.jsp");
 			result.put("Result", true);
-			result.put("Msg", "Aleady login");
+			result.put("Msg", "Already login");
+			logger.info("Register failed:" + parameter.get("login_username") + "has already login.");
 		} else {
 			if (parameter.size() > REGISTER_DEFAULT_PARA) {
 				// Check whether username is duplicated or not
@@ -39,6 +43,7 @@ public class UserManager {
 					result.put("DispatchURL", "register.jsp");
 					result.put("Result", false);
 					result.put("Msg", "Duplicate Username");
+					logger.info("Register failed:" + parameter.get("Text_username") + "existed.");
 				} else {
 					// Key operation
 					int rs = dao.register(parameter);
@@ -46,11 +51,12 @@ public class UserManager {
 						result.put("DispatchURL", "register.jsp"); // Insert
 																	// successfully
 						result.put("Result", true);
+						logger.info("Register succeeded:Username--" + parameter.get("Text_username"));
 					} else {
-						result.put("DispatchURL", "register.jsp");// Insert
-																	// failed
+						result.put("DispatchURL", "register.jsp");// Insert  failed
 						result.put("Result", false);
 						result.put("Msg", "Database Error occured, please try again");
+						logger.info("Register failed: Database internal error");
 					}
 				}
 			} else { // The first time to display register page
@@ -62,27 +68,35 @@ public class UserManager {
 
 	public Map<String, Object> login() {
 		Map<String, Object> result = new HashMap<>();
-		if (!parameter.get("Text_username").isEmpty() || !parameter.get("Text_password").isEmpty()) { 
-			// Fill the login form and click submit, just check what the user wrote
-			if (/*checkLogin(parameter.get("login_username"), parameter.get("login_password"))
-					||*/ checkLogin(parameter.get("Text_username"), parameter.get("Text_password"))) {
+		if (!parameter.get("Text_username").isEmpty() || !parameter.get("Text_password").isEmpty()) {
+			// Fill the login form and click submit, just check what the user
+			// wrote
+			if (/*
+				 * checkLogin(parameter.get("login_username"),
+				 * parameter.get("login_password")) ||
+				 */ checkLogin(parameter.get("Text_username"), parameter.get("Text_password"))) {
 				result.put("DispatchURL", "homepage");
 				result.put("Redirect", true);
 				result.put("login_username", parameter.get("Text_username"));
 				result.put("login_password", parameter.get("Text_password"));
+				logger.info("User Login: Username--"+parameter.get("Text_username"));
 			} else {
 				result.put("DispatchURL", "index.jsp");
-				result.put("Msg", "Username(ID) and/or password is wrong");
+				result.put("Msg", "Username(ID) or password is wrong");
 				result.put("Firsttime", false);
+				logger.info("User Login Failed: Username--"+parameter.get("Text_username"));
 			}
 		} else {
-			//the first time load index page, check whether username and password stored in session
+			// the first time load index page, check whether username and
+			// password stored in session
 			if (checkLogin(parameter.get("login_username"), parameter.get("login_password"))) {
 				result.put("DispatchURL", "homepage");
 				result.put("Redirect", true);
+				logger.info("User Session Login: Username--"+parameter.get("login_username"));
 			} else {
 				result.put("DispatchURL", "index.jsp");
 				result.put("Firsttime", false);
+				logger.info("User Session Login Failed: Username--"+parameter.get("login_username"));
 			}
 		}
 		return result;
@@ -124,7 +138,7 @@ public class UserManager {
 		else if (rs == 1)
 			return true;
 		else {
-			System.out.println("Fatal Error: duplicate user!");
+			logger.error("Duplicate User!");
 			return true;
 		}
 	}

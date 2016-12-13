@@ -35,7 +35,11 @@
 				<h2 style="text-align: center">Souvenirs</h2>
 				<h6 style="text-align: center; color: #606060">In memory of our
 					graduation season</h6>
-				<br />
+				<c:choose>
+					<c:when test="${not empty Msg}"><h6 style="color:firebrick;text-align:center;font-weight:bold">${Msg }</h6></c:when>
+					<c:otherwise>	<br /></c:otherwise>
+				</c:choose>
+
 				<form action="login" method="POST" id="form_login"
 					onsubmit="return checkSubmit()">
 					<div class="form-group">
@@ -71,6 +75,7 @@
 				</div>
 			</div>
 		</div>
+		
 		<!-- 	
 		<div class="row">
 			<div class="col-md-9">
