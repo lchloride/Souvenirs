@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -171,7 +172,7 @@ div.desc a:active {
 			</div>
 			<div>
 				<ul class="nav navbar-nav">
-					<li class="active"><a href="homepage.jsp">HomePage</a></li>
+					<li class="active"><a href="homepage">HomePage</a></li>
 					<li><a href="#">Group</a></li>
 				</ul>
 
@@ -180,7 +181,7 @@ div.desc a:active {
 						src="/Souvenirs/res/image/default_avatar.png" alt="avatar"
 						width="32" height="32"></li>
 					<li class="dropdown"><a href="#" class="dropdown-toggle"
-						data-toggle="dropdown">${sessionScope.username }example <b
+						data-toggle="dropdown">${sessionScope.username} <b
 							class="caret"></b>
 					</a>
 						<ul class="dropdown-menu">

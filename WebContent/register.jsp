@@ -69,8 +69,7 @@
 			} else {
 				if (password.length > 15 && password.length <= 30) {
 					_score += 1 * (password.length - 15) + (2 * (15 - 6 + 1));
-				}
-				else
+				} else
 					return 0;
 			}
 		}
@@ -119,6 +118,16 @@
 
 		return true;
 	}
+
+	function displayfun() {
+		i--;
+		document.getElementById("mes").innerHTML = i;
+		if (i == 0) {
+			window.location.href = "index.jsp";
+			clearInterval(intervalid);
+		}
+
+	}
 </script>
 </head>
 <body>
@@ -137,9 +146,9 @@
 
 
 				<ul class="nav navbar-nav navbar-right" style="padding-right: 5%">
-					<li class="active"><a href="#"><span class="glyphicon glyphicon-user"></span>
-							Register</a></li>
-					<li ><a href="index.jsp"><span
+					<li class="active"><a href="#"><span
+							class="glyphicon glyphicon-user"></span> Register</a></li>
+					<li><a href="index.jsp"><span
 							class="glyphicon glyphicon-log-in"></span> Login</a></li>
 				</ul>
 
@@ -152,11 +161,12 @@
 			<h2 class="title">Souvenirs Register Page</h2>
 			<br />
 			<form class="form-horizontal" role="form"
-				onsubmit="return checkSubmit()">
+				onsubmit="return checkSubmit()" method="post" action="register">
 				<div class="form-group">
 					<label for="username" class="col-sm-2 control-label">Username</label>
 					<div class="col-sm-7">
 						<input type="text" class="form-control" id="username"
+							name="Text_username"
 							placeholder="3~50 English letters/numbers ONLY">
 					</div>
 					<div class="col-sm-3 control-label ">
@@ -168,7 +178,7 @@
 					<label for="password" class="col-sm-2 control-label">Password</label>
 					<div class="col-sm-7">
 						<input type="password" class="form-control" id="password"
-							placeholder="6~30 letters/numbers/symbols"
+							placeholder="6~30 letters/numbers/symbols" name="Text_password"
 							onkeyup="pwdstrength()">
 					</div>
 					<div class="col-sm-3 control-label" id="pwdstrength"></div>
@@ -198,6 +208,23 @@
 				<div class="form-group">
 					<div class="col-sm-offset-2 col-sm-10">
 						<button type="submit" class="btn btn-primary">Register</button>
+						<c:choose>
+							<c:when test="${empty Result }">
+								<br />
+							</c:when>
+							<c:when test="${not empty Result and Result == true }">
+								<h5 style="display: inline;margin-left:10px">Creating user succeeded! ${Msg } <br/><span>The browser will redirect to login page in <span id="mes">5</span> seconds.<br /> If
+		browser does not redirect automatically, please click on <a href="index.jsp">here</a></span></h5>
+								<script>
+									var i = 5;
+									var intervalid;
+									intervalid = setInterval("displayfun()",	1000);
+								</script>
+							</c:when>
+							<c:when test="${not empty Result and Result == false }">
+								<h5 style="display: inline">Creating user failed! ${Msg }</h5>
+							</c:when>
+						</c:choose>
 					</div>
 				</div>
 			</form>

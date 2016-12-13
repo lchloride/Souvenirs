@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html lang="zh_CN">
 <head>
@@ -19,7 +20,13 @@
 <link href="/Souvenirs/res/css/index.css" rel="stylesheet"
 	type="text/css">
 <title>Souvenirs</title>
-
+<c:if test="${empty Firsttime or ((not empty Firsttime) and Firsttime == true)}">
+<script>
+	window.onload = function() {
+		document.getElementById("form_login").submit();
+	}
+</script>
+</c:if>
 </head>
 <body>
 	<div class="mainbody">
@@ -29,7 +36,7 @@
 				<h6 style="text-align: center; color: #606060">In memory of our
 					graduation season</h6>
 				<br />
-				<form action="homepage.jsp" method="POST" id="form_login"
+				<form action="login" method="POST" id="form_login"
 					onsubmit="return checkSubmit()">
 					<div class="form-group">
 						<input type="text" class="form-control" id="username"
