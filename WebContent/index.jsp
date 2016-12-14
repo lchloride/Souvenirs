@@ -53,7 +53,7 @@
 					<div class="form-group">
 						<input type="text" class="form-control" id="verifycode"
 							name="Text_verifycode" placeholder="Case insensitive" value="" style="width:58%;display:inline">
-							<label for="verifycode" style="width:40%"><img src="/Souvenirs/res/image/verifycode/verifycode1.png" ></label>
+							<label for="verifycode" style="width:40%"><img src="${'/Souvenirs/res/image/verifycode/'}${VerifyCode }${'.png'}" ></label>
 					</div>
 					<button type="submit" class="btn btn-primary">Login</button>
 					<a href="register.jsp" class="btn btn-primary" role="button">Register</a>

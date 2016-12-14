@@ -68,6 +68,10 @@ public class UserServ extends HttpServlet {
 				session.getAttribute("username") == null ? "" : (String) session.getAttribute("username"));
 		para.put("login_password",
 				session.getAttribute("password") == null ? "" : (String) session.getAttribute("password"));
+		para.put("login_verifycode_name",
+				session.getAttribute("login_verifycode_name") == null ? "" : (String) session.getAttribute("login_verifycode_name"));
+		para.put("register_verifycode_name",
+				session.getAttribute("register_verifycode_name") == null ? "" : (String) session.getAttribute("register_verifycode_name"));
 		// Transfer parameters to AnimeManager
 		um.setParameter(para);
 
@@ -90,10 +94,11 @@ public class UserServ extends HttpServlet {
 		}
 		
 		if (result.containsKey("login_username")&&result.containsKey("login_password")) {
-			System.out.println(result.get("login_username") + " " + result.get("login_password"));
 			session.setAttribute("username", result.get("login_username"));
 			session.setAttribute("password", result.get("login_password"));
 		}
+		if (result.containsKey("VerifyCode"))
+			session.setAttribute("login_verifycode_name", result.get("VerifyCode"));
 
 		// Forward or Redirect result to assigned page
 		String dispatchURL = (String) result.get("DispatchURL");

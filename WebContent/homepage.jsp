@@ -178,7 +178,7 @@ div.desc a:active {
 
 				<ul class="nav navbar-nav navbar-right" style="padding-right: 5%">
 					<li><img class="navbar-form"
-						src="/Souvenirs/res/image/default_avatar.png" alt="avatar"
+						src="${empty Avatar?'/Souvenirs/res/image/default_avatar.png':Avatar}" alt="avatar"
 						width="32" height="32"></li>
 					<li class="dropdown"><a href="#" class="dropdown-toggle"
 						data-toggle="dropdown">${sessionScope.username} <b
@@ -412,8 +412,7 @@ div.desc a:active {
 											Preview</label>
 										<div class="col-sm-9 small-grid">
 											<img class="img-rounded manage-content"
-												src="/Souvenirs/res/image/default_avatar.png" width="120"
-												height="120">
+												src="/Souvenirs/image" width="120" height="120">
 										</div>
 									</div>
 								</div>

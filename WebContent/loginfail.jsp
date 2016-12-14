@@ -4,7 +4,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Login Success</title>
+<title>Login Failed</title>
 <link href="/Souvenirs/res/image/logo.ico" rel="icon">
 <style type="text/css">
 html, body {
