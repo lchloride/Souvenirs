@@ -14,8 +14,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.eclipse.jdt.internal.compiler.env.IGenericField;
-
 /**
  * Servlet implementation class UserServ
  */
@@ -66,12 +64,14 @@ public class UserServ extends HttpServlet {
 
 		para.put("login_username",
 				session.getAttribute("username") == null ? "" : (String) session.getAttribute("username"));
+		para.put("login_user_id",
+				session.getAttribute("user_id") == null ? "" : (String) session.getAttribute("user_id"));
 		para.put("login_password",
 				session.getAttribute("password") == null ? "" : (String) session.getAttribute("password"));
-		para.put("login_verifycode_name",
-				session.getAttribute("login_verifycode_name") == null ? "" : (String) session.getAttribute("login_verifycode_name"));
-		para.put("register_verifycode_name",
-				session.getAttribute("register_verifycode_name") == null ? "" : (String) session.getAttribute("register_verifycode_name"));
+		para.put("login_verifycode_name", session.getAttribute("login_verifycode_name") == null ? ""
+				: (String) session.getAttribute("login_verifycode_name"));
+		para.put("register_verifycode_name", session.getAttribute("register_verifycode_name") == null ? ""
+				: (String) session.getAttribute("register_verifycode_name"));
 		// Transfer parameters to AnimeManager
 		um.setParameter(para);
 
@@ -92,10 +92,12 @@ public class UserServ extends HttpServlet {
 		for (Entry<String, Object> entry : result.entrySet()) {
 			request.setAttribute(entry.getKey(), entry.getValue());
 		}
-		
-		if (result.containsKey("login_username")&&result.containsKey("login_password")) {
+
+		if (result.containsKey("login_user_id") && result.containsKey("login_username")
+				&& result.containsKey("login_password")) {
 			session.setAttribute("username", result.get("login_username"));
 			session.setAttribute("password", result.get("login_password"));
+			session.setAttribute("user_id", result.get("login_user_id"));
 		}
 		if (result.containsKey("VerifyCode"))
 			session.setAttribute("login_verifycode_name", result.get("VerifyCode"));
