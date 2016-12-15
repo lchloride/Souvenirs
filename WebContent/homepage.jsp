@@ -185,7 +185,7 @@ div.desc a:active {
 							class="caret"></b>
 					</a>
 						<ul class="dropdown-menu">
-							<li><a href="#">Account</a></li>
+							<li><a href="account.jsp">Account</a></li>
 							<li class="divider"></li>
 							<li><a href="index.jsp">Logout</a></li>
 						</ul></li>

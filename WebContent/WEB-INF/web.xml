@@ -53,6 +53,17 @@
 		<servlet-name>ImageLoader</servlet-name>
 		<servlet-class>tool.ImageLoader</servlet-class>
 	</servlet>
+	<servlet>
+		<servlet-name>ErrorHandler</servlet-name>
+		<servlet-class>tool.ErrorHandler</servlet-class>
+	</servlet>
+
+	<!-- servlet mappings -->
+	<servlet-mapping>
+		<servlet-name>ErrorHandler</servlet-name>
+		<url-pattern>/ErrorHandler</url-pattern>
+	</servlet-mapping>
+
 	<servlet-mapping>
 		<servlet-name>UserServ</servlet-name>
 		<url-pattern>/register</url-pattern>
@@ -69,6 +80,22 @@
 		<servlet-name>ImageLoader</servlet-name>
 		<url-pattern>/image</url-pattern>
 	</servlet-mapping>
+	<error-page>
+		<error-code>403</error-code>
+		<location>/ErrorHandler</location>
+	</error-page>
+	<error-page>
+		<error-code>404</error-code>
+		<location>/ErrorHandler</location>
+	</error-page>
+	<error-page>
+		<error-code>500</error-code>
+		<location>/ErrorHandler</location>
+	</error-page>
+	<error-page>
+		<exception-type>java.lang.Throwable</exception-type>
+		<location>/ErrorHandler</location>
+	</error-page>
 	<welcome-file-list>
 		<welcome-file>index.html</welcome-file>
 		<welcome-file>index.htm</welcome-file>
