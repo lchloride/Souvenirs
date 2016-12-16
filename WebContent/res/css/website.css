@@ -1,0 +1,41 @@
+body {
+	background: #2d3b36 url(/Souvenirs/res/image/bg.jpg) no-repeat bottom
+		center fixed;
+	background-size: cover;
+}
+
+@media ( min-width :768px) {
+	.mainbody {
+		margin-top: auto;
+		margin-bottom: auto;
+		margin-right: 10%;
+		margin-left: 10%;
+		font-family: Tahoma, "Microsoft YaHei", sans-serif;
+		background: #E8FFFF;
+		padding-bottom: 20px;
+
+	}
+}
+
+@media ( max-width : 767px) {
+	.mainbody {
+		margin-top: auto;
+		margin-bottom: auto;
+		margin-right: 5px;
+		margin-left: 5px;
+		font-family: Tahoma, "Microsoft YaHei", sans-serif;
+		background: #E8FFFF;
+		padding-bottom: 20px;
+	}
+}
+
+.footer {
+	margin-top: 20px;
+	text-align: center;
+	margin-right: 10%;
+	margin-left: 10%;
+	font-family: Tahoma, "Microsoft YaHei", sans-serif;
+	background: #E8FFFF;
+	padding-top:10px;
+	padding-bottom:10px;
+}
