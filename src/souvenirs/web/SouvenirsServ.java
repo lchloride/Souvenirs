@@ -2,7 +2,10 @@ package souvenirs.web;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
@@ -54,14 +57,43 @@ public class SouvenirsServ extends HttpServlet {
 		if (!UserManager.checkLogin(session.getAttribute("user_id"), session.getAttribute("username"), session.getAttribute("password"))) {
 			response.sendRedirect("loginfail.jsp");
 		} else {
-			// Forward to assigned page
-			String dispatchURL = "homepage.jsp";
-			List<String> para = new ArrayList<>();
-			para.add("user");
-			para.add((String)session.getAttribute("user_id"));
+			SouvenirsManager sm = SouvenirsManager.getInstance();
+			Map<String, String> para = new HashMap<String, String>();
+			Enumeration<?> paraNames = request.getParameterNames();
+
+			// Put all parameters from request into a Map transferred to
+			// AnimeManager
+			while (paraNames.hasMoreElements()) {
+				String paraName = (String) paraNames.nextElement();
+				String[] paraValues = request.getParameterValues(paraName);
+				String paraValue = paraValues[0];
+				para.put(paraName, new String(paraValue.getBytes("iso8859-1"), "UTF-8"));
+			}
 			
-			request.setAttribute("Avatar" ,ImageLoader.genImageQuery(false, para));
-			//request.setAttribute("Avatar", "/SouvenirsData"+(String)DB.execSQLQuery("select avatar from user where username='"+session.getAttribute("username")+"'").get(0).get(0));
+			para.put("login_user_id",
+					session.getAttribute("user_id") == null ? "" : (String) session.getAttribute("user_id"));
+			
+			sm.setParameter(para);
+			
+			Map<String, Object> result = new HashMap<>();
+
+			// Obtain operation
+			String query_url = request.getServletPath();
+			query_url = query_url.substring(query_url.lastIndexOf('/') + 1);
+
+			if (query_url.contentEquals("homepage")) {
+				result = sm.displayContent();
+			} else if (query_url.contentEquals("logout")) {
+				session.invalidate();
+				response.sendRedirect("index.jsp");
+				return;
+			} else {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND);
+				return;
+			}
+			
+			// Forward to assigned page
+			String dispatchURL = result.containsKey("DispatchURL")?(String)result.get("DispatchURL"):"index.jsp";
 			RequestDispatcher dispatcher = request.getRequestDispatcher(dispatchURL);
 			dispatcher.forward(request, response);
 		}

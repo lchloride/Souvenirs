@@ -77,6 +77,10 @@
 		<url-pattern>/homepage</url-pattern>
 	</servlet-mapping>
 	<servlet-mapping>
+		<servlet-name>SouvenirsServ</servlet-name>
+		<url-pattern>/logout</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
 		<servlet-name>ImageLoader</servlet-name>
 		<url-pattern>/image</url-pattern>
 	</servlet-mapping>

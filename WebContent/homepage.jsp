@@ -187,7 +187,7 @@ div.desc a:active {
 						<ul class="dropdown-menu">
 							<li><a href="account.jsp">Account</a></li>
 							<li class="divider"></li>
-							<li><a href="index.jsp">Logout</a></li>
+							<li><a href="logout">Logout</a></li>
 						</ul></li>
 				</ul>
 			</div>
