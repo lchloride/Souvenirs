@@ -1,43 +1,4 @@
-<!-- <!DOCTYPE html> -->
-<!-- html>
-<head> 
-<meta charset="utf-8"> 
-<title>菜鸟教程(runoob.com)</title> 
-</head>
-<body>
-
-<canvas id="myCanvas" width="200" height="100" style="border:1px solid #c3c3c3;">
-您的浏览器不支持 HTML5 canvas 标签。
-</canvas>
-<button type="button" onclick="save()">Save</button>
-<script>
-
-var c=document.getElementById("myCanvas");
-var ctx=c.getContext("2d");
-ctx.fillStyle="#FF0000";
-ctx.fillRect(0,0,150,75);
-ctx.moveTo(0,0);
-ctx.lineTo(200,100);
-ctx.stroke();
-ctx.beginPath();
-ctx.arc(95,50,40,0,2*Math.PI);
-//ctx.stroke();
-ctx.fill();
-ctx.font="30px Arial";
-ctx.strokeText("Hello World",10,50);
-
-function save() {
-	var myCanvas = document.getElementById("myCanvas");  
-                // here is the most important part because if you dont replace you will get a DOM 18 exception.  
-                 var image = myCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream;Content-Disposition: attachment;filename=foobar.png");  
-                //var image = myCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream");   
-                window.location.href=image; // it will save locally  
-}
-
-</script>
-
-</body>
-</html> -->
+<!DOCTYPE html>
 <html>
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta charset="utf-8">
@@ -49,65 +10,89 @@ function save() {
 	<canvas id="canvas1" width="600" height="800"></canvas>
 	<br />
 	<br />
-	<input type="button" value="保存png图片" id="btn1" />
-	<input type="button" value="保存jpg图片" id="btn2" />
-	<input type="button" value="显示图片" id="btn3" />
+	<input type="button" value="方法1：保存png图片" id="btn1" />
+	<input type="button" value="方法1：保存jpg图片" id="btn2" />
+	<input type="button" value="方法2：显示图片" id="btn3" />
+	<input type="button" value="方法3：直接保存data" id="btn4" onclick="saveDirect()">
+	<form action="changeImage" method = "POST" onsubmit="return check()">
+		<input type="hidden" value="" id="picture" name="image"/>
+		<input type="submit" value="方法4：後台處理并生成圖片再發送到前台" id="btn5" />
+	</form>
 	<script type="text/javascript">
-		//绘制图片
-		var canvas = document.getElementById('canvas1');
-		var ctx = canvas.getContext('2d');
-		// ctx.fillRect(0, 0, canvas.width, canvas.height);
-		// ctx.fillStyle = "red";
-		// ctx.font = 'italic bold 30px Helvetica ';
-		// ctx.fillText('楷体', 50, 50);
-		var image = new Image();
-		image.src = "BBB.jpg";
-		image.onload = function() {
-			ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, 600,
-					800);//这里取的是实际尺寸
-		}
-		var image1 = new Image();
-		image1.src = "/SouvenirsData/%2300000001/daily%20life/tour.jpg";
-		image1.onload = function() {
-			ctx.drawImage(image1, 0, 0, image1.width, image1.height, 30, 90,
-					339, 232);//这里取的是实际尺寸
-		}
-		/* var img    = new Image();
-		 img = canvas.toDataURL("image/png");   */
-		//以下是调用上面的函数
-		var mb = myBrowser();
-		if ("IE" == mb) {
-			alert("我是 IE");
-			document.getElementById('btn2').onclick = document
-					.execCommand('SaveAs');
-		}
-		if ("FF" == mb) {
-			alert("我是 Firefox");
-		}
-		if ("Chrome" == mb) {
-			//alert("我是 Chrome");
-			document.getElementById('btn2').onclick = function() {
-				var type = 'jpg';
-				download(type);
-			}
-		}
-		if ("Opera" == mb) {
-			alert("我是 Opera");
-		}
-		if ("Safari" == mb) {
-			alert("我是 Safari");
-		}
-
-		//绑定下载事件
-		var btn = document.getElementById('btn1');
-		btn.onclick = function() {
-			var type = 'png';
+	var canvas = document.getElementById('canvas1');
+	var ctx = canvas.getContext('2d');
+	var img = new Image();
+	
+	var mb = myBrowser();
+	if ("IE" == mb) {
+		alert("我是 IE");
+/* 			document.getElementById('btn2').onclick = document
+				.execCommand('SaveAs'); */
+	}
+	if ("FF" == mb) {
+		alert("我是 Firefox");
+	}
+	if ("Chrome" == mb) {
+		//alert("我是 Chrome");
+		document.getElementById('btn2').onclick = function() {
+			var type = 'jpg';
 			download(type);
 		}
+	}
+	if ("Opera" == mb) {
+		alert("我是 Opera");
+	}
+	if ("Safari" == mb) {
+		alert("我是 Safari");
+	}
+	
+	//绑定下载事件
+	var btn = document.getElementById('btn1');
+	btn.onclick = function() {
+		var type = 'png';
+		download(type);
+	}
 
-		document.getElementById('btn3').onclick = function() {
-			saveImageInfo();
-		}
+	document.getElementById('btn3').onclick = function() {
+		saveImageInfo();
+	}
+	
+	
+	if (document.all) {
+		  window.attachEvent('onload', load);  
+	 }else {  
+		  window.addEventListener('load', load, false);
+	}
+	
+
+	function load() {
+		//绘制图片
+		var image = new Image();
+		image.src = "BBB.jpg";
+		
+		if(image.complete){
+			ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, 600,
+					800);//这里取的是实际尺寸
+		}else{
+			   image.onload = function(){
+					ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, 600,
+							800);//这里取的是实际尺寸
+					var image1 = new Image();
+					image1.src = "/SouvenirsData/%2300000001/daily%20life/tour.jpg";
+					image1.onload = function() {
+						ctx.drawImage(image1, 0, 0, image1.width, image1.height, 30, 90,
+								339, 232);//这里取的是实际尺寸
+						ctx.font = 'italic bold 30px Helvetica ';
+						ctx.fillStyle = 'blue';
+						ctx.fillText('Visiting Beach', 370, 180);
+					}
+			   };
+			   image.onerror = function(){
+			     window.alert('加载失败，请重试');
+			   };
+		}; 
+	}
+	
 		function saveImageInfo() {
 			var mycanvas = document.getElementById("canvas1");
 			img = canvas.toDataURL("image/png");
@@ -165,6 +150,18 @@ function save() {
 				return "IE";
 			}
 			; //判断是否IE浏览器
+		}
+			
+		function saveDirect() {
+			var myCanvas = document.getElementById("canvas1");  
+		                // here is the most important part because if you dont replace you will get a DOM 18 exception.  
+		                 var image = myCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream;Content-Disposition: attachment;filename=foobar.png");  
+		                //var image = myCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream");   
+		                window.location.href=image; // it will save locally  
+		}
+		
+		function check() {
+			document.getElementById('picture').value=canvas.toDataURL("image/png");
 		}
 	</script>
 </body>
