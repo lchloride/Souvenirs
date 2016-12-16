@@ -35,4 +35,18 @@ public class Base64 {
         }  
         return result;  
     }  
+    
+    // 解密 得到byte数组 
+    public static byte[] decodeBytes(String s) {  
+        byte[] b = null;  
+        if (s != null) {  
+            BASE64Decoder decoder = new BASE64Decoder();  
+            try {  
+                b = decoder.decodeBuffer(s);  
+            } catch (Exception e) {  
+                e.printStackTrace();  
+            }  
+        }  
+        return b;  
+    }  
 }

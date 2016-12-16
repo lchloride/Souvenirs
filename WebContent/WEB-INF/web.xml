@@ -84,6 +84,11 @@
 		<servlet-name>ImageLoader</servlet-name>
 		<url-pattern>/image</url-pattern>
 	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>SouvenirsServ</servlet-name>
+		<url-pattern>/changeImage</url-pattern>
+	</servlet-mapping>	
+	
 	<error-page>
 		<error-code>403</error-code>
 		<location>/ErrorHandler</location>

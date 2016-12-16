@@ -1,6 +1,7 @@
 package souvenirs.web;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +17,7 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 
+import tool.Base64;
 import user.web.UserManager;
 
 /**
@@ -84,6 +86,33 @@ public class SouvenirsServ extends HttpServlet {
 			} else if (query_url.contentEquals("logout")) {
 				session.invalidate();
 				response.sendRedirect("index.jsp");
+				return;
+			} else if (query_url.contentEquals("changeImage")){
+				String content = request.getParameter("image");
+				String content_base64 = content.substring(content.indexOf("base64,")+7, content.length()-(918-858));
+				byte[] rs_byte = Base64.decodeBytes(content_base64);
+				logger.debug(content_base64.length()+" "+rs_byte.length);
+				try {
+					OutputStream os = null;
+
+					response.reset();
+					response.setCharacterEncoding("UTF-8");
+					// 不同类型的文件对应不同的MIME类型
+					response.setContentType("image/*");
+					// 文件以流的方式发送到客户端浏览器
+					 response.setHeader("Content-Disposition","attachment;filename=img.jpg");
+					 response.setHeader("Content-Disposition", "inline;filename=img.jpg");
+
+					response.setContentLength(rs_byte.length);
+
+					os = response.getOutputStream();
+					os.write(rs_byte);
+					os.flush();
+					os.close();
+				} catch (Exception e) {
+					// TODO: handle exception
+					e.printStackTrace();
+				}
 				return;
 			} else {
 				response.sendError(HttpServletResponse.SC_NOT_FOUND);
