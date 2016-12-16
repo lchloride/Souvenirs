@@ -56,7 +56,12 @@ public class ErrorHandler extends HttpServlet {
 				des_img_path = "/Souvenirs/res/image/404_not_found.png";
 				description = "Sorry, the page you requested has been moved or deleted. ";
 				break;
-
+			case 403:
+				des_img_path = "/Souvenirs/res/image/403_forbidden.png";
+				description = "Sorry, your request was forbidden by server. ";
+			case 500:
+				des_img_path = "/Souvenirs/res/image/500_internal_error.png";
+				description = "Sorry, the server encountered a problem that it cannot response. ";
 			default:
 				break;
 			}

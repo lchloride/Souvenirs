@@ -98,7 +98,7 @@ body {
 	position:absolute;
 	left:0%;
 /* 	top:50%; */
-	margin-left: 100px;
+	margin-left: 90px;
 /* 	margin-top:-25px; */
 	width: 200px;
 	height:125px;
