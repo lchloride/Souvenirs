@@ -26,8 +26,8 @@ public class SouvenirsManager {
 		Map<String, Object> result = new HashMap<>();
 		List<String> para = new ArrayList<>();
 		para.add("user");
-		para.add(parameter.get("user_id"));
-		
+		para.add(parameter.get("login_user_id"));
+		logger.debug("Image Query Parameter: "+para);
 		result.put("Avatar" ,ImageLoader.genImageQuery(false, para));
 		result.put("DispatchURL", "homepage.jsp");
 		return result;
