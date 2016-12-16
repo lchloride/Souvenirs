@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
@@ -89,6 +90,9 @@ public class SouvenirsServ extends HttpServlet {
 				return;
 			}
 			
+			for (Entry<String, Object> entry : result.entrySet()) {
+				request.setAttribute(entry.getKey(), entry.getValue());
+			}
 			// Forward to assigned page
 			String dispatchURL = result.containsKey("DispatchURL")?(String)result.get("DispatchURL"):"index.jsp";
 			RequestDispatcher dispatcher = request.getRequestDispatcher(dispatchURL);
