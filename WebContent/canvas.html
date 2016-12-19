@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-<meta charset="utf-8">
+<meta charset="">
 <head>
 
 </head>
@@ -10,13 +10,13 @@
 	<canvas id="canvas1" width="600" height="800"></canvas>
 	<br />
 	<br />
-	<input type="button" value="æ–¹æ³•1ï¼šä¿å­˜pngå›¾ç‰‡" id="btn1" />
-	<input type="button" value="æ–¹æ³•1ï¼šä¿å­˜jpgå›¾ç‰‡" id="btn2" />
-	<input type="button" value="æ–¹æ³•2ï¼šæ˜¾ç¤ºå›¾ç‰‡" id="btn3" />
-	<input type="button" value="æ–¹æ³•3ï¼šç›´æ¥ä¿å­˜data" id="btn4" onclick="saveDirect()">
+	<input type="button" value="·½·¨1£º±£´æpngÍ¼Æ¬" id="btn1" />
+	<input type="button" value="·½·¨1£º±£´æjpgÍ¼Æ¬" id="btn2" />
+	<input type="button" value="·½·¨2£ºÏÔÊ¾Í¼Æ¬" id="btn3" />
+	<input type="button" value="·½·¨3£ºÖ±½Ó±£´ædata" id="btn4" onclick="saveDirect()">
 	<form action="changeImage" method = "POST" onsubmit="return check()">
 		<input type="hidden" value="" id="picture" name="image"/>
-		<input type="submit" value="æ–¹æ³•4ï¼šå¾Œå°è™•ç†å¹¶ç”Ÿæˆåœ–ç‰‡å†ç™¼é€åˆ°å‰å°" id="btn5" />
+		<input type="submit" value="·½·¨4£ºááÌ¨ÌÀí²¢Éú³ÉˆDÆ¬ÔÙ°lËÍµ½Ç°Ì¨" id="btn5" />
 	</form>
 	<script type="text/javascript">
 	var canvas = document.getElementById('canvas1');
@@ -25,28 +25,28 @@
 	
 	var mb = myBrowser();
 	if ("IE" == mb) {
-		alert("æˆ‘æ˜¯ IE");
+		alert("ÎÒÊÇ IE");
 /* 			document.getElementById('btn2').onclick = document
 				.execCommand('SaveAs'); */
 	}
 	if ("FF" == mb) {
-		alert("æˆ‘æ˜¯ Firefox");
+		alert("ÎÒÊÇ Firefox");
 	}
 	if ("Chrome" == mb) {
-		//alert("æˆ‘æ˜¯ Chrome");
+		//alert("ÎÒÊÇ Chrome");
 		document.getElementById('btn2').onclick = function() {
 			var type = 'jpg';
 			download(type);
 		}
 	}
 	if ("Opera" == mb) {
-		alert("æˆ‘æ˜¯ Opera");
+		alert("ÎÒÊÇ Opera");
 	}
 	if ("Safari" == mb) {
-		alert("æˆ‘æ˜¯ Safari");
+		alert("ÎÒÊÇ Safari");
 	}
 	
-	//ç»‘å®šä¸‹è½½äº‹ä»¶
+	//°ó¶¨ÏÂÔØÊÂ¼ş
 	var btn = document.getElementById('btn1');
 	btn.onclick = function() {
 		var type = 'png';
@@ -66,29 +66,29 @@
 	
 
 	function load() {
-		//ç»˜åˆ¶å›¾ç‰‡
+		//»æÖÆÍ¼Æ¬
 		var image = new Image();
 		image.src = "BBB.jpg";
 		
 		if(image.complete){
 			ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, 600,
-					800);//è¿™é‡Œå–çš„æ˜¯å®é™…å°ºå¯¸
+					800);//ÕâÀïÈ¡µÄÊÇÊµ¼Ê³ß´ç
 		}else{
 			   image.onload = function(){
 					ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, 600,
-							800);//è¿™é‡Œå–çš„æ˜¯å®é™…å°ºå¯¸
+							800);//ÕâÀïÈ¡µÄÊÇÊµ¼Ê³ß´ç
 					var image1 = new Image();
 					image1.src = "/SouvenirsData/%2300000001/daily%20life/tour.jpg";
 					image1.onload = function() {
 						ctx.drawImage(image1, 0, 0, image1.width, image1.height, 30, 90,
-								339, 232);//è¿™é‡Œå–çš„æ˜¯å®é™…å°ºå¯¸
-						ctx.font = 'italic bold 30px Helvetica ';
+								339, 232);//ÕâÀïÈ¡µÄÊÇÊµ¼Ê³ß´ç
+						ctx.font = 'italic bold 30px "segoe print" ';
 						ctx.fillStyle = 'blue';
 						ctx.fillText('Visiting Beach', 370, 180);
 					}
 			   };
 			   image.onerror = function(){
-			     window.alert('åŠ è½½å¤±è´¥ï¼Œè¯·é‡è¯•');
+			     window.alert('¼ÓÔØÊ§°Ü£¬ÇëÖØÊÔ');
 			   };
 		}; 
 	}
@@ -104,18 +104,18 @@
 			w.document
 					.write("<scr"+"ipt>function SaveAs5(imgURL){var oPop = window.open(imgURL,'','width=1, height=1, top=5000, left=5000');for(; oPop.document.readyState != 'complete'; ){ if (oPop.document.readyState == 'complete')break; }oPop.document.execCommand('SaveAs'); oPop.close();}</scr"+"ipt>");
 		}
-		//å›¾ç‰‡ä¸‹è½½æ“ä½œ,æŒ‡å®šå›¾ç‰‡ç±»å‹
+		//Í¼Æ¬ÏÂÔØ²Ù×÷,Ö¸¶¨Í¼Æ¬ÀàĞÍ
 		function download(type) {
-			//è®¾ç½®ä¿å­˜å›¾ç‰‡çš„ç±»å‹
+			//ÉèÖÃ±£´æÍ¼Æ¬µÄÀàĞÍ
 			var imgdata = canvas.toDataURL(type);
-			//å°†mime-typeæ”¹ä¸ºimage/octet-stream,å¼ºåˆ¶è®©æµè§ˆå™¨ä¸‹è½½
+			//½«mime-type¸ÄÎªimage/octet-stream,Ç¿ÖÆÈÃä¯ÀÀÆ÷ÏÂÔØ
 			var fixtype = function(type) {
 				type = type.toLocaleLowerCase().replace(/jpg/i, 'jpeg');
 				var r = type.match(/png|jpeg|bmp|gif/)[0];
 				return 'image/' + r;
 			}
 			imgdata = imgdata.replace(fixtype(type), 'image/octet-stream')
-			//å°†å›¾ç‰‡ä¿å­˜åˆ°æœ¬åœ°
+			//½«Í¼Æ¬±£´æµ½±¾µØ
 			var saveFile = function(data, filename) {
 				var link = document.createElement('a');
 				link.href = data;
@@ -130,26 +130,26 @@
 		}
 
 		function myBrowser() {
-			var userAgent = navigator.userAgent; //å–å¾—æµè§ˆå™¨çš„userAgentå­—ç¬¦ä¸²
+			var userAgent = navigator.userAgent; //È¡µÃä¯ÀÀÆ÷µÄuserAgent×Ö·û´®
 			var isOpera = userAgent.indexOf("Opera") > -1;
 			if (isOpera) {
 				return "Opera"
 			}
-			; //åˆ¤æ–­æ˜¯å¦Operaæµè§ˆå™¨
+			; //ÅĞ¶ÏÊÇ·ñOperaä¯ÀÀÆ÷
 			if (userAgent.indexOf("Firefox") > -1) {
 				return "FF";
-			} //åˆ¤æ–­æ˜¯å¦Firefoxæµè§ˆå™¨
+			} //ÅĞ¶ÏÊÇ·ñFirefoxä¯ÀÀÆ÷
 			if (userAgent.indexOf("Chrome") > -1) {
 				return "Chrome";
 			}
 			if (userAgent.indexOf("Safari") > -1) {
 				return "Safari";
-			} //åˆ¤æ–­æ˜¯å¦Safariæµè§ˆå™¨
+			} //ÅĞ¶ÏÊÇ·ñSafariä¯ÀÀÆ÷
 			//if (userAgent.indexOf("compatible") > -1 && userAgent.indexOf("MSIE") > -1 && !isOpera) {
 			if (!!window.ActiveXObject || "ActiveXObject" in window) {
 				return "IE";
 			}
-			; //åˆ¤æ–­æ˜¯å¦IEæµè§ˆå™¨
+			; //ÅĞ¶ÏÊÇ·ñIEä¯ÀÀÆ÷
 		}
 			
 		function saveDirect() {

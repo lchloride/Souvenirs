@@ -100,8 +100,8 @@ public class SouvenirsServ extends HttpServlet {
 					// 不同类型的文件对应不同的MIME类型
 					response.setContentType("image/*");
 					// 文件以流的方式发送到客户端浏览器
-					 response.setHeader("Content-Disposition","attachment;filename=img.jpg");
-					 response.setHeader("Content-Disposition", "inline;filename=img.jpg");
+					response.setHeader("Content-Disposition","attachment;filename=img.jpg");
+					// response.setHeader("Content-Disposition", "inline;filename=img.jpg");
 
 					response.setContentLength(rs_byte.length);
 
