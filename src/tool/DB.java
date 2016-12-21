@@ -9,6 +9,10 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import com.sun.crypto.provider.RSACipher;
+
+import sun.util.logging.resources.logging;
+
 
 /*
  * This class is a tool class only to offer database operations
@@ -105,7 +109,7 @@ public class DB {
 	// ∆’Õ®≤È±Ì
 	public static List<List<Object>> execSQLQuery(String sql) {
 		List<List<Object>> result = new ArrayList<List<Object>>();
-		List<Object>result_entry = new ArrayList<>();
+		List<Object>result_entry = null;
 		Connection conn = null;
 		Statement stmt = null;
 		ResultSet rs = null;
@@ -115,8 +119,8 @@ public class DB {
 			rs = stmt.executeQuery(sql);
 
 			ResultSetMetaData rsmd = rs.getMetaData();
-
 			while (rs.next()) {
+				result_entry = new ArrayList<>();
 				for (int i = 1; i <= rsmd.getColumnCount(); i++)
 					result_entry.add(rs.getObject(i));
 				result.add(result_entry);
@@ -175,6 +179,13 @@ public class DB {
 				e.printStackTrace();
 			}
 		}
+		return rs;
+	}
+	
+	public static String parsePara(String para) {
+		String rs = new String();
+		System.out.println(para.matches("\'"));
+		rs = para.replaceAll("[\']", "\\\\\'");
 		return rs;
 	}
 }
