@@ -103,7 +103,6 @@
 	}
 
 	function selectImage(idx) {
-		alert(idx.toString() + " " + selected_image.toString());
 		document.getElementById("selected_img_" + selected_image).className = "img";
 		selected_image = idx;
 		document.getElementById("selected_img_" + selected_image).className = "img-clicked";
@@ -129,7 +128,7 @@
 			}
 			assignImage();
 		}
-		xmlhttp.open("GET", "AlbumAjax?album_name="+album, true);
+		xmlhttp.open("GET", "AlbumAjax?album_name=" + album, true);
 		xmlhttp.send();
 	}
 
@@ -281,28 +280,31 @@ div.img-content {
 				style="border:1px solid #c3c3c3;"> Sorry, your browser does
 			not support HTML5 canvas tag, we suggest using Chrome or Firefox to
 			achieve best experience. </canvas>
+			<div id="drawing_content"></div>
 		</div>
 
 		<form class="from" role="form" action="making">
 			<input type="hidden" value="" id="query_type" />
 			<div class="oper-content" id="div_oper">
-				<h4>Select Pictures from Album</h4>
+				<div id="choose_album">
+					<h4>Select Pictures from Album</h4>
 
-				<div class="form-group">
-					<label for="name">Album</label> <select class="form-control"
-						name="Select_album_name" onchange="queryImageInAlbum()" id="select_album_name">
-						<c:forEach var="album_name" items="${Album_List}">
-							<option>${album_name }</option>
-						</c:forEach>
-					</select>
-				</div>
-
-
-				<!-- Choose a picture for the rect -->
-				<div class="img-content" id="img_content">
+					<div class="form-group">
+						<label for="name">Album</label> <select class="form-control"
+							name="Select_album_name" onchange="queryImageInAlbum()"
+							id="select_album_name">
+							<c:forEach var="album_name" items="${Album_List}">
+								<option>${album_name }</option>
+							</c:forEach>
+						</select>
+					</div>
 
 
-					<%-- 					<c:forEach var="image_addr" items="${Image_Addr }" varStatus="status">
+					<!-- Choose a picture for the rect -->
+					<div class="img-content" id="img_content">
+
+
+						<%-- 					<c:forEach var="image_addr" items="${Image_Addr }" varStatus="status">
 						<div class="img" id="selected_img_${status.index}">
 							<a href="#" onclick="selectImage(${status.index})"><img
 								src="${image_addr}" alt="Image In Album"
@@ -312,15 +314,16 @@ div.img-content {
 							</div>
 						</div>
 					</c:forEach> --%>
-				</div>
+					</div>
 
-				<!-- Modify position and Zoom -->
-				<div></div>
+					<!-- Modify position and Zoom -->
+					<div></div>
 
-				<!-- Add button -->
-				<div style="margin-top: 10px;">
-					<button class="btn-sm btn-primary" id="add_pic_btn" type="button">Add
-						Selected Image</button>
+					<!-- Add button -->
+					<div style="margin-top: 10px;">
+						<button class="btn-sm btn-primary" id="add_pic_btn" type="button">Add
+							Selected Image</button>
+					</div>
 				</div>
 			</div>
 		</form>

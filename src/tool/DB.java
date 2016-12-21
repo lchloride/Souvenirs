@@ -184,7 +184,6 @@ public class DB {
 	
 	public static String parsePara(String para) {
 		String rs = new String();
-		System.out.println(para.matches("\'"));
 		rs = para.replaceAll("[\']", "\\\\\'");
 		return rs;
 	}
