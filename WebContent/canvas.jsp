@@ -16,6 +16,9 @@
 
 <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
 <script src="/Souvenirs/res/bootstrap/js/bootstrap.min.js"></script>
+<script src="/Souvenirs/res/bootstrap/js/jquery.min.js"
+	type="text/javascript"></script>
+<script src="/Souvenirs/res/js/iColorPicker.js" type="text/javascript"></script>
 <link href="/Souvenirs/res/css/website.css" rel="stylesheet"
 	type="text/css">
 <script>
@@ -37,6 +40,7 @@
 	var souvenir_obj = JSON.parse(souvenir_json);
 	var ratio = 1;//This is the ratio of canvas's real height to original background height. 
 	var onshowContentId = "hint";//Indicate which operation content is activated and shown.
+	var proc_position = 0;
 
 	window.onload = function() {
 		//set height and width of canvas that fits the displaying area
@@ -57,7 +61,6 @@
 				* 0.8 - (20 * 3) - c.width - 10 + "px";
 		document.getElementById("img_content").style.height = display_height
 				- (41 + 74 + 39) + "px";//41 is the height of <h4>, 74 is the height of form and 39 is the height of button
-				
 		assignImage();
 		drawSouvenir();
 		drawBorderRect();
@@ -235,7 +238,9 @@
 						+ (display_width * 0.1 + 20 + R(souvenir_obj[i].startX) + 1)
 						+ 'px;top:' + (70 + R(souvenir_obj[i].startY) + 2)
 						+ 'px;width:' + R(souvenir_obj[i].drawW) + 'px;height:'
-						+ (R(souvenir_obj[i].drawH) + 2) + 'px" onclick="changeOperContent(\'choose_album\')"></div></a>';
+						+ (R(souvenir_obj[i].drawH) + 2)
+						+ 'px" onclick="changeOperContent(\'choose_album\', '
+						+ i + ')"></div></a>';
 			else if (souvenir_obj[i].type == "text")
 				div_str += '<a><div class="border-rect" style="left:'
 						+ (display_width * 0.1 + 20 + R(souvenir_obj[i].startX) + 1)
@@ -246,14 +251,17 @@
 								+ souvenir_obj[i].paddingR)
 						+ 'px;height:'
 						+ (R(souvenir_obj[i].maxH + souvenir_obj[i].paddingT
-								+ souvenir_obj[i].paddingB) + 2) + 'px" onclick="changeOperContent(\'hint\')"></div></a>';
+								+ souvenir_obj[i].paddingB) + 2)
+						+ 'px" onclick="changeOperContent(\'edit_text\', ' + i
+						+ ')"></div></a>';
 		}
 		div_id.innerHTML = div_str;
 	}
 	function selectImage(idx) {
-		document.getElementById("selected_img_" + selected_image).className = "img";
+		if (selected_image >= 1)
+			document.getElementById("select_img_" + selected_image).className = "img";
 		selected_image = idx;
-		document.getElementById("selected_img_" + selected_image).className = "img-clicked";
+		document.getElementById("select_img_" + selected_image).className = "img-clicked";
 	}
 
 	function R(val) {
@@ -263,6 +271,7 @@
 	function queryImageInAlbum(str) {
 		var xmlhttp;
 		var album = document.getElementById("select_album_name").value;
+		selected_image = 0;//set selected image index to 0 when changine another album 
 		if (str == "") {
 			image_json = "[]";
 			return;
@@ -290,19 +299,35 @@
 		if (obj.length == 0)
 			img_content = "<h4>There is no picture in the album.</h4>";
 		for (i = 0; i < obj.length; i++) {
-			img_content += '<div class="img" id="selected_img_'+i+'"><a onclick="selectImage('
-					+ i
-					+ ')"><img src="'+
-			 obj[i].Addr+'" alt="Image In Album" width="120" height="120"></a><div class="desc" ><a style="color:black">'
+			img_content += '<div class="img" id="select_img_'
+					+ (i + 1)
+					+ '"><a onclick="selectImage('
+					+ (i + 1)
+					+ ')"><img id="album_image_'
+					+ (i + 1)
+					+ '" src="'
+					+ obj[i].Addr
+					+ '" alt="Image In Album" width="120" height="120"></a><div class="desc" ><a style="color:black">'
 					+ obj[i].Filename + '</a></div></div>';
 		}
 		document.getElementById("img_content").innerHTML = img_content;
 	}
-	
-	function changeOperContent(new_content_id) {
+
+	function changeOperContent(new_content_id, idx) {
 		document.getElementById(onshowContentId).style.display = "none";
 		onshowContentId = new_content_id;
+		proc_position = idx;
 		document.getElementById(onshowContentId).style.display = "block";
+		if (new_content_id == "edit_text")
+			document.getElementById("text_content").innerHTML = souvenir_obj[proc_position].text;
+	}
+
+	function addImage2Canvas() {
+		if (proc_position >= 1 && selected_image >= 1) {
+			souvenir_obj[proc_position].url = document
+					.getElementById("album_image_" + selected_image).src;
+			drawSouvenir();
+		}
 	}
 </script>
 
@@ -412,9 +437,8 @@ div.border-rect {
 }
 
 #border_rect a :hover {
-	border-color:rgba(255,0,0,0.5);
-	border-width:4px;
-	
+	border-color: rgba(255, 0, 0, 0.5);
+	border-width: 4px;
 }
 </style>
 </head>
@@ -504,10 +528,61 @@ div.border-rect {
 
 					<!-- Add button -->
 					<div style="margin-top: 10px;">
-						<button class="btn-sm btn-primary" id="add_pic_btn" type="button">Add
-							Selected Image</button>
+						<button class="btn-sm btn-primary" id="add_pic_btn" type="button"
+							onclick="addImage2Canvas()">Add Selected Image</button>
 					</div>
 				</div>
+
+				<!-- The following content is the one of editing text -->
+				<div id="edit_text" style="display: none">
+					<h4>Edit Text</h4>
+					<div class="form-group">
+						<label for="name">Input your words below </label>
+						<textarea id="text_content" class="form-control" rows="3"></textarea>
+						<span class="help-block">Hint: Over-long text may not be
+							displayed properly.</span>
+					</div>
+
+					<h5 style="font-weight:bold">Set Attributes</h5>
+					<div class="row">
+						<div class="col-md-4">
+							<div class="form-group">
+								<select class="form-control">
+									<option>Arial</option>
+									<option>Comic Sans MS</option>
+									<option>Courier New</option>
+									<option>Microsoft YaHei UI</option>
+									<option>Times New Roman</option>
+									<option>Verdana</option>
+								</select>
+							</div>
+						</div>
+
+						<div class="col-md-2">
+							<div class="form-group">
+								<select class="form-control">
+									<option>6</option>
+									<option>8</option>
+									<option>10</option>
+									<option>12</option>
+									<option>14</option>
+									<option>16</option>
+									<option>18</option>
+									<option>20</option>
+								</select>
+							</div>
+						</div>
+
+						<div class="col-md-4">
+							<div class="form-group">
+								<input id="color1" class="iColorPicker form-control" type="text"
+									value="#fff467"
+									style="background-color: rgb(255, 244, 103); width: 80%; display: inline">
+							</div>
+						</div>
+					</div>
+				</div>
+
 			</div>
 		</form>
 	</div>
