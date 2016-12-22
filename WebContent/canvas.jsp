@@ -28,60 +28,172 @@
 			|| document.body.clientHeight;
 	display_height = display_height - 155;
 	var selected_image = 0;
-	var image_json = '${Image_JSON}';
+	var image_json = '${empty Image_JSON?"[]":Image_JSON}';
+	var souvenir_json = '[{"background": "BBB.jpg","originW": 1960,"originH": 2240},'
+			+ '{"type": "image","url": "/Souvenirs/res/image/default_avatar.png","startX": 107,"startY": 252,"drawW": 1092,"drawH": 658,"zoom": 0,'
+			+ '"moveX": 0,"moveY": 0,"t11": 1,"t12": 0,"t13": 0,"t21": 0,"t22": 1,"t23": 0, "clipShape":"rect", "clipPara": [653,581,329]},'
+			+ '{"type": "text","text": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ你我他她它あいうえお1234567890`-=[];\'", "startX": 1204,"startY": 337,"maxW": 531,"maxH":263, "style": "arial","size": 16,'
+			+ '"color": "black","bold": false,"italic": false,"paddingL": 96, "paddingR":87, "paddingT":51, "paddingB":44, "lineH":1.5, "clipShape":"rect"}]';
+	var souvenir_obj = JSON.parse(souvenir_json);
+	var ratio = 1;//This is the ratio of canvas's real height to original background height. 
+	var onshowContentId = "hint";//Indicate which operation content is activated and shown.
 
 	window.onload = function() {
 		//set height and width of canvas that fits the displaying area
 		var c = document.getElementById("myCanvas");
-		c.width = display_height / 8 * 7;
+		c.width = display_height
+				* (souvenir_obj[0].originW / souvenir_obj[0].originH);
 		c.height = display_height;
+		ratio = c.height / souvenir_obj[0].originH;
+
 		document.getElementById("div_canvas").style.width = c.width.toString()
 				+ "px";
 		document.getElementById("div_oper").style.width = display_width * 0.8
-				- (20 * 3) - c.width - 10 + "px";
+				- (20 * 3) - c.width - 10 + "px";//0.8 is the width of mainbody,20 is margin of rach column, 10 is the modification of style
 		document.getElementById("div_oper").style.left = String(Math
 				.floor(display_width * 0.1 + c.width + 20))
 				+ 'px';
 		document.getElementById("img_content").style.width = display_width
 				* 0.8 - (20 * 3) - c.width - 10 + "px";
 		document.getElementById("img_content").style.height = display_height
-				- (41 + 74 + 39) + "px";
+				- (41 + 74 + 39) + "px";//41 is the height of <h4>, 74 is the height of form and 39 is the height of button
+				
 		assignImage();
-
-		var ctx = c.getContext("2d");
-		ctx.fillStyle = "white";
-		ctx.fillRect(0, 0, 400, 300);
-
-		bg = new Image();
-		bg.src = "res/image/BBB.jpg"
-		bg.onload = function() {
-			ctx.drawImage(bg, 0, 0, c.width, c.height);
-			image = new Image();
-			image.onload = function() {
-				//drawImg(ctx, image);
-				var d = 30;
-				ctx.drawImage(image, 0 + d, 0 + d, image.width - 2 * d,
-						image.height - 2 * d, 0, 0, 240, 240);
-			}
-			image.src = "res/image/default_avatar.png";
-		}
-
-		/* 		var c2 = document.getElementById("myCanvas1");
-		 var ctx2 = c.getContext("2d");
-		 ctx2.fillStyle = "#FFFF00";
-		 ctx2.fillRect(50, 25, 150, 75); */
+		drawSouvenir();
+		drawBorderRect();
 	}
 
-	function drawImg(context, image) {
-		//圆形裁剪区
-		//createCircleClip(context)
-		//星形裁剪区
-		create5StarClip(context);
-		context.fillStyle = "black";
-		context.fillRect(0, 0, 400, 300);
-		context.scale(1, 2);
-		context.drawImage(image, 50, 0);
+	//This function is the main function of drawing which will call the spcific sub-function to draw shapes
+	function drawSouvenir() {
+		var c = document.getElementById("myCanvas");
+		var ctx = c.getContext("2d");
 
+		bg = new Image();
+		bg.src = "res/image/" + souvenir_obj[0].background;
+		bg.onload = function() {
+			ctx.drawImage(bg, 0, 0, c.width, c.height);
+			drawClip(ctx);
+			drawContent(ctx, 1);
+		}
+	}
+
+	function drawClip(ctx) {
+		ctx.strokeStyle = "rgba(255,255,255,0)";
+		for (i = 1; i < souvenir_obj.length; i++) {
+			if (souvenir_obj[i].type == "image") {
+				if (souvenir_obj[i].clipShape == "rect")
+					createRectClip(ctx, R(souvenir_obj[i].startX),
+							R(souvenir_obj[i].startY),
+							R(souvenir_obj[i].drawW), R(souvenir_obj[i].drawH));
+				else if (souvenir_obj[i].clipShape == "circle")
+					createCircleClip(ctx, R(souvenir_obj[i].clipPara[0]),
+							R(souvenir_obj[i].clipPara[1]),
+							R(souvenir_obj[i].clipPara[2]));
+				else
+					;
+			} else if (souvenir_obj[i].type == "text") {
+				if (souvenir_obj[i].clipShape == "rect")
+					createRectClip(
+							ctx,
+							R(souvenir_obj[i].startX + souvenir_obj[i].paddingL),
+							R(souvenir_obj[i].startY + souvenir_obj[i].paddingT)
+									- souvenir_obj[i].size / 2,
+							R(souvenir_obj[i].maxW), R(souvenir_obj[i].maxH)
+									+ souvenir_obj[i].size);
+				else
+					;
+			} else {
+				alert("There are something wrong with this templete!\n"
+						+ "Sorry for the imconvience, please give us a feedback about this issue and try another templete.\n"
+						+ "Thank you!");
+				return;
+			}
+		}
+		ctx.clip();
+	}
+	//This function is to select proper sub-function of drawing
+	function drawContent(ctx, idx) {
+		if (souvenir_obj[idx] == undefined || souvenir_obj[idx] == null
+				|| souvenir_obj[idx].type == undefined
+				|| souvenir_obj[idx].type == null)
+			return;
+		else {
+			if (souvenir_obj[idx].type == "image")
+				drawImg(ctx, idx);
+			else if (souvenir_obj[idx].type == "text")
+				drawText(ctx, idx);
+			else {
+				alert("There are something wrong with this templete!\n"
+						+ "Sorry for the imconvience, please give us a feedback about this issue and try another templete.\n"
+						+ "Thank you!");
+				return;
+			}
+		}
+	}
+
+	//Draw an assigned image
+	function drawImg(ctx, idx) {
+		//圆形裁剪区
+		//createCircleClip(ctx)
+		//星形裁剪区
+		//create5StarClip(ctx);
+		image = new Image();
+		image.onload = function() {
+			//drawImg(ctx, image);
+			var d = souvenir_obj[idx].zoom;
+			var moveX = souvenir_obj[idx].moveX;
+			var moveY = souvenir_obj[idx].moveY;
+			ctx.transform(souvenir_obj[idx].t11, souvenir_obj[idx].t12,
+					souvenir_obj[idx].t21, souvenir_obj[idx].t22,
+					souvenir_obj[idx].t13, souvenir_obj[idx].t23);
+
+			ctx.drawImage(image, 0 + d - moveX, 0 + d - moveY, image.width - 2
+					* d - moveX, image.height - 2 * d - moveY,
+					R(souvenir_obj[idx].startX), R(souvenir_obj[idx].startY),
+					R(souvenir_obj[idx].drawW), R(souvenir_obj[idx].drawH));
+			drawContent(ctx, idx + 1);
+		}
+		image.src = souvenir_obj[idx].url;
+	}
+
+	//Draw text
+	function drawText(ctx, idx) {
+		var font_style = '';
+		if (souvenir_obj[idx].italic)
+			font_style += "italic ";
+		if (souvenir_obj[idx].bold)
+			font_style += "bold ";
+		font_style += souvenir_obj[idx].size + 'px "' + souvenir_obj[idx].style
+				+ '" ';
+		ctx.font = font_style;
+		ctx.fillStyle = souvenir_obj[idx].color;
+		/* ctx.fillText(souvenir_obj[idx].text, R(souvenir_obj[idx].startX+souvenir_obj[idx].paddingL),
+				R(souvenir_obj[idx].startY+souvenir_obj[idx].paddingT+souvenir_obj[idx].size), R(souvenir_obj[idx].maxW)); */
+		draw_long_text(souvenir_obj[idx].text, ctx, R(souvenir_obj[idx].startX
+				+ souvenir_obj[idx].paddingL), R(souvenir_obj[idx].startY
+				+ souvenir_obj[idx].paddingT + souvenir_obj[idx].size),
+				R(souvenir_obj[idx].maxW), souvenir_obj[idx].size,
+				souvenir_obj[idx].lineH);
+		drawContent(ctx, idx + 1);
+	}
+
+	//Auxiliary function of auto-wrap, without considering of vertical out-of-range condition
+	function draw_long_text(longtext, ctx, startX, startY, max_width, size,
+			line_height) {
+		var line_text = new String();
+		var lineno = 1;
+		for (i = 0; i < longtext.length; i++) {
+			if (ctx.measureText(line_text).width <= max_width)
+				line_text += longtext[i];
+			else {
+				ctx.fillText(line_text, startX, startY + (lineno - 1) * size
+						* line_height, max_width);
+				line_text = new String();
+				lineno++;
+			}
+		}
+		ctx.fillText(line_text, startX, startY + (lineno - 1) * size
+				* line_height, max_width);
 	}
 
 	function create5StarClip(context) {
@@ -99,13 +211,53 @@
 			context.lineTo(dx + x * s, dy + y * s);
 		}
 		context.closePath();
-		context.clip();
+		//context.clip();
 	}
 
+	function createCircleClip(ctx, stX, stY, radius) {
+		ctx.beginPath();
+		ctx.arc(stX, stY, radius, 0, Math.PI * 2, true);
+		ctx.closePath();
+		//ctx.clip();
+	}
+
+	function createRectClip(ctx, stX, stY, width, height) {
+		ctx.rect(stX, stY, width, height);
+		ctx.stroke();
+	}
+
+	function drawBorderRect() {
+		var div_id = document.getElementById("border_rect");
+		var div_str = new String();
+		for (i = 1; i < souvenir_obj.length; i++) {
+			if (souvenir_obj[i].type == "image")
+				div_str += '<a><div class="border-rect" style="left:'
+						+ (display_width * 0.1 + 20 + R(souvenir_obj[i].startX) + 1)
+						+ 'px;top:' + (70 + R(souvenir_obj[i].startY) + 2)
+						+ 'px;width:' + R(souvenir_obj[i].drawW) + 'px;height:'
+						+ (R(souvenir_obj[i].drawH) + 2) + 'px" onclick="changeOperContent(\'choose_album\')"></div></a>';
+			else if (souvenir_obj[i].type == "text")
+				div_str += '<a><div class="border-rect" style="left:'
+						+ (display_width * 0.1 + 20 + R(souvenir_obj[i].startX) + 1)
+						+ 'px;top:'
+						+ (70 + R(souvenir_obj[i].startY) + 2)
+						+ 'px;width:'
+						+ R(souvenir_obj[i].maxW + souvenir_obj[i].paddingL
+								+ souvenir_obj[i].paddingR)
+						+ 'px;height:'
+						+ (R(souvenir_obj[i].maxH + souvenir_obj[i].paddingT
+								+ souvenir_obj[i].paddingB) + 2) + 'px" onclick="changeOperContent(\'hint\')"></div></a>';
+		}
+		div_id.innerHTML = div_str;
+	}
 	function selectImage(idx) {
 		document.getElementById("selected_img_" + selected_image).className = "img";
 		selected_image = idx;
 		document.getElementById("selected_img_" + selected_image).className = "img-clicked";
+	}
+
+	function R(val) {
+		return ratio * val;
 	}
 
 	function queryImageInAlbum(str) {
@@ -145,6 +297,12 @@
 					+ obj[i].Filename + '</a></div></div>';
 		}
 		document.getElementById("img_content").innerHTML = img_content;
+	}
+	
+	function changeOperContent(new_content_id) {
+		document.getElementById(onshowContentId).style.display = "none";
+		onshowContentId = new_content_id;
+		document.getElementById(onshowContentId).style.display = "block";
 	}
 </script>
 
@@ -240,6 +398,24 @@ div.img-content {
 	overflow-y: scroll;
 	height: 300px;
 }
+
+div.border-rect {
+	position: absolute;
+	border-style: solid;
+	border-color: #0000ff;
+	border-width: 2px;
+	/*following 4 items will be overwriten in js script*/
+	left: 0;
+	top: 0;
+	width: 0;
+	height: 0;
+}
+
+#border_rect a :hover {
+	border-color:rgba(255,0,0,0.5);
+	border-width:4px;
+	
+}
 </style>
 </head>
 <body>
@@ -280,13 +456,20 @@ div.img-content {
 				style="border:1px solid #c3c3c3;"> Sorry, your browser does
 			not support HTML5 canvas tag, we suggest using Chrome or Firefox to
 			achieve best experience. </canvas>
-			<div id="drawing_content"></div>
+			<div id="border_rect"></div>
 		</div>
 
 		<form class="from" role="form" action="making">
 			<input type="hidden" value="" id="query_type" />
 			<div class="oper-content" id="div_oper">
-				<div id="choose_album">
+				<!-- The following content is the one of display hint page -->
+				<div id="hint">
+					<h4 style="text-align: center; margin-top: 45%;">Click on the
+						rectangle area in the preview image to modify its content.</h4>
+				</div>
+
+				<!-- The following content is the one of selecting a picture from album -->
+				<div id="choose_album" style="display: none;">
 					<h4>Select Pictures from Album</h4>
 
 					<div class="form-group">
