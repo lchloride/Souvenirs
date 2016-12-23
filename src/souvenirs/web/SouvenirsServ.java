@@ -2,6 +2,7 @@ package souvenirs.web;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -54,7 +55,9 @@ public class SouvenirsServ extends HttpServlet {
 		// If login information is wrong, redirect to index.jsp in order to
 		// login in again
 		logger.debug(session + " " + session.getAttribute("username") + " " + session.getAttribute("password"));
-		if (!UserManager.checkLogin(session.getAttribute("user_id"), session.getAttribute("username"), session.getAttribute("password"))) {
+		if (!UserManager.checkLogin(session.getAttribute("user_id"), session.getAttribute("username"),
+				session.getAttribute("password"))) {
+			session.invalidate();
 			response.sendRedirect("loginfail.jsp");
 		} else {
 			SouvenirsManager sm = SouvenirsManager.getInstance();
@@ -69,12 +72,13 @@ public class SouvenirsServ extends HttpServlet {
 				String paraValue = paraValues[0];
 				para.put(paraName, new String(paraValue.getBytes("iso8859-1"), "UTF-8"));
 			}
-			
+
+			// Send user_id as primary key of user to manager object
 			para.put("login_user_id",
 					session.getAttribute("user_id") == null ? "" : (String) session.getAttribute("user_id"));
-			
+
 			sm.setParameter(para);
-			
+
 			Map<String, Object> result = new HashMap<>();
 
 			// Obtain operation
@@ -87,11 +91,12 @@ public class SouvenirsServ extends HttpServlet {
 				session.invalidate();
 				response.sendRedirect("index.jsp");
 				return;
-			} else if (query_url.contentEquals("changeImage")){
+			} else if (query_url.contentEquals("changeImage")) {
 				String content = request.getParameter("image");
-				String content_base64 = content.substring(content.indexOf("base64,")+7, content.length()-(918-858));
+				String content_base64 = content.substring(content.indexOf("base64,") + 7,
+						content.length() - (918 - 858));
 				byte[] rs_byte = Base64.decodeBytes(content_base64);
-				logger.debug(content_base64.length()+" "+rs_byte.length);
+				logger.debug(content_base64.length() + " " + rs_byte.length);
 				try {
 					OutputStream os = null;
 
@@ -100,8 +105,9 @@ public class SouvenirsServ extends HttpServlet {
 					// 不同类型的文件对应不同的MIME类型
 					response.setContentType("image/*");
 					// 文件以流的方式发送到客户端浏览器
-					 response.setHeader("Content-Disposition","attachment;filename=img.jpg");
-					 response.setHeader("Content-Disposition", "inline;filename=img.jpg");
+					response.setHeader("Content-Disposition", "attachment;filename=img.jpg");
+					// response.setHeader("Content-Disposition",
+					// "inline;filename=img.jpg");
 
 					response.setContentLength(rs_byte.length);
 
@@ -114,16 +120,28 @@ public class SouvenirsServ extends HttpServlet {
 					e.printStackTrace();
 				}
 				return;
+			} else if (query_url.contentEquals("making")) {
+				result = sm.makingSouvenirs();
+			} else if (query_url.contains("AlbumAjax")) {
+				String rs = sm.getImageAddrInAlbum();
+				response.setContentType("text/xml; charset=UTF-8");
+				// 以下两句为取消在本地的缓存
+				response.setHeader("Cache-Control", "no-cache");
+				response.setHeader("Pragma", "no-cache");
+				PrintWriter out = response.getWriter();
+				out.write(rs);// 注意这里向jsp输出的流，在script中的截获方法
+				out.close();
+				return;
 			} else {
 				response.sendError(HttpServletResponse.SC_NOT_FOUND);
 				return;
 			}
-			
+
 			for (Entry<String, Object> entry : result.entrySet()) {
 				request.setAttribute(entry.getKey(), entry.getValue());
 			}
 			// Forward to assigned page
-			String dispatchURL = result.containsKey("DispatchURL")?(String)result.get("DispatchURL"):"index.jsp";
+			String dispatchURL = result.containsKey("DispatchURL") ? (String) result.get("DispatchURL") : "index.jsp";
 			RequestDispatcher dispatcher = request.getRequestDispatcher(dispatchURL);
 			dispatcher.forward(request, response);
 		}

@@ -49,11 +49,13 @@ public class UserManager {
 					// Key operation
 					int rs = dao.register(parameter);
 					if (rs == 0) {
-						result.put("DispatchURL", "register.jsp"); // Insert successfully
+						result.put("DispatchURL", "register.jsp"); // Insert
+																	// successfully
 						result.put("Result", true);
 						logger.info("Register succeeded:Username <" + parameter.get("Text_username") + ">");
 					} else {
-						result.put("DispatchURL", "register.jsp");// Insert failed
+						result.put("DispatchURL", "register.jsp");// Insert
+																	// failed
 						result.put("Result", false);
 						result.put("Msg", "Database Error occured, please try again");
 						logger.info("Register failed: Database internal error");
@@ -70,8 +72,10 @@ public class UserManager {
 		Map<String, Object> result = new HashMap<>();
 		String text_username = null;
 		String text_password = null;
-		
-		if (!parameter.get("Text_username").isEmpty() || !parameter.get("Text_password").isEmpty()) {
+		if (parameter.get("Text_username") == null || parameter.get("Text_password") == null) {
+			result.put("DispatchURL", "index.jsp");
+			result.put("Redirect", true);
+		} else if (!parameter.get("Text_username").isEmpty() || !parameter.get("Text_password").isEmpty()) {
 			text_username = parameter.get("Text_username");
 			text_password = parameter.get("Text_password");
 			if (parameter.get("login_verifycode_name") == null) {
@@ -81,9 +85,9 @@ public class UserManager {
 				result.put("Msg", "Verify Code is expired!");
 				result.put("Firsttime", false);
 				result.put("VerifyCode", VerifyCode.getVerifyCode());
-				logger.info("User Login Failed: Username <" + text_username+"> with expired verify code.");
+				logger.info("User Login Failed: Username <" + text_username + "> with expired verify code.");
 			} else {
-				//Check verify code input by user
+				// Check verify code input by user
 				if (VerifyCode.checkVerifyCodeAns(parameter.get("login_verifycode_name"),
 						parameter.get("Text_verifycode")))
 					// Fill the login form and click submit, just check what the
@@ -100,20 +104,22 @@ public class UserManager {
 						result.put("Msg", "Username(ID) or password is wrong");
 						result.put("Firsttime", false);
 						result.put("VerifyCode", VerifyCode.getVerifyCode());
-						logger.info("User Login Failed: Username <" + text_username +"> with wrong username(ID) or password.");
+						logger.info("User Login Failed: Username <" + text_username
+								+ "> with wrong username(ID) or password.");
 					}
 				else {
 					result.put("DispatchURL", "index.jsp");
 					result.put("Msg", "Verify code is wrong");
 					result.put("Firsttime", false);
 					result.put("VerifyCode", VerifyCode.getVerifyCode());
-					logger.info("User Login Failed: Username <" + text_username+"> with wrong verify code.");
+					logger.info("User Login Failed: Username <" + text_username + "> with wrong verify code.");
 				}
 			}
 		} else {
 			// the first time load index page, check username and
 			// password stored in session
-			if (checkLogin(parameter.get("login_user_id"), parameter.get("login_username"), parameter.get("login_password"))) {
+			if (checkLogin(parameter.get("login_user_id"), parameter.get("login_username"),
+					parameter.get("login_password"))) {
 				result.put("DispatchURL", "homepage");
 				result.put("Redirect", true);
 				logger.info("User Session Login: Username <" + parameter.get("login_username") + ">");
@@ -153,9 +159,10 @@ public class UserManager {
 				return false;
 		}
 	}
-	
+
 	/*
-	 * This method is designed for check session login info, not only username matches password, but also user_id matches username.
+	 * This method is designed for check session login info, not only username
+	 * matches password, but also user_id matches username.
 	 */
 	public static boolean checkLogin(String user_id, String username, String password) {
 		Map<String, String> para = new HashMap<>();
@@ -170,14 +177,15 @@ public class UserManager {
 	}
 
 	/*
-	 * This method is designed for check session login info, not only username matches password, but also user_id matches username.
+	 * This method is designed for check session login info, not only username
+	 * matches password, but also user_id matches username.
 	 */
 	public static boolean checkLogin(Object user_id, Object username, Object password) {
 		Map<String, String> para = new HashMap<>();
 		if (user_id == null || username == null || password == null)
 			return false;
 		else {
-			para.put("Text_user_id", (String)user_id);
+			para.put("Text_user_id", (String) user_id);
 			para.put("Text_username", (String) username);
 			para.put("Text_password", (String) password);
 			List<Object> query_result = dao.getLogin(para);
@@ -197,15 +205,15 @@ public class UserManager {
 		else if (rs == 1)
 			return true;
 		else {
-			logger.error("Duplicate User: Username <"+username+">");
+			logger.error("Duplicate User: Username <" + username + ">");
 			return true;
 		}
 	}
-	
+
 	public static String getUserIDByName(String username) {
 		try {
 			List<Object> query_result = dao.getUserIDByName(username);
-			return (String)query_result.get(0);
+			return (String) query_result.get(0);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

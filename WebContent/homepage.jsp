@@ -174,6 +174,8 @@ div.desc a:active {
 				<ul class="nav navbar-nav">
 					<li class="active"><a href="homepage">HomePage</a></li>
 					<li><a href="#">Group</a></li>
+					<li><a href="#">Upload</a></li>
+					<li><a href="making">Making</a></li>					
 				</ul>
 
 				<ul class="nav navbar-nav navbar-right" style="padding-right: 5%">
