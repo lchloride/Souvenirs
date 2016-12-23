@@ -60,7 +60,9 @@
 
 		document.getElementById("size").innerHTML = JSON
 				.stringify(souvenir_obj);
-
+		
+		idx = 1;
+		
 		bg = new Image();
 		bg.src = "res/image/" + souvenir_obj[0].background;
 		bg.onload = function() {
