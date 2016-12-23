@@ -32,11 +32,12 @@
 	display_height = display_height - 155;
 	var selected_image = 0;
 	var image_json = '${empty Image_JSON?"[]":Image_JSON}';
-	var souvenir_json = '[{"background": "BBB.jpg","originW": 1960,"originH": 2240},'
+	/* var souvenir_json = '[{"background": "BBB.jpg","originW": 1960,"originH": 2240},'
 			+ '{"type": "image","url": "/Souvenirs/res/image/default_avatar.png","startX": 107,"startY": 252,"drawW": 1092,"drawH": 658,"zoom": 0,'
 			+ '"moveX": 0,"moveY": 0,"t11": 1,"t12": 0,"t13": 0,"t21": 0,"t22": 1,"t23": 0, "clipShape":"rect", "clipPara": [653,581,329]},'
-			+ '{"type": "text","text": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ你我他她它あいうえお1234567890`-=[];\'", "startX": 1204,"startY": 337,"maxW": 531,"maxH":263, "style": "arial","size": 16,'
-			+ '"color": "black","bold": false,"italic": false,"paddingL": 96, "paddingR":87, "paddingT":51, "paddingB":44, "lineH":1.5, "clipShape":"rect"}]';
+			+ '{"type": "text","text": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ你我他她它あいうえお1234567890`-=[];\'", "startX": 1204,"startY": 337,"maxW": 531,"maxH":263, "style": "Arial","size": 16,'
+			+ '"color": "black","bold": false,"italic": false,"paddingL": 96, "paddingR":87, "paddingT":51, "paddingB":44, "lineH":1.5, "clipShape":"rect"}]'; */
+	var souvenir_json = '[{"background":"BBB.jpg","originW":1960,"originH":2240},{"type":"image","url":"/Souvenirs/res/image/default_avatar.png","startX":107,"startY":252,"drawW":1092,"drawH":658,"zoom":0,"moveX":0,"moveY":0,"t11":1,"t12":0,"t13":0,"t21":0,"t22":1,"t23":0,"clipShape":"circle","clipPara":[653,581,329]},{"type":"text","text":"abcde","startX":1204,"startY":337,"maxW":531,"maxH":263,"style":"Arial","size":16,"color":"black","bold":false,"italic":false,"paddingL":96,"paddingR":87,"paddingT":51,"paddingB":44,"lineH":1.5,"clipShape":"rect"},{"type":"text","text":"text2","startX":86,"startY":1036,"maxW":387,"maxH":345,"style":"Comic Sans MS","size":16,"color":"blue","bold":true,"italic":false,"paddingL":62,"paddingR":60,"paddingT":100,"paddingB":103,"lineH":1.5,"clipShape":"rect"},{"type":"image","url":"/Souvenirs/res/image/default_avatar.png","startX":618,"startY":951,"drawW":1144,"drawH":618,"zoom":0,"moveX":0,"moveY":0,"t11":1,"t12":0,"t13":0,"t21":0,"t22":1,"t23":0,"clipShape":"rect"},{"type":"image","url":"/Souvenirs/res/image/default_avatar.png","startX":113,"startY":1593,"drawW":1152,"drawH":548,"zoom":0,"moveX":0,"moveY":0,"t11":1,"t12":0,"t13":0,"t21":0,"t22":1,"t23":0,"clipShape":"rect"},{"type":"text","text":"text3","startX":1329,"startY":1606,"maxW":498,"maxH":476,"style":"Times New Roman","size":18,"color":"Green","bold":false,"italic":true,"paddingL":20,"paddingR":18,"paddingT":17,"paddingB":17,"lineH":1.5,"clipShape":"rect"}]';
 	var souvenir_obj = JSON.parse(souvenir_json);
 	var ratio = 1;//This is the ratio of canvas's real height to original background height. 
 	var onshowContentId = "hint";//Indicate which operation content is activated and shown.
@@ -44,23 +45,7 @@
 
 	window.onload = function() {
 		//set height and width of canvas that fits the displaying area
-		var c = document.getElementById("myCanvas");
-		c.width = display_height
-				* (souvenir_obj[0].originW / souvenir_obj[0].originH);
-		c.height = display_height;
-		ratio = c.height / souvenir_obj[0].originH;
-
-		document.getElementById("div_canvas").style.width = c.width.toString()
-				+ "px";
-		document.getElementById("div_oper").style.width = display_width * 0.8
-				- (20 * 3) - c.width - 10 + "px";//0.8 is the width of mainbody,20 is margin of rach column, 10 is the modification of style
-		document.getElementById("div_oper").style.left = String(Math
-				.floor(display_width * 0.1 + c.width + 20))
-				+ 'px';
-		document.getElementById("img_content").style.width = display_width
-				* 0.8 - (20 * 3) - c.width - 10 + "px";
-		document.getElementById("img_content").style.height = display_height
-				- (41 + 74 + 39) + "px";//41 is the height of <h4>, 74 is the height of form and 39 is the height of button
+		changeContentSize();
 		assignImage();
 		drawSouvenir();
 		drawBorderRect();
@@ -136,10 +121,6 @@
 
 	//Draw an assigned image
 	function drawImg(ctx, idx) {
-		//圆形裁剪区
-		//createCircleClip(ctx)
-		//星形裁剪区
-		//create5StarClip(ctx);
 		image = new Image();
 		image.onload = function() {
 			//drawImg(ctx, image);
@@ -174,9 +155,9 @@
 				R(souvenir_obj[idx].startY+souvenir_obj[idx].paddingT+souvenir_obj[idx].size), R(souvenir_obj[idx].maxW)); */
 		draw_long_text(souvenir_obj[idx].text, ctx, R(souvenir_obj[idx].startX
 				+ souvenir_obj[idx].paddingL), R(souvenir_obj[idx].startY
-				+ souvenir_obj[idx].paddingT + souvenir_obj[idx].size),
-				R(souvenir_obj[idx].maxW), souvenir_obj[idx].size,
-				souvenir_obj[idx].lineH);
+				+ souvenir_obj[idx].paddingT)
+				+ souvenir_obj[idx].size, R(souvenir_obj[idx].maxW),
+				souvenir_obj[idx].size, souvenir_obj[idx].lineH);
 		drawContent(ctx, idx + 1);
 	}
 
@@ -232,23 +213,26 @@
 	function drawBorderRect() {
 		var div_id = document.getElementById("border_rect");
 		var div_str = new String();
+		var margin_left = jQuery("#myCanvas").offset().left;
+		var margin_top = jQuery("#myCanvas").offset().top;
+
 		for (i = 1; i < souvenir_obj.length; i++) {
 			if (souvenir_obj[i].type == "image")
 				div_str += '<a><div class="border-rect" style="left:'
-						+ (display_width * 0.1 + 20 + R(souvenir_obj[i].startX) + 1)
-						+ 'px;top:' + (70 + R(souvenir_obj[i].startY) + 2)
-						+ 'px;width:' + R(souvenir_obj[i].drawW) + 'px;height:'
-						+ (R(souvenir_obj[i].drawH) + 2)
+						+ (margin_left + R(souvenir_obj[i].startX)) + 'px;top:'
+						+ (margin_top + R(souvenir_obj[i].startY))
+						+ 'px;width:' + R(souvenir_obj[i].drawW + 2)
+						+ 'px;height:' + (R(souvenir_obj[i].drawH) + 2)
 						+ 'px" onclick="changeOperContent(\'choose_album\', '
 						+ i + ')"></div></a>';
 			else if (souvenir_obj[i].type == "text")
 				div_str += '<a><div class="border-rect" style="left:'
-						+ (display_width * 0.1 + 20 + R(souvenir_obj[i].startX) + 1)
+						+ (margin_left + R(souvenir_obj[i].startX))
 						+ 'px;top:'
-						+ (70 + R(souvenir_obj[i].startY) + 2)
+						+ (margin_top + R(souvenir_obj[i].startY))
 						+ 'px;width:'
 						+ R(souvenir_obj[i].maxW + souvenir_obj[i].paddingL
-								+ souvenir_obj[i].paddingR)
+								+ souvenir_obj[i].paddingR + 2)
 						+ 'px;height:'
 						+ (R(souvenir_obj[i].maxH + souvenir_obj[i].paddingT
 								+ souvenir_obj[i].paddingB) + 2)
@@ -314,12 +298,33 @@
 	}
 
 	function changeOperContent(new_content_id, idx) {
+		selected_image = 0;
+		assignImage();
+
 		document.getElementById(onshowContentId).style.display = "none";
 		onshowContentId = new_content_id;
 		proc_position = idx;
 		document.getElementById(onshowContentId).style.display = "block";
-		if (new_content_id == "edit_text")
+
+		document.getElementById("main_body").style.minHeight = Math.max(jQuery(
+				"#div_oper").height(),
+				document.getElementById("myCanvas").height)
+				+ "px";
+		if (new_content_id == "edit_text") {
 			document.getElementById("text_content").innerHTML = souvenir_obj[proc_position].text;
+			document.getElementById("size_select").value = souvenir_obj[proc_position].size;
+			document.getElementById("style_select").value = souvenir_obj[proc_position].style;
+			document.getElementById("color1").value = souvenir_obj[proc_position].color;
+			document.getElementById("color1").style.backgroundColor = souvenir_obj[proc_position].color;
+			if (souvenir_obj[proc_position].bold) {
+				document.getElementById("bold_btn").className = "btn btn-default active";
+			} else
+				document.getElementById("bold_btn").className = "btn btn-default";
+			if (souvenir_obj[proc_position].italic) {
+				document.getElementById("italic_btn").className = "btn btn-default active";
+			} else
+				document.getElementById("italic_btn").className = "btn btn-default";
+		}
 	}
 
 	function addImage2Canvas() {
@@ -329,9 +334,111 @@
 			drawSouvenir();
 		}
 	}
+
+	function changeContentSize() {
+		display_width = window.innerWidth
+				|| document.documentElement.clientWidth
+				|| document.body.clientWidth;
+
+		display_height = window.innerHeight
+				|| document.documentElement.clientHeight
+				|| document.body.clientHeight;
+		display_height = display_height - 155;
+
+		var c = document.getElementById("myCanvas");
+		c.width = display_height
+				* (souvenir_obj[0].originW / souvenir_obj[0].originH);
+		c.height = display_height;
+		ratio = c.height / souvenir_obj[0].originH;
+
+		document.getElementById("main_body").style.minWidth = Math.max(
+				(c.width * 1.75 + (20 * 3)), 768 - 10)
+				+ "px";
+
+		document.getElementById("div_canvas").style.width = c.width.toString()
+				+ "px";
+
+		var margin_left = jQuery("#myCanvas").offset().left;
+		document.getElementById("div_oper").style.left = String(Math
+				.round(margin_left + c.width))
+				+ 'px';
+		document.getElementById("div_oper").style.top = jQuery("#myCanvas")
+				.offset().top
+				+ "px";
+		document.getElementById("div_oper").style.width = (jQuery("#main_body")
+				.innerWidth()
+				- c.width - (jQuery("#div_canvas").offset().left - jQuery(
+				"#main_body").offset().left) * 3)
+				+ "px";
+
+		document.getElementById("text_content").style.width = (jQuery(
+				"#main_body").width()
+				- c.width - (jQuery("#div_canvas").offset().left - jQuery(
+				"#main_body").offset().left) * 3)
+				+ "px";
+		//20 is margin of each column
+
+		document.getElementById("img_content").style.width = display_width
+				* 0.8 - (20 * 3) - c.width - 10 + "px";
+		document.getElementById("img_content").style.height = display_height
+				- (41 + 74 + 39) + "px";//41 is the height of <h4>, 74 is the height of form and 39 is the height of button	
+
+		document.getElementById("main_body").style.minHeight = Math.max(jQuery(
+				"#div_oper").height(), c.height)
+				+ "px";
+
+		document.getElementById("size").innerHTML = (jQuery("#main_body")
+				.width()
+				- c.width - (jQuery("#div_canvas").offset().left - jQuery(
+				"#main_body").offset().left) * 3)
+				+ "px "
+				+ (jQuery("#main_body").outerWidth())
+				+ ", "
+				+ c.width
+				+ ", "
+				+ (jQuery("#div_canvas").offset().left - jQuery("#main_body")
+						.offset().left)
+				+ ", minWidth="
+				+ document.getElementById("main_body").style.minWidth;
+		drawSouvenir();
+		drawBorderRect();
+	}
+
+	function changeBold() {
+		souvenir_obj[proc_position].bold = !souvenir_obj[proc_position].bold;
+		if (souvenir_obj[proc_position].bold) {
+			document.getElementById("bold_btn").className = "btn btn-default active";
+		} else
+			document.getElementById("bold_btn").className = "btn btn-default";
+	}
+
+	function changeItalic() {
+		souvenir_obj[proc_position].italic = !souvenir_obj[proc_position].italic;
+		if (souvenir_obj[proc_position].italic) {
+			document.getElementById("italic_btn").className = "btn btn-default active";
+		} else
+			document.getElementById("italic_btn").className = "btn btn-default";
+	}
+
+	function saveText() {
+		var text = document.getElementById("text_content").value;
+		souvenir_obj[proc_position].text = text;
+		souvenir_obj[proc_position].style = document
+				.getElementById("style_select").value;
+		souvenir_obj[proc_position].size = parseInt(document
+				.getElementById("size_select").value);
+		souvenir_obj[proc_position].color = document.getElementById("color1").value;
+		drawSouvenir();
+	}
 </script>
 
 <style type="text/css">
+@media ( max-width : 845px) {
+	body {
+		min-width: 845px;
+	}
+}
+
 .oper-content {
 	margin-left: 20px;
 	position: absolute;
@@ -440,12 +547,17 @@ div.border-rect {
 	border-color: rgba(255, 0, 0, 0.5);
 	border-width: 4px;
 }
+
+.narrow-col {
+	padding-left: 10px;
+	padding-right: 10px;
+}
 </style>
 </head>
-<body>
-	<div class="mainbody" style="padding-left: 0px;">
+<body onresize="changeContentSize()">
+	<div class="mainbody" id="main_body" style="padding-left: 0px;">
 		<!-- Nav bar on the top of the screen -->
-		<nav class="navbar navbar-default" role="navigation">
+		<nav id="nav_bar" class="navbar navbar-default" role="navigation">
 		<div class="container-fluid">
 			<div class="navbar-header">
 				<a class="navbar-brand" href="index.jsp">Souvenirs</a>
@@ -509,8 +621,6 @@ div.border-rect {
 
 					<!-- Choose a picture for the rect -->
 					<div class="img-content" id="img_content">
-
-
 						<%-- 					<c:forEach var="image_addr" items="${Image_Addr }" varStatus="status">
 						<div class="img" id="selected_img_${status.index}">
 							<a href="#" onclick="selectImage(${status.index})"><img
@@ -538,16 +648,18 @@ div.border-rect {
 					<h4>Edit Text</h4>
 					<div class="form-group">
 						<label for="name">Input your words below </label>
-						<textarea id="text_content" class="form-control" rows="3"></textarea>
-						<span class="help-block">Hint: Over-long text may not be
-							displayed properly.</span>
+						<textarea id="text_content" class="form-control" rows="3"
+							style="width: 100%"></textarea>
+						<span class="help-block"><span
+							class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+							Notice: Over-long text may be displayed improperly.</span>
 					</div>
 
-					<h5 style="font-weight:bold">Set Attributes</h5>
+					<h5 style="font-weight: bold">Set Attributes</h5>
 					<div class="row">
-						<div class="col-md-4">
+						<div class="col-sm-7 col-md-4 col-lg-4 narrow-col">
 							<div class="form-group">
-								<select class="form-control">
+								<select class="form-control" id="style_select">
 									<option>Arial</option>
 									<option>Comic Sans MS</option>
 									<option>Courier New</option>
@@ -558,9 +670,9 @@ div.border-rect {
 							</div>
 						</div>
 
-						<div class="col-md-2">
+						<div class="col-sm-5 col-md-4  col-lg-2 narrow-col">
 							<div class="form-group">
-								<select class="form-control">
+								<select class="form-control" id="size_select">
 									<option>6</option>
 									<option>8</option>
 									<option>10</option>
@@ -573,12 +685,52 @@ div.border-rect {
 							</div>
 						</div>
 
-						<div class="col-md-4">
+						<div class="clearfix visible-xs"></div>
+
+						<div class="col-sm-7 col-md-4 col-lg-3 narrow-col">
 							<div class="form-group">
 								<input id="color1" class="iColorPicker form-control" type="text"
-									value="#fff467"
-									style="background-color: rgb(255, 244, 103); width: 80%; display: inline">
+									value="#000000"
+									style="background-color: #000000; width: 70%; display: inline">
 							</div>
+						</div>
+					</div>
+
+					<div class="row">
+						<div class="col-xs-4 col-sm-6 col-md-4 col-lg-3 narrow-col">
+							<button type="button" id="bold_btn" class="btn btn-default"
+								aria-label="Left Align" onclick="changeBold()">
+								<span class="glyphicon glyphicon-bold" aria-hidden="true"></span>
+							</button>
+
+							<button type="button" id="italic_btn" class="btn btn-default"
+								aria-label="Left Align" onclick="changeItalic()">
+								<span class="glyphicon glyphicon-italic" aria-hidden="true"></span>
+							</button>
+						</div>
+
+						<div class="col-xs-8 col-sm-6 col-md-6 col-lg-6 narrow-col">
+							<div class="row">
+								<div class="col-xs-5 col-sm-5 col-md-5 col-lg-4 narrow-col">Line Height</div>
+								<div class="col-xs-6 narrow-col">
+									<select class="form-control" id="line_height_select"
+										style="float: left" onchange="souvenir_obj[proc_position].lineH=parseFloat(document.getElementById('line_height_select').value)">
+										<option>1</option>
+										<option>1.5</option>
+										<option>2</option>
+										<option>2.5</option>
+										<option>3</option>
+									</select>
+								</div>
+							</div>
+						</div>
+
+					</div>
+
+					<div class="row" style="margin-top: 10px;">
+						<div class="col-sm-4 col-md-2 col-lg-1 narrow-col">
+							<button type="button" id="save_text" class="btn btn-primary"
+								aria-label="Left Align" onclick="saveText()">Save Text</button>
 						</div>
 					</div>
 				</div>
@@ -587,6 +739,7 @@ div.border-rect {
 		</form>
 	</div>
 
+	<div id="size" style="display: none"></div>
 	<div class="footer">Copyright &copy; 2016 Souvenirs, All Rights
 		Reserved.</div>
 </body>

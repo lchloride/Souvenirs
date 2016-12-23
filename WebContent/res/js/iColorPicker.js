@@ -1,9 +1,10 @@
 /*Copyright(c)2009,www.supersite.me*/var imageUrl = 'res/image/color.png';
 function iColorShow(id, id2) {
-	var eICP = jQuery("#" + id2).position();
+	var eICP = jQuery("#" + id2).offset();
 	jQuery("#iColorPicker").css({
-		'top' : 276+eICP.top + (jQuery("#" + id).outerHeight()) + "px",
-		'right' : (jQuery("#" + id).outerWidth())/2+$(window).width()*0.1 + "px",
+		'top' : eICP.top + (jQuery("#" + id).outerHeight()) + "px",
+		/*'right' : jQuery("body").width()-(jQuery("#" + id).outerWidth())-jQuery("#" + id).offset().left+ "px",*/
+		'left': jQuery("#" + id).offset().left+"px",
 		'position' : 'absolute', 
 	}).fadeIn("fast");
 	jQuery("#iColorPickerBg").css({
