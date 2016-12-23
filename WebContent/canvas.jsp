@@ -37,11 +37,13 @@
 			+ '"moveX": 0,"moveY": 0,"t11": 1,"t12": 0,"t13": 0,"t21": 0,"t22": 1,"t23": 0, "clipShape":"rect", "clipPara": [653,581,329]},'
 			+ '{"type": "text","text": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ你我他她它あいうえお1234567890`-=[];\'", "startX": 1204,"startY": 337,"maxW": 531,"maxH":263, "style": "Arial","size": 16,'
 			+ '"color": "black","bold": false,"italic": false,"paddingL": 96, "paddingR":87, "paddingT":51, "paddingB":44, "lineH":1.5, "clipShape":"rect"}]'; */
-	var souvenir_json = '[{"background":"BBB.jpg","originW":1960,"originH":2240},{"type":"image","url":"/Souvenirs/res/image/default_avatar.png","startX":107,"startY":252,"drawW":1092,"drawH":658,"zoom":0,"moveX":0,"moveY":0,"t11":1,"t12":0,"t13":0,"t21":0,"t22":1,"t23":0,"clipShape":"circle","clipPara":[653,581,329]},{"type":"text","text":"abcde","startX":1204,"startY":337,"maxW":531,"maxH":263,"style":"Arial","size":16,"color":"black","bold":false,"italic":false,"paddingL":96,"paddingR":87,"paddingT":51,"paddingB":44,"lineH":1.5,"clipShape":"rect"},{"type":"text","text":"text2","startX":86,"startY":1036,"maxW":387,"maxH":345,"style":"Comic Sans MS","size":16,"color":"blue","bold":true,"italic":false,"paddingL":62,"paddingR":60,"paddingT":100,"paddingB":103,"lineH":1.5,"clipShape":"rect"},{"type":"image","url":"/Souvenirs/res/image/default_avatar.png","startX":618,"startY":951,"drawW":1144,"drawH":618,"zoom":0,"moveX":0,"moveY":0,"t11":1,"t12":0,"t13":0,"t21":0,"t22":1,"t23":0,"clipShape":"rect"},{"type":"image","url":"/Souvenirs/res/image/default_avatar.png","startX":113,"startY":1593,"drawW":1152,"drawH":548,"zoom":0,"moveX":0,"moveY":0,"t11":1,"t12":0,"t13":0,"t21":0,"t22":1,"t23":0,"clipShape":"rect"},{"type":"text","text":"text3","startX":1329,"startY":1606,"maxW":498,"maxH":476,"style":"Times New Roman","size":18,"color":"Green","bold":false,"italic":true,"paddingL":20,"paddingR":18,"paddingT":17,"paddingB":17,"lineH":1.5,"clipShape":"rect"}]';
+	var souvenir_json = '[{"background":"BBB.jpg","originW":1960,"originH":2240},{"type":"image","url":"/Souvenirs/res/image/default_avatar.png","startX":107,"startY":252,"drawW":1092,"drawH":658,"zoom":0,"moveX":0,"moveY":0,"t11":1,"t12":0,"t13":0,"t21":0,"t22":1,"t23":0,"clipShape":"circle","clipPara":[653,581,329]},{"type":"text","text":"abcde","startX":1204,"startY":337,"maxW":531,"maxH":263,"style":"Arial","size":16,"color":"black","bold":false,"italic":false,"paddingL":96,"paddingR":87,"paddingT":51,"paddingB":44,"lineH":1.5,"clipShape":"rect"},{"type":"text","text":"text2","startX":86,"startY":1036,"maxW":387,"maxH":345,"style":"Comic Sans MS","size":16,"color":"blue","bold":true,"italic":false,"paddingL":62,"paddingR":60,"paddingT":100,"paddingB":103,"lineH":1.5,"clipShape":"rect"},{"type":"image","url":"/Souvenirs/res/image/index_bg.jpg","startX":618,"startY":951,"drawW":1144,"drawH":618,"zoom":0,"moveX":0,"moveY":0,"t11":1,"t12":0,"t13":0,"t21":0,"t22":1,"t23":0,"clipShape":"rect"},{"type":"image","url":"/Souvenirs/res/image/bg.jpg","startX":113,"startY":1593,"drawW":1152,"drawH":548,"zoom":0,"moveX":0,"moveY":0,"t11":1,"t12":0,"t13":0,"t21":0,"t22":1,"t23":0,"clipShape":"rect"},{"type":"text","text":"text3","startX":1329,"startY":1606,"maxW":498,"maxH":476,"style":"Times New Roman","size":18,"color":"Green","bold":false,"italic":true,"paddingL":20,"paddingR":18,"paddingT":17,"paddingB":17,"lineH":1.5,"clipShape":"rect"}]';
 	var souvenir_obj = JSON.parse(souvenir_json);
 	var ratio = 1;//This is the ratio of canvas's real height to original background height. 
 	var onshowContentId = "hint";//Indicate which operation content is activated and shown.
 	var proc_position = 0;
+	var idx = 1;
+	var isError = false;
 
 	window.onload = function() {
 		//set height and width of canvas that fits the displaying area
@@ -56,12 +58,15 @@
 		var c = document.getElementById("myCanvas");
 		var ctx = c.getContext("2d");
 
+		document.getElementById("size").innerHTML = JSON
+				.stringify(souvenir_obj);
+
 		bg = new Image();
 		bg.src = "res/image/" + souvenir_obj[0].background;
 		bg.onload = function() {
 			ctx.drawImage(bg, 0, 0, c.width, c.height);
 			drawClip(ctx);
-			drawContent(ctx, 1);
+			drawContent(ctx);
 		}
 	}
 
@@ -100,8 +105,8 @@
 		ctx.clip();
 	}
 	//This function is to select proper sub-function of drawing
-	function drawContent(ctx, idx) {
-		if (souvenir_obj[idx] == undefined || souvenir_obj[idx] == null
+	function drawContent(ctx) {
+		if (isError||souvenir_obj[idx] == undefined || souvenir_obj[idx] == null
 				|| souvenir_obj[idx].type == undefined
 				|| souvenir_obj[idx].type == null)
 			return;
@@ -120,10 +125,13 @@
 	}
 
 	//Draw an assigned image
-	function drawImg(ctx, idx) {
+	function drawImg(ctx) {
+		if (isError)
+			return;
 		image = new Image();
+		image.src = souvenir_obj[idx].url;
+
 		image.onload = function() {
-			//drawImg(ctx, image);
 			var d = souvenir_obj[idx].zoom;
 			var moveX = souvenir_obj[idx].moveX;
 			var moveY = souvenir_obj[idx].moveY;
@@ -135,13 +143,20 @@
 					* d - moveX, image.height - 2 * d - moveY,
 					R(souvenir_obj[idx].startX), R(souvenir_obj[idx].startY),
 					R(souvenir_obj[idx].drawW), R(souvenir_obj[idx].drawH));
-			drawContent(ctx, idx + 1);
+			idx++;
+			drawContent(ctx);
 		}
-		image.src = souvenir_obj[idx].url;
+		
+		image.onerror = function() {
+			isError = true;
+			alert("Cannot load image!");
+		}
 	}
 
 	//Draw text
-	function drawText(ctx, idx) {
+	function drawText(ctx) {
+		if (isError)
+			return;
 		var font_style = '';
 		if (souvenir_obj[idx].italic)
 			font_style += "italic ";
@@ -158,7 +173,8 @@
 				+ souvenir_obj[idx].paddingT)
 				+ souvenir_obj[idx].size, R(souvenir_obj[idx].maxW),
 				souvenir_obj[idx].size, souvenir_obj[idx].lineH);
-		drawContent(ctx, idx + 1);
+		idx++;
+		drawContent(ctx);
 	}
 
 	//Auxiliary function of auto-wrap, without considering of vertical out-of-range condition
@@ -218,21 +234,24 @@
 
 		for (i = 1; i < souvenir_obj.length; i++) {
 			if (souvenir_obj[i].type == "image")
-				div_str += '<a><div class="border-rect" style="left:'
+				div_str += '<a><div class="border-rect" id="border_rect_' + i
+						+ '" style="left:'
 						+ (margin_left + R(souvenir_obj[i].startX)) + 'px;top:'
 						+ (margin_top + R(souvenir_obj[i].startY))
-						+ 'px;width:' + R(souvenir_obj[i].drawW + 2)
+						+ 'px;width:' + (R(souvenir_obj[i].drawW) + 2)
 						+ 'px;height:' + (R(souvenir_obj[i].drawH) + 2)
 						+ 'px" onclick="changeOperContent(\'choose_album\', '
 						+ i + ')"></div></a>';
 			else if (souvenir_obj[i].type == "text")
-				div_str += '<a><div class="border-rect" style="left:'
+				div_str += '<a><div class="border-rect"  id="border_rect_'
+						+ i
+						+ '" style="left:'
 						+ (margin_left + R(souvenir_obj[i].startX))
 						+ 'px;top:'
 						+ (margin_top + R(souvenir_obj[i].startY))
 						+ 'px;width:'
-						+ R(souvenir_obj[i].maxW + souvenir_obj[i].paddingL
-								+ souvenir_obj[i].paddingR + 2)
+						+ (R(souvenir_obj[i].maxW + souvenir_obj[i].paddingL
+								+ souvenir_obj[i].paddingR) + 2)
 						+ 'px;height:'
 						+ (R(souvenir_obj[i].maxH + souvenir_obj[i].paddingT
 								+ souvenir_obj[i].paddingB) + 2)
@@ -302,20 +321,26 @@
 		assignImage();
 
 		document.getElementById(onshowContentId).style.display = "none";
+		if (proc_position >= 1)
+			document.getElementById("border_rect_" + proc_position).className = "border-rect";
 		onshowContentId = new_content_id;
 		proc_position = idx;
 		document.getElementById(onshowContentId).style.display = "block";
+		document.getElementById("border_rect_" + idx).className = "border-rect-active";
 
-		document.getElementById("main_body").style.minHeight = Math.max(jQuery(
-				"#div_oper").height(),
-				document.getElementById("myCanvas").height)
+		document.getElementById("main_body").style.minHeight = Math
+				.max((jQuery("#div_oper").height() + jQuery("#myCanvas")
+						.offset().top),
+						document.getElementById("myCanvas").height)
 				+ "px";
+
 		if (new_content_id == "edit_text") {
 			document.getElementById("text_content").innerHTML = souvenir_obj[proc_position].text;
 			document.getElementById("size_select").value = souvenir_obj[proc_position].size;
 			document.getElementById("style_select").value = souvenir_obj[proc_position].style;
 			document.getElementById("color1").value = souvenir_obj[proc_position].color;
 			document.getElementById("color1").style.backgroundColor = souvenir_obj[proc_position].color;
+			document.getElementById("line_height_select").value = souvenir_obj[proc_position].lineH;
 			if (souvenir_obj[proc_position].bold) {
 				document.getElementById("bold_btn").className = "btn btn-default active";
 			} else
@@ -383,23 +408,11 @@
 		document.getElementById("img_content").style.height = display_height
 				- (41 + 74 + 39) + "px";//41 is the height of <h4>, 74 is the height of form and 39 is the height of button	
 
-		document.getElementById("main_body").style.minHeight = Math.max(jQuery(
-				"#div_oper").height(), c.height)
+		document.getElementById("main_body").style.minHeight = Math
+				.max((jQuery("#div_oper").height() + jQuery("#myCanvas")
+						.offset().top), c.height)
 				+ "px";
 
-		document.getElementById("size").innerHTML = (jQuery("#main_body")
-				.width()
-				- c.width - (jQuery("#div_canvas").offset().left - jQuery(
-				"#main_body").offset().left) * 3)
-				+ "px "
-				+ (jQuery("#main_body").outerWidth())
-				+ ", "
-				+ c.width
-				+ ", "
-				+ (jQuery("#div_canvas").offset().left - jQuery("#main_body")
-						.offset().left)
-				+ ", minWidth="
-				+ document.getElementById("main_body").style.minWidth;
 		drawSouvenir();
 		drawBorderRect();
 	}
@@ -541,6 +554,13 @@ div.border-rect {
 	top: 0;
 	width: 0;
 	height: 0;
+}
+
+div.border-rect-active {
+	position: absolute;
+	border-style: solid;
+	border-color: #c71585;
+	border-width: 2px;
 }
 
 #border_rect a :hover {
@@ -697,32 +717,37 @@ div.border-rect {
 					</div>
 
 					<div class="row">
-						<div class="col-xs-4 col-sm-6 col-md-4 col-lg-3 narrow-col">
+						<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 narrow-col">
 							<button type="button" id="bold_btn" class="btn btn-default"
-								aria-label="Left Align" onclick="changeBold()">
+								aria-label="Left Align" onclick="changeBold()"
+								style="margin-top: 5px;">
 								<span class="glyphicon glyphicon-bold" aria-hidden="true"></span>
 							</button>
 
 							<button type="button" id="italic_btn" class="btn btn-default"
-								aria-label="Left Align" onclick="changeItalic()">
+								aria-label="Left Align" onclick="changeItalic()"
+								style="margin-top: 5px;">
 								<span class="glyphicon glyphicon-italic" aria-hidden="true"></span>
 							</button>
 						</div>
 
-						<div class="col-xs-8 col-sm-6 col-md-6 col-lg-6 narrow-col">
-							<div class="row">
-								<div class="col-xs-5 col-sm-5 col-md-5 col-lg-4 narrow-col">Line Height</div>
-								<div class="col-xs-6 narrow-col">
-									<select class="form-control" id="line_height_select"
-										style="float: left" onchange="souvenir_obj[proc_position].lineH=parseFloat(document.getElementById('line_height_select').value)">
-										<option>1</option>
-										<option>1.5</option>
-										<option>2</option>
-										<option>2.5</option>
-										<option>3</option>
-									</select>
-								</div>
-							</div>
+						<div class="col-xs-8 col-sm-7 col-md-7 col-lg-6 narrow-col">
+							<!-- 							<div class="row">
+								<div class="col-xs-5 col-sm-5 col-md-5 col-lg-4 narrow-col">Line
+									Height</div>
+								<div class="col-xs-6 narrow-col"> -->
+							<span style="float: left; padding: 10px">Line Height</span> <select
+								class="form-control" id="line_height_select"
+								style="float: left; width: 50%"
+								onchange="souvenir_obj[proc_position].lineH=parseFloat(document.getElementById('line_height_select').value)">
+								<option>1</option>
+								<option>1.5</option>
+								<option>2</option>
+								<option>2.5</option>
+								<option>3</option>
+							</select>
+							<!-- 								</div>
+							</div> -->
 						</div>
 
 					</div>
