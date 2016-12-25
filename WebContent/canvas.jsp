@@ -168,13 +168,13 @@
 				+ '" ';
 		ctx.font = font_style;
 		ctx.fillStyle = souvenir_obj[idx].color;
-		/* ctx.fillText(souvenir_obj[idx].text, R(souvenir_obj[idx].startX+souvenir_obj[idx].paddingL),
-				R(souvenir_obj[idx].startY+souvenir_obj[idx].paddingT+souvenir_obj[idx].size), R(souvenir_obj[idx].maxW)); */
-		draw_long_text(souvenir_obj[idx].text, ctx, R(souvenir_obj[idx].startX
+/* 		ctx.fillText(souvenir_obj[idx].text, R(souvenir_obj[idx].startX+souvenir_obj[idx].paddingL),
+				R(souvenir_obj[idx].startY+souvenir_obj[idx].paddingT+souvenir_obj[idx].size), R(souvenir_obj[idx].maxW));  */
+ 		draw_long_text(souvenir_obj[idx].text, ctx, R(souvenir_obj[idx].startX
 				+ souvenir_obj[idx].paddingL), R(souvenir_obj[idx].startY
 				+ souvenir_obj[idx].paddingT)
 				+ souvenir_obj[idx].size, R(souvenir_obj[idx].maxW),
-				souvenir_obj[idx].size, souvenir_obj[idx].lineH);
+				souvenir_obj[idx].size, souvenir_obj[idx].lineH); 
 		idx++;
 		drawContent(ctx);
 	}
@@ -262,6 +262,7 @@
 		}
 		div_id.innerHTML = div_str;
 	}
+	
 	function selectImage(idx) {
 		if (selected_image >= 1)
 			document.getElementById("select_img_" + selected_image).className = "img";
@@ -748,8 +749,6 @@ div.border-rect-active {
 								<option>2.5</option>
 								<option>3</option>
 							</select>
-							<!-- 								</div>
-							</div> -->
 						</div>
 
 					</div>

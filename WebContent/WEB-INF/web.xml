@@ -57,6 +57,10 @@
 		<servlet-name>ErrorHandler</servlet-name>
 		<servlet-class>tool.ErrorHandler</servlet-class>
 	</servlet>
+	<servlet>
+		<servlet-name>Upload</servlet-name>
+		<servlet-class>tool.Upload</servlet-class>
+	</servlet>
 
 	<!-- servlet mappings -->
 	<servlet-mapping>
@@ -96,7 +100,11 @@
 		<servlet-name>SouvenirsServ</servlet-name>
 		<url-pattern>/AlbumAjax</url-pattern>
 	</servlet-mapping>	
-			
+	<servlet-mapping>
+		<servlet-name>Upload</servlet-name>
+		<url-pattern>/upload</url-pattern>
+	</servlet-mapping>	
+				
 	<error-page>
 		<error-code>403</error-code>
 		<location>/ErrorHandler</location>
