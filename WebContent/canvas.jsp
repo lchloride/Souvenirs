@@ -326,7 +326,14 @@
 		document.getElementById(onshowContentId).style.display = "none";
 		if (proc_position >= 1)
 			document.getElementById("border_rect_" + proc_position).className = "border-rect";
+		if (onshowContentId == "edit_text") {
+			document.getElementById("size_"+souvenir_obj[proc_position].size).selected = "";
+			document.getElementById("style_"+souvenir_obj[proc_position].style.substring(0,5)).selected = "";	
+			document.getElementById("line_height_"+souvenir_obj[proc_position].lineH*10).selected = "" ;
+		}
+		
 		onshowContentId = new_content_id;
+		
 		proc_position = idx;
 		document.getElementById(onshowContentId).style.display = "block";
 		document.getElementById("border_rect_" + idx).className = "border-rect-active";
@@ -339,11 +346,11 @@
 
 		if (new_content_id == "edit_text") {
 			document.getElementById("text_content").innerHTML = souvenir_obj[proc_position].text;
-			document.getElementById("size_select").value = souvenir_obj[proc_position].size;
-			document.getElementById("style_select").value = souvenir_obj[proc_position].style;
+			document.getElementById("size_"+souvenir_obj[proc_position].size).selected = "selected";
+			document.getElementById("style_"+souvenir_obj[proc_position].style.substring(0,5)).selected = "selected";
 			document.getElementById("color1").value = souvenir_obj[proc_position].color;
 			document.getElementById("color1").style.backgroundColor = souvenir_obj[proc_position].color;
-			document.getElementById("line_height_select").value = souvenir_obj[proc_position].lineH;
+			document.getElementById("line_height_"+souvenir_obj[proc_position].lineH*10).selected = "selected" ;
 			if (souvenir_obj[proc_position].bold) {
 				document.getElementById("bold_btn").className = "btn btn-default active";
 			} else
@@ -683,12 +690,12 @@ div.border-rect-active {
 						<div class="col-sm-7 col-md-4 col-lg-4 narrow-col">
 							<div class="form-group">
 								<select class="form-control" id="style_select">
-									<option>Arial</option>
-									<option>Comic Sans MS</option>
-									<option>Courier New</option>
-									<option>Microsoft YaHei UI</option>
-									<option>Times New Roman</option>
-									<option>Verdana</option>
+									<option id="style_Arial">Arial</option>
+									<option id="style_Comic">Comic Sans MS</option>
+									<option id="style_Couri">Courier New</option>
+									<option id="style_Micro">Microsoft YaHei UI</option>
+									<option id="style_Times">Times New Roman</option>
+									<option id="style_Verda">Verdana</option>
 								</select>
 							</div>
 						</div>
@@ -696,14 +703,14 @@ div.border-rect-active {
 						<div class="col-sm-5 col-md-4  col-lg-2 narrow-col">
 							<div class="form-group">
 								<select class="form-control" id="size_select">
-									<option>6</option>
-									<option>8</option>
-									<option>10</option>
-									<option>12</option>
-									<option>14</option>
-									<option>16</option>
-									<option>18</option>
-									<option>20</option>
+									<option id="size_6">6</option>
+									<option id="size_8">8</option>
+									<option id="size_10">10</option>
+									<option id="size_12">12</option>
+									<option id="size_14">14</option>
+									<option id="size_16">16</option>
+									<option id="size_18">18</option>
+									<option id="size_20">20</option>
 								</select>
 							</div>
 						</div>
@@ -743,11 +750,11 @@ div.border-rect-active {
 								class="form-control" id="line_height_select"
 								style="float: left; width: 50%"
 								onchange="souvenir_obj[proc_position].lineH=parseFloat(document.getElementById('line_height_select').value)">
-								<option>1</option>
-								<option>1.5</option>
-								<option>2</option>
-								<option>2.5</option>
-								<option>3</option>
+								<option id="line_height_10">1</option>
+								<option id="line_height_15">1.5</option>
+								<option id="line_height_20">2</option>
+								<option id="line_height_25">2.5</option>
+								<option id="line_height_30">3</option>
 							</select>
 						</div>
 

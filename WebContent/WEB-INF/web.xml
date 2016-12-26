@@ -58,8 +58,8 @@
 		<servlet-class>tool.ErrorHandler</servlet-class>
 	</servlet>
 	<servlet>
-		<servlet-name>Upload</servlet-name>
-		<servlet-class>tool.Upload</servlet-class>
+		<servlet-name>UploadServ</servlet-name>
+		<servlet-class>upload.web.UploadServ</servlet-class>
 	</servlet>
 
 	<!-- servlet mappings -->
@@ -101,7 +101,7 @@
 		<url-pattern>/AlbumAjax</url-pattern>
 	</servlet-mapping>	
 	<servlet-mapping>
-		<servlet-name>Upload</servlet-name>
+		<servlet-name>UploadServ</servlet-name>
 		<url-pattern>/upload</url-pattern>
 	</servlet-mapping>	
 				
