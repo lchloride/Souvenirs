@@ -22,11 +22,27 @@
 <link href="/Souvenirs/res/css/website.css" rel="stylesheet"
 	type="text/css">
 <script type="text/javascript">
-function displayFilename() {
-	var filepath = document.getElementById('upload_file').value;
-	document.getElementById('filename_display').innerHTML = filepath.substring(filepath.lastIndexOf('\\')+1);	
-}
+	function displayFilename() {
+		var filepath = document.getElementById('upload_file').value;
+		document.getElementById('filename_display').innerHTML = filepath
+				.substring(filepath.lastIndexOf('\\') + 1);
+		document.getElementById('pic_name').value = document
+				.getElementById('filename_display').innerHTML;
+	}
 
+	function checkSubmit() {
+		if (document.getElementById("img_description").value.length > 200) {
+			alert("Too long desctription!");
+			return false;
+		}
+		if (document.getElementById("upload_file").value == undefined
+				|| document.getElementById("upload_file").value == ""
+				|| document.getElementById("upload_file").value == null) {
+			alert("Please choose a file!");
+			return false;
+		}
+		return true;
+	}
 </script>
 <style type="text/css">
 .mainbody-content {
@@ -81,7 +97,7 @@ function displayFilename() {
 			<h3 class="heading">Image Upload</h3>
 
 			<form class="form-horizontal" method="post" action="upload"
-				enctype="multipart/form-data">
+				enctype="multipart/form-data" onsubmit="return checkSubmit()">
 				<div class="row" style="margin-bottom: 15px;">
 					<h5 class="col-sm-2 text-right " style="font-weight: bold;">Filename</h5>
 					<div class="col-sm-10">
@@ -120,9 +136,12 @@ function displayFilename() {
 				<div class="form-group">
 					<label for="img_description" class="col-sm-2 control-label">Description</label>
 					<div class="col-sm-9">
-						<textarea id="img_description" class="form-control" rows="3" name="img_description"></textarea>
+						<textarea id="img_description" class="form-control" rows="3"
+							name="img_description"
+							onkeydown="document.getElementById('word_count').innerHTML=this.value.length.toString()+'/200'"
+							onkeyup="document.getElementById('word_count').innerHTML=this.value.length.toString()+'/200'"></textarea>
 					</div>
-					<div class="col-sm-1">200/200</div>
+					<div class="col-sm-1" id="word_count">200/200</div>
 				</div>
 
 				<div class="form-group">
@@ -130,7 +149,8 @@ function displayFilename() {
 						<input type="submit" class="btn btn-primary" value="Upload & Save">
 					</div>
 					<div class="col-sm-2">
-						<input type="submit" class="btn btn-default" value="Cancel">
+						<input type="submit" class="btn btn-default" value="Cancel"
+							onclick="">
 					</div>
 				</div>
 

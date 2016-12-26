@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -42,10 +43,30 @@ public class UploadServ extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		logger.debug(request.getMethod());
-		String dispatchURL = "upload.jsp";
-		RequestDispatcher dispatcher = request.getRequestDispatcher(dispatchURL);
-		dispatcher.forward(request, response);
+		HttpSession session = request.getSession(true);
+		// If login information is wrong, redirect to index.jsp in order to
+		// login in again
+		logger.debug(session + " " + session.getAttribute("username") + " " + session.getAttribute("password"));
+		if (!UserManager.checkLogin(session.getAttribute("user_id"), session.getAttribute("username"),
+				session.getAttribute("password"))) {
+			session.invalidate();
+			response.sendRedirect("loginfail.jsp");
+		} else {
+			UploadManager um = new UploadManager();
+			Map<String, String> para = new HashMap<>();
+			Map<String, Object> result = new HashMap<>();
+			// Send user_id as primary key of user to manager object
+			para.put("login_user_id",
+					session.getAttribute("user_id") == null ? "" : (String) session.getAttribute("user_id"));
+			um.setParameter(para);
+			result = um.diaplayContent();
+			for (Entry<String, Object> entry : result.entrySet()) {
+				request.setAttribute(entry.getKey(), entry.getValue());
+			}
+			String dispatchURL = "upload.jsp";
+			RequestDispatcher dispatcher = request.getRequestDispatcher(dispatchURL);
+			dispatcher.forward(request, response);
+		}
 	}
 
 	/**
@@ -104,7 +125,7 @@ public class UploadServ extends HttpServlet {
 			try {
 				// 解析请求的内容提取文件数据
 				List<FileItem> formItems = upload.parseRequest(request);
-				logger.debug("num:"+formItems.size());
+				logger.debug("num:" + formItems.size());
 				if (formItems != null && formItems.size() > 0) {
 					// 迭代表单数据
 					for (FileItem item : formItems) {
@@ -122,7 +143,8 @@ public class UploadServ extends HttpServlet {
 				para.put("login_user_id",
 						session.getAttribute("user_id") == null ? "" : (String) session.getAttribute("user_id"));
 
-				logger.debug("val="+para);
+				logger.debug("val=" + para);
+				um.setParameter(para);
 				result = um.uploadImg();
 
 				// 处理不在表单中的字段

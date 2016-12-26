@@ -1,9 +1,13 @@
 package upload.web;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import tool.ImageLoader;
 import upload.dao.UploadDAO;
 
 public class UploadManager {
@@ -31,5 +35,13 @@ public class UploadManager {
 		// TODO Auto-generated method stub
 		
 		return null;
+	}
+	
+	public Map<String, Object> diaplayContent() {
+		Map<String, Object> result = new HashMap<>();
+		//Obtain album list 
+		List<Object> album_name_list = dao.getAlbumName(parameter.get("login_user_id"));
+		result.put("Album_List", album_name_list);
+		return result;
 	}
 }
