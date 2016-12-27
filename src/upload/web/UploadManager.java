@@ -1,7 +1,7 @@
 package upload.web;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,7 +9,6 @@ import java.util.Map;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.log4j.Logger;
 
-import tool.ImageLoader;
 import tool.PropertyOper;
 import upload.dao.UploadDAO;
 
@@ -70,8 +69,11 @@ public class UploadManager {
 				uploadDir.mkdir();
 			}
 
-			String fileName = new File(file_handle.getName()).getName();
-			String filePath = uploadPath + File.separator + fileName;
+			String fileName = new File(para.get("filename")).getName();
+			System.out.println("filename:"+fileName);
+			String filePath = null;
+			filePath = (uploadPath + File.separator + fileName);
+			//System.getProperties().list(System.out);
 			File storeFile = new File(filePath);
 			// 在控制台输出文件的上传路径
 			System.out.println(filePath);
@@ -98,6 +100,7 @@ public class UploadManager {
 			result.put("Album_name", para.get("album_name"));
 			result.put("Filename", para.get("filename"));
 			result.put("Upload_result", true);
+			logger.info("User(id="+parameter.get("login_user_id")+") uploaded a picture. Parameters:<"+parameter+">");
 			// request.setAttribute("message", "文件上传成功!");
 		}
 		return result;

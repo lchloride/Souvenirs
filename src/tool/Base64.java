@@ -28,7 +28,10 @@ public class Base64 {
             BASE64Decoder decoder = new BASE64Decoder();  
             try {  
                 b = decoder.decodeBuffer(s);  
-                result = new String(b, "utf-8");  
+                result = new String(b, "utf-8"); 
+                System.out.println(new String(b, "utf-8"));
+                System.out.println(new String(b, "gbk"));
+                System.out.println(new String(b));
             } catch (Exception e) {  
                 e.printStackTrace();  
             }  

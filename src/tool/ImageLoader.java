@@ -153,8 +153,11 @@ public class ImageLoader extends HttpServlet {
 		String[] para_str = content.split("/");
 		List<String> para = Arrays.asList(para_str);
 		if (method.contentEquals("direct")) {
-			para.add(0, user_id);
-			logger.debug("direct para:"+para);
+			para = new ArrayList<>(4);
+			para.add(user_id);
+			para.add(para_str[0]);
+			para.add(para_str[1]);
+			para.add(para_str[2]);
 			// Two situations: one is request user's own image, just check
 			if (para_str[0].contentEquals(user_id) || (long) DB.execSQLQuery(
 					"select count(*) from check_image_priv_direct where allowed_user_id = ? and owner_id= ? and album_name = ? and filename = ?",
@@ -189,7 +192,7 @@ public class ImageLoader extends HttpServlet {
 						.get(0).get(0) == 1)
 					try {
 						path = (String) DB
-								.execSQLQuery("select album_cover from souvenirs.group where group_id=?", para).get(0)
+								.execSQLQuery("select album_cover from souvenirs.group where group_id=?", Arrays.asList(para_str[1])).get(0)
 								.get(0);
 					} catch (IndexOutOfBoundsException e) {
 						// TODO: handle exception

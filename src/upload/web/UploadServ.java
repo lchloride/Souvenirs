@@ -3,6 +3,7 @@ package upload.web;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.log4j.Logger;
 
+import tool.PropertyOper;
 import user.web.UserManager;
 
 /**
@@ -29,13 +31,31 @@ import user.web.UserManager;
 public class UploadServ extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
-	// 上传文件存储目录
-	private static final String UPLOAD_DIRECTORY = "upload";
-
 	// 上传配置
-	private static final int MEMORY_THRESHOLD = 1024 * 1024 * 3; // 3MB
-	private static final int MAX_FILE_SIZE = 1024 * 1024 * 40; // 40MB
-	private static final int MAX_REQUEST_SIZE = 1024 * 1024 * 50; // 50MB
+	private static final int MEMORY_THRESHOLD = Integer
+			.parseInt(PropertyOper.GetValueByKey("souvenirs.properties", "MEMORY_THRESHOLD"), 16);// 1024
+																									// *
+																									// 1024
+																									// *
+																									// 3;
+																									// //
+																									// 3MB
+	private static final int MAX_FILE_SIZE = Integer
+			.parseInt(PropertyOper.GetValueByKey("souvenirs.properties", "MAX_FILE_SIZE"), 16);// 1024
+																								// *
+																								// 1024
+																								// *
+																								// 40;
+																								// //
+																								// 40MB
+	private static final int MAX_REQUEST_SIZE = Integer
+			.parseInt(PropertyOper.GetValueByKey("souvenirs.properties", "MAX_REQUEST_SIZE"), 16);// 1024
+																									// *
+																									// 1024
+																									// *
+																									// 50;
+																									// //
+																									// 50MB
 
 	private Logger logger = Logger.getLogger(UploadServ.class);
 
@@ -107,8 +127,6 @@ public class UploadServ extends HttpServlet {
 			// 设置最大请求值 (包含文件和表单数据)
 			upload.setSizeMax(MAX_REQUEST_SIZE);
 
-
-
 			Map<String, String> para = new HashMap<>();
 			Map<String, Object> result = new HashMap<>();
 			UploadManager um = UploadManager.getInstance();
@@ -117,18 +135,20 @@ public class UploadServ extends HttpServlet {
 			try {
 				// 解析请求的内容提取文件数据
 				List<FileItem> formItems = upload.parseRequest(request);
-				logger.debug("num:" + formItems.size());
 				if (formItems != null && formItems.size() > 0) {
 					// 迭代表单数据
 					for (FileItem item : formItems) {
 						if (item.isFormField()) {
 							String key = item.getFieldName();
-							String val = item.getString();
-
+							String val = new String(item.getString().getBytes("ISO-8859-1"), "UTF-8");
 							para.put(key, val);
 						} else {
 							file_item = item;
-							para.put("origin_filename", item.getName());
+							// Mention: Windows in simplified Chinese always set
+							// filename in GBK, not in utf-8. 
+							//Moreover, filename encoded with GBK would be send to server
+							// without changing to UTF-8
+							para.put("origin_filename", new String(item.getName().getBytes("GBK"), "UTF-8"));
 						}
 					}
 				}
