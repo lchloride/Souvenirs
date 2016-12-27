@@ -2,16 +2,16 @@ package tool;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import com.sun.crypto.provider.RSACipher;
-
-import sun.util.logging.resources.logging;
+import org.apache.log4j.Logger;
 
 
 /*
@@ -21,6 +21,8 @@ public class DB {
 	/*
 	 * This method will obtain an available connection and return it.
 	 */
+	private static Logger logger = Logger.getLogger(DB.class);
+	
 	public static Connection getConn() throws NamingException, SQLException {
 		Connection conn = null;
 		Context ctx = new InitialContext();
@@ -49,19 +51,25 @@ public class DB {
 	 * 
 	 * @return a set of column names, result content
 	 */
-	public static <T> Object[] execSQLQuery(String sql, Store<T> method) {
+	public static <T> Object[] execSQLQuery(String sql, List<String> para, Store<T> method) {
 		List<T> form = new ArrayList<T>();
 		List<String> col_name = new ArrayList<>();
 
 		Connection conn = null;
-		Statement stmt = null;
+		/*Statement stmt = null;*/
 		ResultSet rs = null;
+		PreparedStatement ps=null;
+		
 		try {
 			if (method == null)
 				throw new Exception("Invalid Format Method in DB.java");
 			conn = getConn();
-			stmt = conn.createStatement();
-			rs = stmt.executeQuery(sql);
+			ps = conn.prepareStatement(sql);
+			for (int i=1; para!=null && i<=para.size(); i++)
+				ps.setString(i, para.get(i-1));
+			rs = ps.executeQuery();
+			/*stmt = conn.createStatement();
+			rs = stmt.executeQuery(sql);*/
 
 			ResultSetMetaData rsmd = rs.getMetaData();
 			for (int i = 1; i <= rsmd.getColumnCount(); i++)
@@ -77,7 +85,7 @@ public class DB {
 			}
 			// System.out.println("querysize:"+form.size());
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.warn("exec SQL failed! SQL:<"+sql+"> Msg:<"+e.getMessage()+">", e);
 		} finally {
 			// TODO: handle finally clause
 			try {
@@ -87,12 +95,12 @@ public class DB {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-			try {
+/*			try {
 				stmt.close();
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
-			}
+			}*/
 			try {
 				conn.close();
 			} catch (SQLException e) {
@@ -107,16 +115,21 @@ public class DB {
 	}
 
 	// 普通查表
-	public static List<List<Object>> execSQLQuery(String sql) {
+	public static List<List<Object>> execSQLQuery(String sql, List<String> para) {
 		List<List<Object>> result = new ArrayList<List<Object>>();
 		List<Object>result_entry = null;
 		Connection conn = null;
-		Statement stmt = null;
+		/*Statement stmt = null;*/
 		ResultSet rs = null;
+		PreparedStatement ps=null;
 		try {
 			conn = getConn();
-			stmt = conn.createStatement();
-			rs = stmt.executeQuery(sql);
+			ps = conn.prepareStatement(sql);
+			for (int i=1; para!=null&&i<=para.size(); i++)
+				ps.setString(i, para.get(i-1));
+			rs = ps.executeQuery();
+/*			stmt = conn.createStatement();
+			rs = stmt.executeQuery(sql);*/
 
 			ResultSetMetaData rsmd = rs.getMetaData();
 			while (rs.next()) {
@@ -126,7 +139,7 @@ public class DB {
 				result.add(result_entry);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.warn("exec SQL failed! SQL:<"+sql+"> Msg:<"+e.getMessage()+">", e);
 		} finally {
 			// TODO: handle finally clause
 			try {
@@ -135,12 +148,12 @@ public class DB {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-			try {
+/*			try {
 				stmt.close();
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
-			}
+			}*/
 			try {
 				conn.close();
 			} catch (SQLException e) {
@@ -152,31 +165,39 @@ public class DB {
 	}
 
 	// 更新表
-	public static int execSQLUpdate(String sql) {
+	public static Map<String, Object> execSQLUpdate(String sql, List<String>para) {
+		Map<String, Object> rs = new HashMap<>();
 		Connection conn = null;
-		Statement stmt = null;
-		int rs = 0;
+		/*Statement stmt = null;*/
+		PreparedStatement ps = null;
+		int affect_row_count = 0;
 		try {
 			conn = getConn();
-			stmt = conn.createStatement();
-			rs = stmt.executeUpdate(sql);
+			ps = conn.prepareStatement(sql);
+			for (int i=1; para!=null && i<=para.size(); i++)
+				ps.setString(i, para.get(i-1));
+/*			stmt = conn.createStatement();
+			affect_row_count = stmt.executeUpdate(sql);*/
+			affect_row_count = ps.executeUpdate();
+			rs.put("process_state", true);
+			rs.put("affect_row_count", affect_row_count);
 		} catch (Exception e) {
-			System.out.print("SQL:"+sql);
-			e.printStackTrace();
-			rs = -1;
+			logger.warn("exec SQL failed! SQL:<"+sql+"> Msg:<"+e.getMessage()+">", e);
+			rs.put("process_state", false);
+			rs.put("error_msg", e.getMessage());			
 		} finally {
 			// TODO: handle finally clause
-			try {
+/*			try {
 				stmt.close();
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+				logger.warn("Cannot close statement of sql", e1);
+			}*/
 			try {
 				conn.close();
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.warn("Cannot close connection of sql", e);
 			}
 		}
 		return rs;

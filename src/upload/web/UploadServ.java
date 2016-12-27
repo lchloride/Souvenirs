@@ -59,7 +59,7 @@ public class UploadServ extends HttpServlet {
 			para.put("login_user_id",
 					session.getAttribute("user_id") == null ? "" : (String) session.getAttribute("user_id"));
 			um.setParameter(para);
-			result = um.diaplayContent();
+			result = um.displayContent();
 			for (Entry<String, Object> entry : result.entrySet()) {
 				request.setAttribute(entry.getKey(), entry.getValue());
 			}
@@ -107,15 +107,7 @@ public class UploadServ extends HttpServlet {
 			// 设置最大请求值 (包含文件和表单数据)
 			upload.setSizeMax(MAX_REQUEST_SIZE);
 
-			// 构造临时路径来存储上传的文件
-			// 这个路径相对当前应用的目录
-			String uploadPath = getServletContext().getRealPath("./") + File.separator + UPLOAD_DIRECTORY;
 
-			// 如果目录不存在则创建
-			File uploadDir = new File(uploadPath);
-			if (!uploadDir.exists()) {
-				uploadDir.mkdir();
-			}
 
 			Map<String, String> para = new HashMap<>();
 			Map<String, Object> result = new HashMap<>();
@@ -136,6 +128,7 @@ public class UploadServ extends HttpServlet {
 							para.put(key, val);
 						} else {
 							file_item = item;
+							para.put("origin_filename", item.getName());
 						}
 					}
 				}
@@ -145,26 +138,20 @@ public class UploadServ extends HttpServlet {
 
 				logger.debug("val=" + para);
 				um.setParameter(para);
-				result = um.uploadImg();
+				um.setFile_handle(file_item);
+				result = um.uploadPicture();
 
-				// 处理不在表单中的字段
-				if (!file_item.isFormField()) {
-					String fileName = new File(file_item.getName()).getName();
-					String filePath = uploadPath + File.separator + fileName;
-					File storeFile = new File(filePath);
-					// 在控制台输出文件的上传路径
-					System.out.println(filePath);
-					// 保存文件到硬盘
-					file_item.write(storeFile);
-					request.setAttribute("message", "文件上传成功!");
+				for (Entry<String, Object> entry : result.entrySet()) {
+					request.setAttribute(entry.getKey(), entry.getValue());
 				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
-				request.setAttribute("message", "错误信息: " + ex.getMessage());
+				request.setAttribute("Upload_result", false);
+				request.setAttribute("Error_msg", "Msg: " + ex.getMessage());
 			}
 
 			// 跳转到 message.jsp
-			getServletContext().getRequestDispatcher("/message.jsp").forward(request, response);
+			getServletContext().getRequestDispatcher("/upload.jsp").forward(request, response);
 		}
 	}
 }

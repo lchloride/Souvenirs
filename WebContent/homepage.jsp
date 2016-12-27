@@ -173,7 +173,7 @@ div.desc a:active {
 				<ul class="nav navbar-nav">
 					<li class="active"><a href="homepage">HomePage</a></li>
 					<li><a href="#">Group</a></li>
-					<li><a href="upload.jsp">Upload</a></li>
+					<li><a href="upload">Upload</a></li>
 					<li><a href="making">Making</a></li>					
 				</ul>
 

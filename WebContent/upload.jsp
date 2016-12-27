@@ -17,17 +17,22 @@
 
 <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
 <script src="/Souvenirs/res/bootstrap/js/bootstrap.min.js"></script>
-<script src="/Souvenirs/res/bootstrap/js/jquery.min.js"
-	type="text/javascript"></script>
 <link href="/Souvenirs/res/css/website.css" rel="stylesheet"
 	type="text/css">
 <script type="text/javascript">
+	window.onload = function() {
+		if (${not empty Upload_result})
+		$(function () { $('#myModal').modal({
+			keyboard: true
+		})});
+	}
+	
 	function displayFilename() {
 		var filepath = document.getElementById('upload_file').value;
 		document.getElementById('filename_display').innerHTML = filepath
 				.substring(filepath.lastIndexOf('\\') + 1);
-		document.getElementById('pic_name').value = document
-				.getElementById('filename_display').innerHTML;
+		document.getElementById('pic_name').value = filepath
+		.substring(filepath.lastIndexOf('\\') + 1, filepath.lastIndexOf('.'));
 	}
 
 	function checkSubmit() {
@@ -71,7 +76,7 @@
 				<ul class="nav navbar-nav">
 					<li class="active"><a href="homepage">HomePage</a></li>
 					<li><a href="#">Group</a></li>
-					<li><a href="#">Upload</a></li>
+					<li><a href="upload">Upload</a></li>
 					<li><a href="making">Making</a></li>
 				</ul>
 
@@ -124,10 +129,10 @@
 				<div class="form-group">
 					<label for="lastname" class="col-sm-2 control-label">Album</label>
 					<div class="col-sm-10">
-						<select class="form-control" name="Select_album_name"
+						<select class="form-control" name="select_album_name"
 							id="select_album_name">
-							<c:forEach var="album_name" items="${Album_List}">
-								<option>${album_name }</option>
+							<c:forEach var="Album_item" items="${Album_list}">
+								<option>${Album_item }</option>
 							</c:forEach>
 						</select>
 					</div>
@@ -145,12 +150,10 @@
 				</div>
 
 				<div class="form-group">
-					<div class="col-sm-offset-2 col-sm-2">
+					<div class="col-sm-offset-2 col-sm-4">
 						<input type="submit" class="btn btn-primary" value="Upload & Save">
-					</div>
-					<div class="col-sm-2">
-						<input type="submit" class="btn btn-default" value="Cancel"
-							onclick="">
+						<input type="button" class="btn btn-default" value="Cancel"
+							onclick="confirmCancel()">
 					</div>
 				</div>
 
@@ -162,5 +165,31 @@
 
 	<div class="footer">Copyright &copy; 2016 Souvenirs, All Rights
 		Reserved.</div>
+
+	<!-- 模态框（Modal） -->
+	<div class="modal fade" id="myModal" tabindex="-1" role="dialog"
+		aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"
+						aria-hidden="true">&times;</button>
+					<h4 class="modal-title" id="myModalLabel">Message</h4>
+				</div>
+				<div class="modal-body">
+					<c:if test="${Upload_result }">Uploading Picture Succeeded!<br><small style="color:#999999"><strong>Album:</strong> ${Album_name }, <strong>Filename:</strong> ${Filename }</small></c:if>
+					<c:if test="${not Upload_result }">Uploading Picture Failed!<br><small style="color:#999999">Error Message: ${Error_msg }</small></c:if>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Upload
+						Again</button>
+					<button type="button" class="btn btn-primary" onclick="location.href='/Souvenirs/homepage'">Go to
+						Homepage</button>
+				</div>
+			</div>
+			<!-- /.modal-content -->
+		</div>
+		<!-- /.modal -->
+	</div>
 </body>
 </html>

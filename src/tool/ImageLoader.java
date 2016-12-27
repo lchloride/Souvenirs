@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.servlet.ServletConfig;
@@ -54,7 +56,7 @@ public class ImageLoader extends HttpServlet {
 			return;
 		} else {
 			try {
-				user_id = session.getAttribute("user_id")==null?"":(String) session.getAttribute("user_id");
+				user_id = session.getAttribute("user_id") == null ? "" : (String) session.getAttribute("user_id");
 				response.setHeader("Pragma", "No-cache");
 				response.setHeader("Cache-Control", "no-cache");
 				response.setDateHeader("Expires", 0);
@@ -95,7 +97,8 @@ public class ImageLoader extends HttpServlet {
 				os.close();
 			} catch (Exception e) {
 				// e.printStackTrace();
-				logger.info(e.getMessage() +", request: <" + request.getQueryString() + ">, request user id = <" + user_id+">");
+				logger.info(e.getMessage() + ", request: <" + request.getQueryString() + ">, request user id = <"
+						+ user_id + ">");
 				response.sendError(HttpServletResponse.SC_FORBIDDEN);
 				return;
 			}
@@ -129,7 +132,7 @@ public class ImageLoader extends HttpServlet {
 
 		query += "&content=" + Base64.encode(content);
 		Logger logger = Logger.getLogger(ImageLoader.class);
-		logger.debug("Image Query URL: "+query);
+		logger.debug("Image Query URL: " + query);
 		return query;
 	}
 
@@ -147,29 +150,31 @@ public class ImageLoader extends HttpServlet {
 		}
 		String path = "";
 		String content = Base64.decode(content_base64);
-		String[] para = content.split("/");
+		String[] para_str = content.split("/");
+		List<String> para = Arrays.asList(para_str);
 		if (method.contentEquals("direct")) {
+			para.add(0, user_id);
+			logger.debug("direct para:"+para);
 			// Two situations: one is request user's own image, just check
-			if (para[0]
-					.contentEquals(
-							user_id)
-					|| (long) DB.execSQLQuery("select count(*) from check_image_priv_direct where allowed_user_id = '"
-							+ user_id + "' and owner_id = '" + para[0] + "' and album_name = '" + para[1]
-							+ "' and filename = '" + para[2] + "'").get(0).get(0) == 1)
-				path = File.separator + para[0] + File.separator + para[1] + File.separator + para[2];
+			if (para_str[0].contentEquals(user_id) || (long) DB.execSQLQuery(
+					"select count(*) from check_image_priv_direct where allowed_user_id = ? and owner_id= ? and album_name = ? and filename = ?",
+					para).get(0).get(0) == 1)
+				path = File.separator + para_str[0] + File.separator + para_str[1] + File.separator + para_str[2];
 			else {
-				logger.debug("query: select count(*) from check_image_priv_direct where allowed_user_id = '"
-							+ user_id + "' and owner_id = '" + para[0] + "' and album_name = '" + para[1]
-							+ "' and filename = '" + para[2] + "'");
+				logger.debug("query: select count(*) from check_image_priv_direct where allowed_user_id = '" + user_id
+						+ "' and owner_id = '" + para_str[0] + "' and album_name = '" + para_str[1]
+						+ "' and filename = '" + para_str[2] + "'");
 				throw new Exception("Request is refused because of invalid privillege.");
 			}
 		} else if (method.contentEquals("query")) {
-			if (para[0].contentEquals("user")) {
+			if (para_str[0].contentEquals("user")) {
 				// logger.debug("ImageLoader Para:"+para[0] + " " + para[1]);
-				if (para[1].contentEquals(user_id))
+				if (para_str[1].contentEquals(user_id))
 					// Query avatar path of user stored in database
 					try {
-						path = (String) DB.execSQLQuery("select avatar from user where user_id='" + para[1] + "'")
+						logger.debug(para);
+						path = (String) DB
+								.execSQLQuery("select avatar from user where user_id= ?", Arrays.asList(para_str[1]))
 								.get(0).get(0);
 					} catch (IndexOutOfBoundsException e) {
 						// Cannot find result of username
@@ -178,26 +183,29 @@ public class ImageLoader extends HttpServlet {
 				else {
 					throw new Exception("Request is refused because of invalid privillege.");
 				}
-			} else if (para[0].contentEquals("group")) {
-				if ((long) DB.execSQLQuery("select count(*) from user_belong_group where user_id='" + user_id
-						+ "' and group_id='" + para[1] + "'").get(0).get(0) == 1)
+			} else if (para_str[0].contentEquals("group")) {
+				if ((long) DB
+						.execSQLQuery("select count(*) from user_belong_group where user_id=? and group_id=?", para)
+						.get(0).get(0) == 1)
 					try {
-						path = (String) DB.execSQLQuery("select album_cover from souvenirs.group where group_id='" + para[1] + "'")
-								.get(0).get(0);
+						path = (String) DB
+								.execSQLQuery("select album_cover from souvenirs.group where group_id=?", para).get(0)
+								.get(0);
 					} catch (IndexOutOfBoundsException e) {
 						// TODO: handle exception
 						return "";
 					}
 				else {
 					logger.debug("query: select count(*) from user_belong_group where user_id='" + user_id
-						+ "' and group_id='" + para[1] + "'");
+							+ "' and group_id='" + para_str[1] + "'");
 					throw new Exception("Request is refused because of invalid privillege.");
 				}
-			} else if (para[0].contentEquals("album")) {
-				if (para[1].contentEquals(user_id))
+			} else if (para_str[0].contentEquals("album")) {
+				if (para_str[1].contentEquals(user_id))
 					try {
-						path = (String) DB.execSQLQuery("select album_cover from album where user_id='" + para[1]
-								+ "' and album_name = '" + para[2] + "'").get(0).get(0);
+						path = (String) DB
+								.execSQLQuery("select album_cover from album where user_id=? and album_name = ?", para)
+								.get(0).get(0);
 					} catch (Exception e) {
 						// TODO: handle exception
 						return "";
