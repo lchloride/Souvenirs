@@ -49,24 +49,6 @@ public class SouvenirsManager {
 			List<Object> album_name_list = dao.getAlbumName(parameter.get("login_user_id"));
 			result.put("Album_List", album_name_list);
 			parameter.put("album_name", (String)album_name_list.get(0));
-/*			List<List<Object>> image_list = dao.getPictureAddrInAlbum(parameter.get("login_user_id"), (String)album_name_list.get(0));
-			List<Map<String, String>> image_addr_list = new ArrayList<>();
-			for (List<Object> list : image_list) {
-				List<String> para = new ArrayList<>();
-				para.add((String)list.get(OWNER_ID));
-				para.add((String)list.get(OWNER_ALBUM_NAME));
-				para.add((String)list.get(OWNER_FILENAME));
-				Map<String, String> image_content = new HashMap<>();
-				image_content.put("Filename", (String)list.get(OWNER_FILENAME));
-				image_content.put("Addr", ImageLoader.genImageQuery(true, para));
-				image_addr_list.add(image_content);
-			}
-			JSONArray json_array = new JSONArray();
-			for (Map<String,String> map : image_addr_list) {
-				json_array.put(map);
-			}
-			logger.debug("json:"+json_array);*/
-			/*result.put("Image_Addr", image_addr_list);*/
 			result.put("Image_JSON", getImageAddrInAlbum());
 			result.put("DispatchURL", "canvas.jsp");
 		}else {
