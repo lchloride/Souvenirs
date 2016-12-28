@@ -5,7 +5,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Making Souvenirs</title>
+<title>Making Souvenir</title>
 <link href="/Souvenirs/res/image/logo.ico" rel="icon">
 <!-- 新 Bootstrap 核心 CSS 文件 -->
 <link href="/Souvenirs/res/bootstrap/css/bootstrap.min.css"
@@ -40,36 +40,43 @@
 	var souvenir_json = '[{"background":"BBB.jpg","originW":1960,"originH":2240},{"type":"image","url":"/Souvenirs/res/image/default_avatar.png","startX":107,"startY":252,"drawW":1092,"drawH":658,"zoom":0,"moveX":0,"moveY":0,"t11":1,"t12":0,"t13":0,"t21":0,"t22":1,"t23":0,"clipShape":"circle","clipPara":[653,581,329]},{"type":"text","text":"abcde","startX":1204,"startY":337,"maxW":531,"maxH":263,"style":"Arial","size":16,"color":"black","bold":false,"italic":false,"paddingL":96,"paddingR":87,"paddingT":51,"paddingB":44,"lineH":1.5,"clipShape":"rect"},{"type":"text","text":"text2","startX":86,"startY":1036,"maxW":387,"maxH":345,"style":"Comic Sans MS","size":16,"color":"blue","bold":true,"italic":false,"paddingL":62,"paddingR":60,"paddingT":100,"paddingB":103,"lineH":1.5,"clipShape":"rect"},{"type":"image","url":"/Souvenirs/res/image/index_bg.jpg","startX":618,"startY":951,"drawW":1144,"drawH":618,"zoom":0,"moveX":0,"moveY":0,"t11":1,"t12":0,"t13":0,"t21":0,"t22":1,"t23":0,"clipShape":"rect"},{"type":"image","url":"/Souvenirs/res/image/bg.jpg","startX":113,"startY":1593,"drawW":1152,"drawH":548,"zoom":0,"moveX":0,"moveY":0,"t11":1,"t12":0,"t13":0,"t21":0,"t22":1,"t23":0,"clipShape":"rect"},{"type":"text","text":"text3","startX":1329,"startY":1606,"maxW":498,"maxH":476,"style":"Times New Roman","size":18,"color":"Green","bold":false,"italic":true,"paddingL":20,"paddingR":18,"paddingT":17,"paddingB":17,"lineH":1.5,"clipShape":"rect"}]';
 	var souvenir_obj = JSON.parse(souvenir_json);
 	var ratio = 1;//This is the ratio of canvas's real height to original background height. 
+	var download_ratio = 1;
 	var onshowContentId = "hint";//Indicate which operation content is activated and shown.
 	var proc_position = 0;
 	var idx = 1;
 	var isError = false;
+	var isDrawing = true;
+	var isFinished = false;
+	var intervalid;
 
 	window.onload = function() {
 		//set height and width of canvas that fits the displaying area
 		changeContentSize();
 		assignImage();
-		drawSouvenir();
+		drawSouvenir("myCanvas");
 		drawBorderRect();
 	}
 
 	//This function is the main function of drawing which will call the spcific sub-function to draw shapes
-	function drawSouvenir() {
-		var c = document.getElementById("myCanvas");
+	function drawSouvenir(canvas_id, callback) {
+		var c = document.getElementById(canvas_id);
 		var ctx = c.getContext("2d");
 
 		document.getElementById("size").innerHTML = JSON
 				.stringify(souvenir_obj);
-		
+
 		idx = 1;
-		
+		isFinished = false;
 		bg = new Image();
 		bg.src = "res/image/" + souvenir_obj[0].background;
 		bg.onload = function() {
 			ctx.drawImage(bg, 0, 0, c.width, c.height);
 			drawClip(ctx);
 			drawContent(ctx);
+			if (callback != null && callback != "")
+				callback();
 		}
+
 	}
 
 	function drawClip(ctx) {
@@ -108,11 +115,13 @@
 	}
 	//This function is to select proper sub-function of drawing
 	function drawContent(ctx) {
-		if (isError||souvenir_obj[idx] == undefined || souvenir_obj[idx] == null
+		if (isError || souvenir_obj[idx] == undefined
+				|| souvenir_obj[idx] == null
 				|| souvenir_obj[idx].type == undefined
-				|| souvenir_obj[idx].type == null)
+				|| souvenir_obj[idx].type == null) {
+			isFinished = true;
 			return;
-		else {
+		} else {
 			if (souvenir_obj[idx].type == "image")
 				drawImg(ctx, idx);
 			else if (souvenir_obj[idx].type == "text")
@@ -148,7 +157,7 @@
 			idx++;
 			drawContent(ctx);
 		}
-		
+
 		image.onerror = function() {
 			isError = true;
 			alert("Cannot load image!");
@@ -164,17 +173,17 @@
 			font_style += "italic ";
 		if (souvenir_obj[idx].bold)
 			font_style += "bold ";
-		font_style += souvenir_obj[idx].size + 'px "' + souvenir_obj[idx].style
+		font_style += (isDrawing?souvenir_obj[idx].size:Math.round(souvenir_obj[idx].size/ratio*download_ratio)) + 'px "' + souvenir_obj[idx].style
 				+ '" ';
 		ctx.font = font_style;
 		ctx.fillStyle = souvenir_obj[idx].color;
-/* 		ctx.fillText(souvenir_obj[idx].text, R(souvenir_obj[idx].startX+souvenir_obj[idx].paddingL),
-				R(souvenir_obj[idx].startY+souvenir_obj[idx].paddingT+souvenir_obj[idx].size), R(souvenir_obj[idx].maxW));  */
- 		draw_long_text(souvenir_obj[idx].text, ctx, R(souvenir_obj[idx].startX
+		/* 		ctx.fillText(souvenir_obj[idx].text, R(souvenir_obj[idx].startX+souvenir_obj[idx].paddingL),
+		 R(souvenir_obj[idx].startY+souvenir_obj[idx].paddingT+souvenir_obj[idx].size), R(souvenir_obj[idx].maxW));  */
+		draw_long_text(souvenir_obj[idx].text, ctx, R(souvenir_obj[idx].startX
 				+ souvenir_obj[idx].paddingL), R(souvenir_obj[idx].startY
 				+ souvenir_obj[idx].paddingT)
-				+ souvenir_obj[idx].size, R(souvenir_obj[idx].maxW),
-				souvenir_obj[idx].size, souvenir_obj[idx].lineH); 
+				+ (isDrawing?souvenir_obj[idx].size:Math.round(souvenir_obj[idx].size/ratio*download_ratio)), R(souvenir_obj[idx].maxW),
+				(isDrawing?souvenir_obj[idx].size:Math.round(souvenir_obj[idx].size/ratio*download_ratio)), souvenir_obj[idx].lineH);
 		idx++;
 		drawContent(ctx);
 	}
@@ -185,12 +194,13 @@
 		var line_text = new String();
 		var lineno = 1;
 		for (i = 0; i < longtext.length; i++) {
-			if (ctx.measureText(line_text).width <= max_width)
+			if (ctx.measureText(line_text).width < max_width)
 				line_text += longtext[i];
 			else {
 				ctx.fillText(line_text, startX, startY + (lineno - 1) * size
 						* line_height, max_width);
 				line_text = new String();
+				line_text += longtext[i];
 				lineno++;
 			}
 		}
@@ -262,7 +272,7 @@
 		}
 		div_id.innerHTML = div_str;
 	}
-	
+
 	function selectImage(idx) {
 		if (selected_image >= 1)
 			document.getElementById("select_img_" + selected_image).className = "img";
@@ -271,7 +281,7 @@
 	}
 
 	function R(val) {
-		return ratio * val;
+		return (isDrawing ? ratio : download_ratio) * val;
 	}
 
 	function queryImageInAlbum(str) {
@@ -327,13 +337,15 @@
 		if (proc_position >= 1)
 			document.getElementById("border_rect_" + proc_position).className = "border-rect";
 		if (onshowContentId == "edit_text") {
-			document.getElementById("size_"+souvenir_obj[proc_position].size).selected = "";
-			document.getElementById("style_"+souvenir_obj[proc_position].style.substring(0,5)).selected = "";	
-			document.getElementById("line_height_"+souvenir_obj[proc_position].lineH*10).selected = "" ;
+			document.getElementById("size_" + souvenir_obj[proc_position].size).selected = "";
+			document.getElementById("style_"
+					+ souvenir_obj[proc_position].style.substring(0, 5)).selected = "";
+			document.getElementById("line_height_"
+					+ souvenir_obj[proc_position].lineH * 10).selected = "";
 		}
-		
+
 		onshowContentId = new_content_id;
-		
+
 		proc_position = idx;
 		document.getElementById(onshowContentId).style.display = "block";
 		document.getElementById("border_rect_" + idx).className = "border-rect-active";
@@ -345,12 +357,14 @@
 				+ "px";
 
 		if (new_content_id == "edit_text") {
-			document.getElementById("text_content").innerHTML = souvenir_obj[proc_position].text;
-			document.getElementById("size_"+souvenir_obj[proc_position].size).selected = "selected";
-			document.getElementById("style_"+souvenir_obj[proc_position].style.substring(0,5)).selected = "selected";
+			document.getElementById("text_content").value = souvenir_obj[proc_position].text;
+			document.getElementById("size_" + souvenir_obj[proc_position].size).selected = "selected";
+			document.getElementById("style_"
+					+ souvenir_obj[proc_position].style.substring(0, 5)).selected = "selected";
 			document.getElementById("color1").value = souvenir_obj[proc_position].color;
 			document.getElementById("color1").style.backgroundColor = souvenir_obj[proc_position].color;
-			document.getElementById("line_height_"+souvenir_obj[proc_position].lineH*10).selected = "selected" ;
+			document.getElementById("line_height_"
+					+ souvenir_obj[proc_position].lineH * 10).selected = "selected";
 			if (souvenir_obj[proc_position].bold) {
 				document.getElementById("bold_btn").className = "btn btn-default active";
 			} else
@@ -366,7 +380,7 @@
 		if (proc_position >= 1 && selected_image >= 1) {
 			souvenir_obj[proc_position].url = document
 					.getElementById("album_image_" + selected_image).src;
-			drawSouvenir();
+			drawSouvenir("myCanvas");
 		}
 	}
 
@@ -378,7 +392,8 @@
 		display_height = window.innerHeight
 				|| document.documentElement.clientHeight
 				|| document.body.clientHeight;
-		display_height = display_height - 155;
+		display_height = display_height - 190;
+		//alert(jQuery("#nav_bar").outerHeight(true)+" "+jQuery("#myCanvas").outerHeight(true));
 
 		var c = document.getElementById("myCanvas");
 		c.width = display_height
@@ -423,7 +438,7 @@
 						.offset().top), c.height)
 				+ "px";
 
-		drawSouvenir();
+		drawSouvenir("myCanvas");
 		drawBorderRect();
 	}
 
@@ -451,7 +466,35 @@
 		souvenir_obj[proc_position].size = parseInt(document
 				.getElementById("size_select").value);
 		souvenir_obj[proc_position].color = document.getElementById("color1").value;
-		drawSouvenir();
+		drawSouvenir("myCanvas");
+	}
+
+	function checkSubmit() {
+		isDrawing = false;
+		download_ratio = 1;//受到传递大小限制，只能传2M以下
+		document.getElementById("download_canvas").width = R(souvenir_obj[0].originW);
+		document.getElementById("download_canvas").height = R(souvenir_obj[0].originH);
+		intervalid = setInterval("fun()", 1000);
+		drawSouvenir("download_canvas");
+
+		//isDrawing = true;
+	}
+
+	function fun() {
+		if (isFinished) {
+			 document.getElementById('picture').innerHTML = document.getElementById(
+				'download_canvas').toDataURL('image/png');
+			 if (document.getElementById('picture').innerHTML.length >= 10485760) {
+				 alert("Souvenir is too large, its size should be less than 10MB");
+				 clearInterval(intervalid);
+				 isDrawing = true;
+				 return;
+			 }
+			alert('making finished');
+			clearInterval(intervalid);
+			document.getElementById('making_form').submit();
+			isDrawing = true;
+		}
 	}
 </script>
 
@@ -617,16 +660,25 @@ div.border-rect-active {
 		</div>
 		</nav>
 
-		<div id="div_canvas">
-			<canvas id="myCanvas" width="400" height="300"
-				style="border:1px solid #c3c3c3;"> Sorry, your browser does
-			not support HTML5 canvas tag, we suggest using Chrome or Firefox to
-			achieve best experience. </canvas>
-			<div id="border_rect"></div>
-		</div>
+		<form class="from" role="form" action="formPicture" method="post"
+			id="making_form">
+<!-- 			<input type="hidden" value="" id="picture" name="picture" /> -->
+			<textarea id="picture" 	style="display:none" name="picture"></textarea>
+			<textarea id="picture1" 	style="display:none" name="picture1"></textarea>
+			<div id="div_canvas">
+				<canvas id="myCanvas" width="400" height="300"
+					style="border:1px solid #c3c3c3;"> Sorry, your browser
+				does not support HTML5 canvas tag, we suggest using Chrome or
+				Firefox to achieve best experience. </canvas>
+				<canvas id="download_canvas" width="400" height="300"
+					style="display:none"></canvas>
+				<div id="border_rect"></div>
+				<div>
+					<input type="button" class="btn btn-primary "
+						value="Download Souvenir" id="submit_btn" onclick="checkSubmit()" />
+				</div>
+			</div>
 
-		<form class="from" role="form" action="making">
-			<input type="hidden" value="" id="query_type" />
 			<div class="oper-content" id="div_oper">
 				<!-- The following content is the one of display hint page -->
 				<div id="hint">
@@ -650,18 +702,7 @@ div.border-rect-active {
 
 
 					<!-- Choose a picture for the rect -->
-					<div class="img-content" id="img_content">
-						<%-- 					<c:forEach var="image_addr" items="${Image_Addr }" varStatus="status">
-						<div class="img" id="selected_img_${status.index}">
-							<a href="#" onclick="selectImage(${status.index})"><img
-								src="${image_addr}" alt="Image In Album"
-								width="120" height="120"></a>
-							<div class="desc">
-								<a target="_blank" href="#">My Album${status.index }</a>
-							</div>
-						</div>
-					</c:forEach> --%>
-					</div>
+					<div class="img-content" id="img_content"></div>
 
 					<!-- Modify position and Zoom -->
 					<div></div>

@@ -90,7 +90,7 @@
 	</servlet-mapping>
 	<servlet-mapping>
 		<servlet-name>SouvenirsServ</servlet-name>
-		<url-pattern>/changeImage</url-pattern>
+		<url-pattern>/formPicture</url-pattern>
 	</servlet-mapping>	
 	<servlet-mapping>
 		<servlet-name>SouvenirsServ</servlet-name>

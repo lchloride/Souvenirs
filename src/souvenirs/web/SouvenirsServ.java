@@ -91,10 +91,12 @@ public class SouvenirsServ extends HttpServlet {
 				session.invalidate();
 				response.sendRedirect("index.jsp");
 				return;
-			} else if (query_url.contentEquals("changeImage")) {
-				String content = request.getParameter("image");
+			} else if (query_url.contentEquals("formPicture")) {
+				String content = request.getParameter("picture");
+				logger.debug(content.substring(0, 50)+", "+content.substring(content.length()-50));
 				String content_base64 = content.substring(content.indexOf("base64,") + 7,
-						content.length() - (918 - 858));
+						content.length());
+				logger.debug(content_base64.substring(0, 50)+", "+content_base64.substring(content_base64.length()-50));
 				byte[] rs_byte = Base64.decodeBytes(content_base64);
 				logger.debug(content_base64.length() + " " + rs_byte.length);
 				try {
@@ -105,7 +107,7 @@ public class SouvenirsServ extends HttpServlet {
 					// 不同类型的文件对应不同的MIME类型
 					response.setContentType("image/*");
 					// 文件以流的方式发送到客户端浏览器
-					response.setHeader("Content-Disposition", "attachment;filename=img.jpg");
+					response.setHeader("Content-Disposition", "attachment;filename=img.png");
 					// response.setHeader("Content-Disposition",
 					// "inline;filename=img.jpg");
 
