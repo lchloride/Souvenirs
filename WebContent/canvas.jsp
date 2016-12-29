@@ -473,6 +473,9 @@
 
 	function checkSubmit() {
 		isDrawing = false;
+		document.getElementById("select_size_content").style.display = "none";
+		document.getElementById("loading_content").style.display = "block";
+		document.getElementById("modal_dialog").style.width = "400px";
 		if (document.getElementById("origin_size").checked)
 			download_ratio = 1;
 		else if (document.getElementById("SHD_size").checked)
@@ -489,9 +492,9 @@
 			download_ratio = ratio;
 		document.getElementById("download_canvas").width = R(souvenir_obj[0].originW);
 		document.getElementById("download_canvas").height = R(souvenir_obj[0].originH);
-		intervalid = setInterval("fun()", 1000);
+		intervalid = setInterval("fun()", 500);
 		drawSouvenir("download_canvas");
-		$('#myModal').modal('toggle'); 
+
 		//isDrawing = true;
 	}
 
@@ -505,10 +508,14 @@
 				isDrawing = true;
 				return;
 			}
-			alert('making finished');
+			//alert('making finished');
 			clearInterval(intervalid);
 			document.getElementById('making_form').submit();
 			isDrawing = true;
+			$('#myModal').modal('toggle'); 
+			document.getElementById("loading_content").style.display = "none";
+			document.getElementById("select_size_content").style.display = "block";
+			document.getElementById("modal_dialog").style.cssText = "";
 		}
 	}
 
@@ -720,7 +727,7 @@ div.border-rect-active {
 				<canvas id="download_canvas" width="400" height="300" style="display:none"></canvas>
 				<div id="border_rect"></div>
 				<div>
-					<input type="button" class="btn btn-primary " value="Download Souvenir" id="submit_btn" data-toggle="modal"
+					<input type="button" class="btn btn-primary " value="Make Souvenir" id="submit_btn" data-toggle="modal"
 						data-target="#myModal" />
 					<!-- onclick="checkSubmit()" -->
 				</div>
@@ -856,49 +863,49 @@ div.border-rect-active {
 	<div class="footer">Copyright &copy; 2016 Souvenirs, All Rights Reserved.</div>
 
 	<!-- 模态框（Modal） -->
-	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-		<div class="modal-dialog">
-			<div class="modal-content">
+	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" >
+		<div class="modal-dialog"  id="modal_dialog">
+			<div class="modal-content"  style="display:block" id="select_size_content">
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-					<h4 class="modal-title" id="myModalLabel">Select Image Resolution</h4>
+					<h4 class="modal-title" id="myModalLabel">Select Souvenir Size</h4>
 				</div>
 
 				<div class="modal-body">
-					<div class="radio">
+					<div class="radio" style="margin-bottom:10px;padding-bottom:10px;border-bottom-style:solid;border-width:1px;border-color:#999999;">
 						<label>
-							<input type="radio" name="optionsRadios" id="origin_size" value="origin_size" checked>
-							Origin Size(<span id="origin_size_text"></span>)
+							<input type="radio" name="optionsRadios" id="origin_size" value="origin_size" >
+							Origin Resolution (<span id="origin_size_text"></span>)
 						</label>
 					</div>
 					<div class="radio">
 						<label>
 							<input type="radio" name="optionsRadios" id="SHD_size" value="SHD_size">
-							Super High Resolution(<span id="SHD_size_text"></span>)
+							Super High Resolution (<span id="SHD_size_text"></span>)
 						</label>
 					</div>
 					<div class="radio">
 						<label>
-							<input type="radio" name="optionsRadios" id="HD_size" value="HD_size">
+							<input type="radio" name="optionsRadios" id="HD_size" value="HD_size" checked>
 							High Resolution(<span id="HD_size_text"></span>)
 						</label>
 					</div>
 					<div class="radio">
 						<label>
 							<input type="radio" name="optionsRadios" id="SD_size" value="SD_size">
-							Standard Resolution(<span id="SD_size_text"></span>)
+							Standard Resolution (<span id="SD_size_text"></span>)
 						</label>
 					</div>
-					<div class="radio">
+					<div class="radio" style="margin-bottom:10px;padding-bottom:10px;border-bottom-style:solid;border-width:1px;border-color:#999999">
 						<label>
 							<input type="radio" name="optionsRadios" id="LD_size" value="LD_size">
-							Low Resolution(<span id="LD_size_text"></span>)
+							Low Resolution (<span id="LD_size_text"></span>)
 						</label>
 					</div>
 					<div class="radio">
 						<label>
 							<input type="radio" name="optionsRadios" id="edit_size" value="edit_size">
-							Resolution of Editing Image(<span id="edit_size_text"></span>)
+							Resolution of Editing Image (<span id="edit_size_text"></span>)
 						</label>
 					</div>
 					<h5><strong>Notice:</strong></h5>
@@ -912,6 +919,10 @@ div.border-rect-active {
 					<button type="button" class="btn btn-primary" onclick="checkSubmit()">Make Souvenir and Download</button>
 					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
 				</div>
+			</div>
+			
+			<div class="modal-content" id="loading_content" style="display:none">
+				<img src="/Souvenirs/res/image/loading.gif" width="400" height="300">
 			</div>
 			<!-- /.modal-content -->
 		</div>
