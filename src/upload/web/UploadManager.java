@@ -52,6 +52,7 @@ public class UploadManager {
 		List<Object> album_name_list = dao.getAlbumName(parameter.get("login_user_id"));
 		result.put("Album_list", album_name_list);
 		Map<String, Object> sql_exec_result = dao.addPicture(para);
+		logger.debug(sql_exec_result.get("process_state")+", "+sql_exec_result.get("affect_row_count"));
 		if (!(boolean) sql_exec_result.get("process_state")) {
 			result.put("Upload_result", false);
 			result.put("Error_msg", sql_exec_result.get("error_msg"));
@@ -65,10 +66,11 @@ public class UploadManager {
 
 			// 如果目录不存在则创建
 			File uploadDir = new File(uploadPath);
+			logger.debug("upload_path:"+uploadDir.getPath()+" "+uploadDir.exists());
 			if (!uploadDir.exists()) {
-				uploadDir.mkdir();
+				logger.debug(uploadDir.mkdirs());
 			}
-
+System.getenv();
 			String fileName = new File(para.get("filename")).getName();
 			System.out.println("filename:"+fileName);
 			String filePath = null;
@@ -84,14 +86,14 @@ public class UploadManager {
 				// TODO Auto-generated catch block
 				//e.printStackTrace();
 				parameter.put("filename", para.get("filename"));
-				if ((boolean) delPicture().get("Delete_Result")) {
+				if ((boolean) delPicture().get("Delete_result")) {
 					logger.info("User(id=<" + parameter.get("login_user_id")
 							+ ">) deleted the uploaded picture since there are something wrong when writing files.");
 				} else {
 					logger.error("User(id=<" + parameter.get("login_user_id")
 							+ ">) failed to delete the uploaded picture although there are something wrong when writing files, which leads to inconsistency in database!");
 				}
-				result.put("Upload_eesult", false);
+				result.put("Upload_result", false);
 				result.put("Error_msg", e.getMessage());
 				logger.info("User failed to write uploading picture, error:<" + e.getMessage() + "> with parameters:<"
 						+ parameter + ">");
