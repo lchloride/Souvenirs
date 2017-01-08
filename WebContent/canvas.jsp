@@ -1,6 +1,13 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- canvas页面主要是完成souvenir的绘制与下载，页面的布局会随着souvenir模板的大小以及窗口的大小进行调整 -->
+<!-- 绘制souvenir使用了多段函数递归调用的方法；操作面板的显示与隐藏使用了css的display属性 -->
+<!-- 生成图片化的Souvenir的方法是使用canvas的API生成png格式下的base64编码过的图片，
+然后将图片上传至服务器，服务器解码后转成二进制png文件发回前台，浏览器接收发回的图片并下载到本地 -->
+
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -18,66 +25,93 @@
 <script src="/Souvenirs/res/js/iColorPicker.js" type="text/javascript"></script>
 <link href="/Souvenirs/res/css/website.css" rel="stylesheet" type="text/css">
 <script>
+	/*Declarion of useful global variants  */
+	//display_width is the width(px) of active and available for showing contnet window 
 	var display_width = window.innerWidth
 			|| document.documentElement.clientWidth
 			|| document.body.clientWidth;
-
+	//display_height is similar to display_width, just stands for the height of available window
 	var display_height = window.innerHeight
 			|| document.documentElement.clientHeight
 			|| document.body.clientHeight;
+	//155 stands for the verticle space(px) of  header and footer together with margin and padding 
 	display_height = display_height - 155;
+	//selected_image is the index number of selected image that user clicks
 	var selected_image = 0;
+	//image_json is json formatted string storing image info (name and address) in one availble album obtained by Ajax
+	//If there is some error with Ajax, it would be assign to empty json string and would not display anything
 	var image_json = '${empty Image_JSON?"[]":Image_JSON}';
-	/* var souvenir_json = '[{"background": "BBB.jpg","originW": 1960,"originH": 2240},'
-			+ '{"type": "image","url": "/Souvenirs/res/image/default_avatar.png","startX": 107,"startY": 252,"drawW": 1092,"drawH": 658,"zoom": 0,'
-			+ '"moveX": 0,"moveY": 0,"t11": 1,"t12": 0,"t13": 0,"t21": 0,"t22": 1,"t23": 0, "clipShape":"rect", "clipPara": [653,581,329]},'
-			+ '{"type": "text","text": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ你我他她它あいうえお1234567890`-=[];\'", "startX": 1204,"startY": 337,"maxW": 531,"maxH":263, "style": "Arial","size": 16,'
-			+ '"color": "black","bold": false,"italic": false,"paddingL": 96, "paddingR":87, "paddingT":51, "paddingB":44, "lineH":1.5, "clipShape":"rect"}]'; */
+	//souvenir_json is the json string of souvenir template obtained from server
 	var souvenir_json = '[{"background":"BBB.jpg","originW":1960,"originH":2240},{"type":"image","url":"/Souvenirs/res/image/default_avatar.png","startX":107,"startY":252,"drawW":1092,"drawH":658,"zoom":0,"moveX":0,"moveY":0,"t11":1,"t12":0,"t13":0,"t21":0,"t22":1,"t23":0,"clipShape":"circle","clipPara":[653,581,329]},{"type":"text","text":"abcde","startX":1204,"startY":337,"maxW":531,"maxH":263,"style":"Arial","size":16,"color":"black","bold":false,"italic":false,"paddingL":96,"paddingR":87,"paddingT":51,"paddingB":44,"lineH":1.5,"clipShape":"rect"},{"type":"text","text":"text2","startX":86,"startY":1036,"maxW":387,"maxH":345,"style":"Comic Sans MS","size":16,"color":"blue","bold":true,"italic":false,"paddingL":62,"paddingR":60,"paddingT":100,"paddingB":103,"lineH":1.5,"clipShape":"rect"},{"type":"image","url":"/Souvenirs/res/image/index_bg.jpg","startX":618,"startY":951,"drawW":1144,"drawH":618,"zoom":0,"moveX":0,"moveY":0,"t11":1,"t12":0,"t13":0,"t21":0,"t22":1,"t23":0,"clipShape":"rect"},{"type":"image","url":"/Souvenirs/res/image/bg.jpg","startX":113,"startY":1593,"drawW":1152,"drawH":548,"zoom":0,"moveX":0,"moveY":0,"t11":1,"t12":0,"t13":0,"t21":0,"t22":1,"t23":0,"clipShape":"rect"},{"type":"text","text":"text3","startX":1329,"startY":1606,"maxW":498,"maxH":476,"style":"Times New Roman","size":18,"color":"Green","bold":false,"italic":true,"paddingL":20,"paddingR":18,"paddingT":17,"paddingB":17,"lineH":1.5,"clipShape":"rect"}]';
+	//souvenir_obj is a object parsed from souvenir_json, almost every drawing would operate souvenir_obj 
 	var souvenir_obj = JSON.parse(souvenir_json);
-	var ratio = 1;//This is the ratio of canvas's real height to original background height. 
+	//This is the ratio of canvas's real height to original background height. 
+	var ratio = 1;
+	//It is the ratio when downloading canvas
 	var download_ratio = 1;
-	var onshowContentId = "hint";//Indicate which operation content is activated and shown.
+	//Indicate which operation content is activated and shown.
+	var onshowContentId = "hint";
+	//This indicates the position where user clicked (in other words, the index of active part in templete)
 	var proc_position = 0;
+	//index of processing templete part when drawing
 	var idx = 1;
 	var isError = false;
 	var isDrawing = true;
 	var isFinished = false;
+	//Use to set interval
 	var intervalid;
 
+	//在页面加载完成后执行的脚本
 	window.onload = function() {
 		//set height and width of canvas that fits the displaying area
+		//设置能够匹配窗口大小的canvas宽度和高度
 		changeContentSize();
+		//query display image of selected album on the panel of selecting image
+		//为照片操作面板获取要显示的album中照片
 		assignImage();
+		//计算下载时可选择的souvenir的不同尺寸
 		calcSouvenirResolution();
+		//draw canvas content using souvenir_obj
+		//使用souvenir_obj绘制canvas
 		drawSouvenir("myCanvas");
+		//drawing outer border of each part
+		//为每个区域绘制外框
 		drawBorderRect();
 	}
 
 	//This function is the main function of drawing which will call the spcific sub-function to draw shapes
+	//这个函数是绘图时调用的主函数，用来完成一些初始化和子函数的调用，同时加载背景
 	function drawSouvenir(canvas_id, callback) {
 		var c = document.getElementById(canvas_id);
 		var ctx = c.getContext("2d");
 
 		document.getElementById("size").innerHTML = JSON
 				.stringify(souvenir_obj);
-
+		//Processing first part of templete
 		idx = 1;
 		isFinished = false;
+		//Loading background image
 		bg = new Image();
 		bg.src = "res/image/" + souvenir_obj[0].background;
 		bg.onload = function() {
+			//Drawing bavkground image
 			ctx.drawImage(bg, 0, 0, c.width, c.height);
+			//Creating displaying parts
 			drawClip(ctx);
+			//Drawing content
 			drawContent(ctx);
 			if (callback != null && callback != "")
 				callback();
 		}
 
 	}
-
+	
+	//本函数用来绘制要显示的区域。只有在这个区域中的内容才会被显示，其他位置的内容会被隐藏
+	//目前只支持绘制矩形和圆形区域
 	function drawClip(ctx) {
+		//Transparent filling color
 		ctx.strokeStyle = "rgba(255,255,255,0)";
+		//Clipping to obtain displaying areas based on parameters in templete 
 		for (i = 1; i < souvenir_obj.length; i++) {
 			if (souvenir_obj[i].type == "image") {
 				if (souvenir_obj[i].clipShape == "rect")
@@ -110,8 +144,11 @@
 		}
 		ctx.clip();
 	}
+	
 	//This function is to select proper sub-function of drawing
+	//本函数根据idx决定要调用的绘图方法
 	function drawContent(ctx) {
+		//If idx points to an invalid item in templete, just return
 		if (isError || souvenir_obj[idx] == undefined
 				|| souvenir_obj[idx] == null
 				|| souvenir_obj[idx].type == undefined
@@ -119,6 +156,7 @@
 			isFinished = true;
 			return;
 		} else {
+			//Call specific function to finish drawing 
 			if (souvenir_obj[idx].type == "image")
 				drawImg(ctx, idx);
 			else if (souvenir_obj[idx].type == "text")
@@ -133,9 +171,11 @@
 	}
 
 	//Draw an assigned image
+	//绘制制定的图片
 	function drawImg(ctx) {
 		if (isError)
 			return;
+		//Create image and load it
 		image = new Image();
 		image.src = souvenir_obj[idx].url;
 
@@ -143,15 +183,17 @@
 			var d = souvenir_obj[idx].zoom;
 			var moveX = souvenir_obj[idx].moveX;
 			var moveY = souvenir_obj[idx].moveY;
+			//Transform image based on transforming metrix
 			ctx.transform(souvenir_obj[idx].t11, souvenir_obj[idx].t12,
 					souvenir_obj[idx].t21, souvenir_obj[idx].t22,
 					souvenir_obj[idx].t13, souvenir_obj[idx].t23);
-
+			//Draw image under the control of zoom pixels, horizontal translating pixels and verticle translating pixels
 			ctx.drawImage(image, 0 + d - moveX, 0 + d - moveY, image.width - 2
 					* d - moveX, image.height - 2 * d - moveY,
 					R(souvenir_obj[idx].startX), R(souvenir_obj[idx].startY),
 					R(souvenir_obj[idx].drawW), R(souvenir_obj[idx].drawH));
 			idx++;
+			//Draw the next image/text
 			drawContent(ctx);
 		}
 
@@ -162,9 +204,11 @@
 	}
 
 	//Draw text
+	//绘制文字
 	function drawText(ctx) {
 		if (isError)
 			return;
+		//Form style string
 		var font_style = '';
 		if (souvenir_obj[idx].italic)
 			font_style += "italic ";
@@ -174,9 +218,11 @@
 				.round(souvenir_obj[idx].size / ratio * download_ratio))
 				+ 'px "' + souvenir_obj[idx].style + '" ';
 		ctx.font = font_style;
+		//Set color
 		ctx.fillStyle = souvenir_obj[idx].color;
 		/* 		ctx.fillText(souvenir_obj[idx].text, R(souvenir_obj[idx].startX+souvenir_obj[idx].paddingL),
 		 R(souvenir_obj[idx].startY+souvenir_obj[idx].paddingT+souvenir_obj[idx].size), R(souvenir_obj[idx].maxW));  */
+		 //Call draw_long_text() to draw text at specific position considering text auto-wrap and line height
 		draw_long_text(souvenir_obj[idx].text, ctx, R(souvenir_obj[idx].startX
 				+ souvenir_obj[idx].paddingL),
 				R(souvenir_obj[idx].startY + souvenir_obj[idx].paddingT)
@@ -191,14 +237,17 @@
 	}
 
 	//Auxiliary function of auto-wrap, without considering of vertical out-of-range condition
+	//辅助绘图函数，可完成自动换行，并调整行距
 	function draw_long_text(longtext, ctx, startX, startY, max_width, size,
 			line_height) {
 		var line_text = new String();
 		var lineno = 1;
 		for (i = 0; i < longtext.length; i++) {
+			//letters in line_text doesn't take line full width  
 			if (ctx.measureText(line_text).width < max_width)
 				line_text += longtext[i];
 			else {
+				//Letters overflow one line then put previous line onto canvas and create a new line 
 				ctx.fillText(line_text, startX, startY + (lineno - 1) * size
 						* line_height, max_width);
 				line_text = new String();
@@ -210,6 +259,7 @@
 				* line_height, max_width);
 	}
 
+	//裁剪五角星区域的函数，未启用
 	function create5StarClip(context) {
 		var n = 0;
 		var dx = 200;
@@ -228,6 +278,7 @@
 		//context.clip();
 	}
 
+	//绘制原型裁剪区域函数
 	function createCircleClip(ctx, stX, stY, radius) {
 		ctx.beginPath();
 		ctx.arc(stX, stY, radius, 0, Math.PI * 2, true);
@@ -235,11 +286,13 @@
 		//ctx.clip();
 	}
 
+	//绘制矩形区域函数
 	function createRectClip(ctx, stX, stY, width, height) {
 		ctx.rect(stX, stY, width, height);
 		ctx.stroke();
 	}
 
+	//绘制预览图像中可操作区域的外框，使用js写入不同的html脚本以及使用js控制显示的css类来实现
 	function drawBorderRect() {
 		var div_id = document.getElementById("border_rect");
 		var div_str = new String();
@@ -275,6 +328,7 @@
 		div_id.innerHTML = div_str;
 	}
 
+	//选择一张图片时的响应函数，将选中的图片激活，之前选中的图片失活，改变它们的外观
 	function selectImage(idx) {
 		if (selected_image >= 1)
 			document.getElementById("select_img_" + selected_image).className = "img";
@@ -282,10 +336,13 @@
 		document.getElementById("select_img_" + selected_image).className = "img-clicked";
 	}
 
+	//根据ratio计算实际显示在屏幕中的像素值
 	function R(val) {
+		//isDrawing of true indicates the status of drawing, else it means downloading
 		return (isDrawing ? ratio : download_ratio) * val;
 	}
 
+	//本函数通过Ajax从服务器获取选定的album中的照片
 	function queryImageInAlbum(str) {
 		var xmlhttp;
 		var album = document.getElementById("select_album_name").value;
@@ -311,6 +368,7 @@
 		xmlhttp.send();
 	}
 
+	//此函数通过js完成Ajax获取的album中的照片在页面中的显示
 	function assignImage() {
 		var obj = JSON.parse(image_json);
 		var img_content = new String();
@@ -325,12 +383,13 @@
 					+ (i + 1)
 					+ '" src="'
 					+ obj[i].Addr
-					+ '" alt="Image In Album" width="120" height="120"></a><div class="desc" ><a style="color:black">'
+					+ '" alt="'+obj[i].Filename+'" width="120" height="120"></a><div class="desc" ><a style="color:black">'
 					+ obj[i].Filename + '</a></div></div>';
 		}
 		document.getElementById("img_content").innerHTML = img_content;
 	}
 
+	//更换操作面板时的响应函数，完成旧面板的隐藏与新面板的显示，同时进行相关变量的销毁与初始化
 	function changeOperContent(new_content_id, idx) {
 		selected_image = 0;
 		assignImage();
@@ -338,6 +397,7 @@
 		document.getElementById(onshowContentId).style.display = "none";
 		if (proc_position >= 1)
 			document.getElementById("border_rect_" + proc_position).className = "border-rect";
+		//For editing text panel, clear all the value in  forms
 		if (onshowContentId == "edit_text") {
 			document.getElementById("size_" + souvenir_obj[proc_position].size).selected = "";
 			document.getElementById("style_"
@@ -358,6 +418,7 @@
 						document.getElementById("myCanvas").height)
 				+ "px";
 
+		//For eding text panel, set attribute values of text to forms 
 		if (new_content_id == "edit_text") {
 			document.getElementById("text_content").value = souvenir_obj[proc_position].text;
 			document.getElementById("size_" + souvenir_obj[proc_position].size).selected = "selected";
@@ -367,10 +428,12 @@
 			document.getElementById("color1").style.backgroundColor = souvenir_obj[proc_position].color;
 			document.getElementById("line_height_"
 					+ souvenir_obj[proc_position].lineH * 10).selected = "selected";
+			//Set bold button status
 			if (souvenir_obj[proc_position].bold) {
 				document.getElementById("bold_btn").className = "btn btn-default active";
 			} else
 				document.getElementById("bold_btn").className = "btn btn-default";
+			//Set italic button status
 			if (souvenir_obj[proc_position].italic) {
 				document.getElementById("italic_btn").className = "btn btn-default active";
 			} else
@@ -378,6 +441,7 @@
 		}
 	}
 
+	//此函数是向canvas添加照片时的响应函数，即add Image按钮的响应函数
 	function addImage2Canvas() {
 		if (proc_position >= 1 && selected_image >= 1) {
 			souvenir_obj[proc_position].url = document
@@ -386,6 +450,10 @@
 		}
 	}
 
+	//调整页面中各个组件的大小。
+	//基本规则是：保证canvas的高度可以在页面中完整显示，宽度与高度保持原图比例，显示区占总体宽度的80%并居中，
+	//显示区有最小宽度是768px，保证操作面板不会被挤得无法使用，中央操作区域的最小高度由操作面板和canvas的最大值决定
+	//选择图片时图片的展示区域高度由操作面板的高度、以及面板中其他组件的高度共同决定
 	function changeContentSize() {
 		display_width = window.innerWidth
 				|| document.documentElement.clientWidth
@@ -443,7 +511,8 @@
 		drawSouvenir("myCanvas");
 		drawBorderRect();
 	}
-
+	
+	//本函数是用户单击加粗按钮时的响应函数，如果之前是加粗状态就改成不加粗，否则改成加粗，同时对显示按钮的样式进行修改
 	function changeBold() {
 		souvenir_obj[proc_position].bold = !souvenir_obj[proc_position].bold;
 		if (souvenir_obj[proc_position].bold) {
@@ -452,6 +521,7 @@
 			document.getElementById("bold_btn").className = "btn btn-default";
 	}
 
+	//本函数是用户单击倾斜按钮时的响应函数，逻辑与加粗按钮响应函数相似
 	function changeItalic() {
 		souvenir_obj[proc_position].italic = !souvenir_obj[proc_position].italic;
 		if (souvenir_obj[proc_position].italic) {
@@ -460,6 +530,7 @@
 			document.getElementById("italic_btn").className = "btn btn-default";
 	}
 
+	//用户点击save text的响应函数，将文字的绘制属性保存
 	function saveText() {
 		var text = document.getElementById("text_content").value;
 		souvenir_obj[proc_position].text = text;
@@ -471,6 +542,7 @@
 		drawSouvenir("myCanvas");
 	}
 
+	//用户在下载模态框中点击download时的响应函数，将canvas中的内容按照用户选定的尺寸在一个隐藏的canvas中绘制要下载的图片
 	function checkSubmit() {
 		isDrawing = false;
 		document.getElementById("select_size_content").style.display = "none";
@@ -492,12 +564,13 @@
 			download_ratio = ratio;
 		document.getElementById("download_canvas").width = R(souvenir_obj[0].originW);
 		document.getElementById("download_canvas").height = R(souvenir_obj[0].originH);
-		intervalid = setInterval("fun()", 500);
+		intervalid = setInterval("fun()", 200);
 		drawSouvenir("download_canvas");
 
 		//isDrawing = true;
 	}
-
+	
+	//checkSubmit()中计时器的响应函数，在隐藏的canvas中绘制完成后将canvas的转码为png图片并上传
 	function fun() {
 		if (isFinished) {
 			document.getElementById('picture').innerHTML = document
@@ -518,7 +591,12 @@
 			document.getElementById("modal_dialog").style.cssText = "";
 		}
 	}
-
+	
+	//This function calculates several size of downloading which would be displayed on the modal
+	//Calculate width of downloading image based on its height
+	//There are six kinds of resolution: template-original, Super High Definition(verticle 1080px), 
+	//High Definition(verticle 720px), Standard Definition(verticle 576px), Low Definition(verticle 480px),
+	//editing size which is the size of canvas when editing souvenir
 	function calcSouvenirResolution() {
 		document.getElementById("origin_size_text").innerHTML = souvenir_obj[0].originW
 				+ "px * " + souvenir_obj[0].originH + "px";
@@ -530,10 +608,7 @@
 				.round(souvenir_obj[0].originW
 						* (720 / souvenir_obj[0].originH))
 				+ "px * 720px";
-		document.getElementById("SD_size_text").innerHTML = Math
-				.round(souvenir_obj[0].originW
-						* (576 / souvenir_obj[0].originH))
-				+ "px * 576px";
+		document.getElementById("SD_size_text").innerHTML = Math	.round(souvenir_obj[0].originW* (576 / souvenir_obj[0].originH))	+ "px * 576px";
 		document.getElementById("LD_size_text").innerHTML = Math
 				.round(souvenir_obj[0].originW
 						* (480 / souvenir_obj[0].originH))
@@ -735,8 +810,8 @@ div.border-rect-active {
 
 			<div class="oper-content" id="div_oper">
 				<!-- The following content is the one of display hint page -->
-				<div id="hint">
-					<h4 style="text-align: center; margin-top: 45%;">Click on the rectangle area in the preview image to modify its
+				<div id="hint" style="padding-top:40%">
+					<h4 style="text-align: center;">Click on the rectangle area in the preview image to modify its
 						content.</h4>
 				</div>
 

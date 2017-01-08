@@ -20,13 +20,16 @@
 <link href="/Souvenirs/res/css/website.css" rel="stylesheet"
 	type="text/css">
 <script type="text/javascript">
+	/* if flag of Upload_result is true, it means that this time of loading is after one uploading process, which should display its result.*/
 	window.onload = function() {
 		if (${not empty Upload_result})
+			//Display modal dialog of uploading result, using Bootstrap
 		$(function () { $('#myModal').modal({
 			keyboard: true
 		})});
 	}
 	
+	/* This fucntion is used to display filename to input form of pic_name after choosing a picture. */
 	function displayFilename() {
 		var filepath = document.getElementById('upload_file').value;
 		document.getElementById('filename_display').innerHTML = filepath
@@ -35,6 +38,7 @@
 		.substring(filepath.lastIndexOf('\\') + 1, filepath.lastIndexOf('.'));
 	}
 
+	/* Check whether all parameters assigned by user is valid or not. */
 	function checkSubmit() {
 		if (document.getElementById("img_description").value.length > 200) {
 			alert("Too long desctription!");
@@ -64,6 +68,7 @@
 }
 </style>
 </head>
+
 <body>
 	<div class="mainbody">
 		<!-- Nav bar on the top of the screen -->
@@ -97,7 +102,8 @@
 			</div>
 		</div>
 		</nav>
-
+		
+		<!-- Main part of uploading operation panel  -->
 		<div class="mainbody-content">
 			<h3 class="heading">Image Upload</h3>
 
