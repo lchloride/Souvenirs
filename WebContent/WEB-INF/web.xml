@@ -81,7 +81,7 @@
 		<url-pattern>/homepage</url-pattern>
 	</servlet-mapping>
 	<servlet-mapping>
-		<servlet-name>SouvenirsServ</servlet-name>
+		<servlet-name>UserServ</servlet-name>
 		<url-pattern>/logout</url-pattern>
 	</servlet-mapping>
 	<servlet-mapping>
