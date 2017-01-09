@@ -22,13 +22,14 @@ public class Base64 {
   
     // Ω‚√‹  
     public static String decode(String s) {  
+    	s = s.replace(' ', '+');
         byte[] b = null;  
         String result = null;  
         if (s != null) {  
             BASE64Decoder decoder = new BASE64Decoder();  
             try {  
                 b = decoder.decodeBuffer(s);  
-                result = new String(b, "utf-8");  
+                result = new String(b, "utf-8"); 
             } catch (Exception e) {  
                 e.printStackTrace();  
             }  

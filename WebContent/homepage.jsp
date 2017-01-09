@@ -2,6 +2,11 @@
 	pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- homepage页面，是用户的个人主页，这个页面上有少许的展示和较多的指向基本操作的链接 -->
+<!-- 在页面上完成的操作：显示自己的相册；显示别人分享的相册；创建一个新相册；用户注销 -->
+<!-- 可以跳转的链接：用户主页；上传照片；制作Souvenir；显示帮助；个人相册管理；共享相册管理；个人信息维护； 进入小组操作面板-->
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -121,7 +126,6 @@ div.desc {
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	overflow: hidden;
-	white-space: nowrap;
 }
 
 div.desc:hover {
@@ -162,7 +166,9 @@ div.desc a:active {
 }
 </style>
 </head>
+
 <body>
+	<!-- mainbody is the content part except footer of website infomation -->
 	<div class="mainbody">
 		<!-- Nav bar on the top of the screen -->
 		<nav class="navbar navbar-default" role="navigation">
@@ -174,6 +180,8 @@ div.desc a:active {
 				<ul class="nav navbar-nav">
 					<li class="active"><a href="homepage">HomePage</a></li>
 					<li><a href="#">Group</a></li>
+					<li><a href="upload">Upload</a></li>
+					<li><a href="making">Making</a></li>					
 				</ul>
 
 				<ul class="nav navbar-nav navbar-right" style="padding-right: 5%">

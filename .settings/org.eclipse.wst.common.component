@@ -15,6 +15,12 @@
         <dependent-module archiveName="log4j-1.2.17.jar" deploy-path="/WEB-INF/lib" handle="module:/classpath/lib/Souvenirs/WebContent/WEB-INF/lib/log4j-1.2.17.jar">
             <dependency-type>uses</dependency-type>
         </dependent-module>
+        <dependent-module archiveName="commons-fileupload-1.3.2.jar" deploy-path="/WEB-INF/lib" handle="module:/classpath/lib/Souvenirs/WebContent/WEB-INF/lib/commons-fileupload-1.3.2.jar">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="commons-io-2.5.jar" deploy-path="/WEB-INF/lib" handle="module:/classpath/lib/Souvenirs/WebContent/WEB-INF/lib/commons-io-2.5.jar">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <property name="context-root" value="Souvenirs"/>
         <property name="java-output-path" value="/Souvenirs/build/classes"/>
     </wb-module>

@@ -9,8 +9,8 @@ import user.dao.UserDAO;
 
 public class UserManager {
 	private static UserManager user_manager = new UserManager();
-	private Map<String, String> parameter = null;
-	private static UserDAO dao = new UserDAO();
+	//private Map<String, String> parameter = null;
+	private static UserDAO dao = null;
 	private static Logger logger = Logger.getLogger(UserManager.class);
 
 	final int REGISTER_DEFAULT_PARA = 2;// login_username,login_password
@@ -18,18 +18,20 @@ public class UserManager {
 
 	public UserManager() {
 		// TODO Auto-generated constructor stub
-		// dao = new UserDAO();
+		 
 	}
 
-	public void setParameter(Map<String, String> parameter) {
+/*	public void setParameter(Map<String, String> parameter) {
 		this.parameter = parameter;
-	}
+	}*/
 
 	public static UserManager getInstance() {
 		return user_manager;
 	}
 
-	public Map<String, Object> register() {
+	public Map<String, Object> register(Map<String, String> parameter) {
+		if (dao == null)
+			dao = UserDAO.getInstance();
 		Map<String, Object> result = new HashMap<>();
 		// User has already login the system, he/she cannot register
 		if (checkLogin(parameter.get("login_username"), parameter.get("login_password"))) {
@@ -49,11 +51,13 @@ public class UserManager {
 					// Key operation
 					int rs = dao.register(parameter);
 					if (rs == 0) {
-						result.put("DispatchURL", "register.jsp"); // Insert successfully
+						result.put("DispatchURL", "register.jsp"); // Insert
+																	// successfully
 						result.put("Result", true);
 						logger.info("Register succeeded:Username <" + parameter.get("Text_username") + ">");
 					} else {
-						result.put("DispatchURL", "register.jsp");// Insert failed
+						result.put("DispatchURL", "register.jsp");// Insert
+																	// failed
 						result.put("Result", false);
 						result.put("Msg", "Database Error occured, please try again");
 						logger.info("Register failed: Database internal error");
@@ -66,12 +70,16 @@ public class UserManager {
 		return result;
 	}
 
-	public Map<String, Object> login() {
+	public Map<String, Object> login(Map<String, String> parameter) {
+		if (dao == null)
+			dao = UserDAO.getInstance();
 		Map<String, Object> result = new HashMap<>();
 		String text_username = null;
 		String text_password = null;
-		
-		if (!parameter.get("Text_username").isEmpty() || !parameter.get("Text_password").isEmpty()) {
+		if (parameter.get("Text_username") == null || parameter.get("Text_password") == null) {
+			result.put("DispatchURL", "index.jsp");
+			result.put("Redirect", true);
+		} else if (!parameter.get("Text_username").isEmpty() || !parameter.get("Text_password").isEmpty()) {
 			text_username = parameter.get("Text_username");
 			text_password = parameter.get("Text_password");
 			if (parameter.get("login_verifycode_name") == null) {
@@ -81,9 +89,9 @@ public class UserManager {
 				result.put("Msg", "Verify Code is expired!");
 				result.put("Firsttime", false);
 				result.put("VerifyCode", VerifyCode.getVerifyCode());
-				logger.info("User Login Failed: Username <" + text_username+"> with expired verify code.");
+				logger.info("User Login Failed: Username <" + text_username + "> with expired verify code.");
 			} else {
-				//Check verify code input by user
+				// Check verify code input by user
 				if (VerifyCode.checkVerifyCodeAns(parameter.get("login_verifycode_name"),
 						parameter.get("Text_verifycode")))
 					// Fill the login form and click submit, just check what the
@@ -100,20 +108,22 @@ public class UserManager {
 						result.put("Msg", "Username(ID) or password is wrong");
 						result.put("Firsttime", false);
 						result.put("VerifyCode", VerifyCode.getVerifyCode());
-						logger.info("User Login Failed: Username <" + text_username +"> with wrong username(ID) or password.");
+						logger.info("User Login Failed: Username <" + text_username
+								+ "> with wrong username(ID) or password.");
 					}
 				else {
 					result.put("DispatchURL", "index.jsp");
 					result.put("Msg", "Verify code is wrong");
 					result.put("Firsttime", false);
 					result.put("VerifyCode", VerifyCode.getVerifyCode());
-					logger.info("User Login Failed: Username <" + text_username+"> with wrong verify code.");
+					logger.info("User Login Failed: Username <" + text_username + "> with wrong verify code.");
 				}
 			}
 		} else {
 			// the first time load index page, check username and
 			// password stored in session
-			if (checkLogin(parameter.get("login_user_id"), parameter.get("login_username"), parameter.get("login_password"))) {
+			if (checkLogin(parameter.get("login_user_id"), parameter.get("login_username"),
+					parameter.get("login_password"))) {
 				result.put("DispatchURL", "homepage");
 				result.put("Redirect", true);
 				logger.info("User Session Login: Username <" + parameter.get("login_username") + ">");
@@ -129,6 +139,8 @@ public class UserManager {
 	}
 
 	public static boolean checkLogin(String username, String password) {
+		if (dao == null)
+			dao = UserDAO.getInstance();
 		Map<String, String> para = new HashMap<>();
 		para.put("Text_username", username);
 		para.put("Text_password", password);
@@ -140,6 +152,8 @@ public class UserManager {
 	}
 
 	public static boolean checkLogin(Object username, Object password) {
+		if (dao == null)
+			dao = UserDAO.getInstance();
 		Map<String, String> para = new HashMap<>();
 		if (username == null || password == null)
 			return false;
@@ -153,11 +167,14 @@ public class UserManager {
 				return false;
 		}
 	}
-	
+
 	/*
-	 * This method is designed for check session login info, not only username matches password, but also user_id matches username.
+	 * This method is designed for check session login info, not only username
+	 * matches password, but also user_id matches username.
 	 */
 	public static boolean checkLogin(String user_id, String username, String password) {
+		if (dao == null)
+			dao = UserDAO.getInstance();
 		Map<String, String> para = new HashMap<>();
 		para.put("Text_user_id", user_id);
 		para.put("Text_username", username);
@@ -170,14 +187,17 @@ public class UserManager {
 	}
 
 	/*
-	 * This method is designed for check session login info, not only username matches password, but also user_id matches username.
+	 * This method is designed for check session login info, not only username
+	 * matches password, but also user_id matches username.
 	 */
 	public static boolean checkLogin(Object user_id, Object username, Object password) {
+		if (dao == null)
+			dao = UserDAO.getInstance();
 		Map<String, String> para = new HashMap<>();
 		if (user_id == null || username == null || password == null)
 			return false;
 		else {
-			para.put("Text_user_id", (String)user_id);
+			para.put("Text_user_id", (String) user_id);
 			para.put("Text_username", (String) username);
 			para.put("Text_password", (String) password);
 			List<Object> query_result = dao.getLogin(para);
@@ -189,6 +209,8 @@ public class UserManager {
 	}
 
 	public static boolean checkUsername(String username) {
+		if (dao == null)
+			dao = UserDAO.getInstance();
 		Map<String, String> para = new HashMap<>();
 		para.put("Text_username", username);
 		long rs = (long) dao.checkUsername(para).get(0);
@@ -197,15 +219,17 @@ public class UserManager {
 		else if (rs == 1)
 			return true;
 		else {
-			logger.error("Duplicate User: Username <"+username+">");
+			logger.error("Duplicate User: Username <" + username + ">");
 			return true;
 		}
 	}
-	
+
 	public static String getUserIDByName(String username) {
+		if (dao == null)
+			dao = UserDAO.getInstance();
 		try {
 			List<Object> query_result = dao.getUserIDByName(username);
-			return (String)query_result.get(0);
+			return (String) query_result.get(0);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
