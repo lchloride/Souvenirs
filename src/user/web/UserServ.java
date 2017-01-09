@@ -49,7 +49,7 @@ public class UserServ extends HttpServlet {
 		Enumeration<?> paraNames = request.getParameterNames();
 
 		// Put all parameters from request into a Map transferred to
-		// AnimeManager
+		// UserManager
 		while (paraNames.hasMoreElements()) {
 			String paraName = (String) paraNames.nextElement();
 			String[] paraValues = request.getParameterValues(paraName);
@@ -68,20 +68,22 @@ public class UserServ extends HttpServlet {
 				: (String) session.getAttribute("login_verifycode_name"));
 		para.put("register_verifycode_name", session.getAttribute("register_verifycode_name") == null ? ""
 				: (String) session.getAttribute("register_verifycode_name"));
-		// Transfer parameters to AnimeManager
-		//um.setParameter(para);
 
 		Map<String, Object> result = new HashMap<>();
 
-		// Obtain operation
+		// Obtain operation url
 		String query_url = request.getServletPath();
 		query_url = query_url.substring(query_url.lastIndexOf('/') + 1);
 
+		//Call specific method according to query_url
 		if (query_url.contentEquals("register")) {
+			//Register a new user
 			result = um.register(para);
 		} else if (query_url.contentEquals("login")) {
+			//Check validation of user login information 
 			result = um.login(para);
 		} else {
+			//Invalid query_url, redirect to index.jsp
 			result.put("DispatchURL", "index.jsp");
 		}
 
@@ -89,12 +91,15 @@ public class UserServ extends HttpServlet {
 			request.setAttribute(entry.getKey(), entry.getValue());
 		}
 
+		//If login succeeded, put user information into session
 		if (result.containsKey("login_user_id") && result.containsKey("login_username")
 				&& result.containsKey("login_password")) {
 			session.setAttribute("username", result.get("login_username"));
 			session.setAttribute("password", result.get("login_password"));
 			session.setAttribute("user_id", result.get("login_user_id"));
 		}
+		
+		//Set verify code
 		if (result.containsKey("VerifyCode"))
 			session.setAttribute("login_verifycode_name", result.get("VerifyCode"));
 

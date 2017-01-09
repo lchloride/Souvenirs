@@ -64,7 +64,7 @@ public class SouvenirsServ extends HttpServlet {
 			Enumeration<?> paraNames = request.getParameterNames();
 
 			// Put all parameters from request into a Map transferred to
-			// AnimeManager
+			// SouvenirManager
 			while (paraNames.hasMoreElements()) {
 				String paraName = (String) paraNames.nextElement();
 				String[] paraValues = request.getParameterValues(paraName);

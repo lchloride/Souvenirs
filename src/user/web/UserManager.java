@@ -46,13 +46,15 @@ public class UserManager {
 					result.put("Msg", "Duplicate Username");
 					logger.info("Register failed: <" + parameter.get("Text_username") + "> existed.");
 				} else {
-					// Key operation
+					// Key operation of register
 					int rs = dao.register(parameter);
 					if (rs == 0) {
+						//Register succeeded.
 						result.put("DispatchURL", "register.jsp"); // Insert successfully
 						result.put("Result", true);
 						logger.info("Register succeeded:Username <" + parameter.get("Text_username") + ">");
 					} else {
+						//Register failed.
 						result.put("DispatchURL", "register.jsp");// Insert failed
 						result.put("Result", false);
 						result.put("Msg", "Database Error occured, please try again");
@@ -98,8 +100,9 @@ public class UserManager {
 				// Check verify code input by user
 				if (VerifyCode.checkVerifyCodeAns(parameter.get("login_verifycode_name"),
 						parameter.get("Text_verifycode")))
-					// Fill the login form and click submit, just check what the user wrote
+					// Verify code is valid, then check username and password
 					if (checkLogin(text_username, text_password)) {
+						// Checking(login) succeeded
 						result.put("DispatchURL", "homepage");
 						result.put("Redirect", true);
 						result.put("login_username", text_username);
@@ -107,6 +110,7 @@ public class UserManager {
 						result.put("login_user_id", getUserIDByName(text_username));
 						logger.info("User Login Succeeded: Username <" + text_username + ">");
 					} else {
+						//Login failed, username/password is wrong
 						result.put("DispatchURL", "index.jsp");
 						result.put("Msg", "Username(ID) or password is wrong");
 						result.put("Firsttime", false);
@@ -115,6 +119,7 @@ public class UserManager {
 								+ "> with wrong username(ID) or password.");
 					}
 				else {
+					//verify code is wrong
 					result.put("DispatchURL", "index.jsp");
 					result.put("Msg", "Verify code is wrong");
 					result.put("Firsttime", false);
@@ -127,6 +132,7 @@ public class UserManager {
 			// password stored in session
 			if (checkLogin(parameter.get("login_user_id"), parameter.get("login_username"),
 					parameter.get("login_password"))) {
+				//Checking succeed, then automatically login
 				result.put("DispatchURL", "homepage");
 				result.put("Redirect", true);
 				logger.info("User Session Login: Username <" + parameter.get("login_username") + ">");
@@ -141,6 +147,10 @@ public class UserManager {
 		return result;
 	}
 
+	/*
+	 * 检查用户登录信息是否正确<br>
+	 * 本函数只使用username和password，使用在login页面的检查
+	 */
 	public static boolean checkLogin(String username, String password) {
 		if (dao == null)
 			dao = UserDAO.getInstance();
@@ -154,6 +164,10 @@ public class UserManager {
 			return false;
 	}
 
+	/*
+	 * 检查用户登录信息是否正确<br>
+	 * 本函数是上一个函数的重载，使用Object类型username、password，减少在调用函数中Object转String的操作
+	 */
 	public static boolean checkLogin(Object username, Object password) {
 		if (dao == null)
 			dao = UserDAO.getInstance();
@@ -211,6 +225,11 @@ public class UserManager {
 		}
 	}
 
+	/*
+	 * 检查用户名是否存在
+	 * @param username 待检查的用户名
+	 * @result 检查结果，布尔型
+	 */
 	public static boolean checkUsername(String username) {
 		if (dao == null)
 			dao = UserDAO.getInstance();
@@ -227,6 +246,11 @@ public class UserManager {
 		}
 	}
 
+	/*
+	 * 根据username获取user_id
+	 * @param username 待查询的用户名
+	 * @result user_id
+	 */
 	public static String getUserIDByName(String username) {
 		if (dao == null)
 			dao = UserDAO.getInstance();
