@@ -68,6 +68,8 @@ public class ErrorHandler extends HttpServlet {
 			case 500:
 				des_img_path = "/Souvenirs/res/image/500_internal_error.png";
 				description = "Sorry, the server encountered a problem that it cannot response. ";
+				logger.error("ErrorHandler--Description: " + description + ", ErrorCode: " + statusCode + ", Request URI: "
+						+ requestUri);
 				break;
 			default:
 				break;
@@ -77,10 +79,9 @@ public class ErrorHandler extends HttpServlet {
 			description += "Exception Type : " + throwable.getClass().getName() + "</br>";
 			description += "Request URI: " + requestUri + "<br>";
 			description += "Exception Message: " + throwable.getMessage();
+			logger.error("ErrorHandler--Description: " + description);
 		}
-		logger.error("ErrorHandler--Description: " + description + ", ErrorCode: " + statusCode + ", Request URI: "
-				+ requestUri + ", Exception Type: " + throwable.getClass().getName() + ", Exception Message: "
-				+ throwable.getMessage());
+
 		request.setAttribute("Description", description);
 		request.setAttribute("DesImage", des_img_path);
 		request.setAttribute("ErrorCode", statusCode);

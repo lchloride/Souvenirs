@@ -38,7 +38,7 @@ public class UserManager {
 			result.put("Msg", "Already login");
 			logger.info("Register failed: <" + parameter.get("login_username") + "> has already login.");
 		} else {
-			if (parameter.size() > REGISTER_DEFAULT_PARA) {//Large than means there are valid parameters for creating a new user
+			if (parameter.size() > REGISTER_DEFAULT_PARA) {//Large than REGISTER_DEFAULT_PARA means there are valid parameters for creating a new user
 				// Check whether username is duplicated or not
 				if (checkUsername(parameter.get("Text_username"))) {
 					result.put("DispatchURL", "register.jsp");
