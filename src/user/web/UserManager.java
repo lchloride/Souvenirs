@@ -9,8 +9,8 @@ import user.dao.UserDAO;
 
 public class UserManager {
 	private static UserManager user_manager = new UserManager();
-	private Map<String, String> parameter = null;
-	private static UserDAO dao = new UserDAO();
+	//private Map<String, String> parameter = null;
+	private static UserDAO dao = null;
 	private static Logger logger = Logger.getLogger(UserManager.class);
 
 	final int REGISTER_DEFAULT_PARA = 2;// login_username,login_password
@@ -18,18 +18,20 @@ public class UserManager {
 
 	public UserManager() {
 		// TODO Auto-generated constructor stub
-		// dao = new UserDAO();
+		 
 	}
 
-	public void setParameter(Map<String, String> parameter) {
+/*	public void setParameter(Map<String, String> parameter) {
 		this.parameter = parameter;
-	}
+	}*/
 
 	public static UserManager getInstance() {
 		return user_manager;
 	}
 
-	public Map<String, Object> register() {
+	public Map<String, Object> register(Map<String, String> parameter) {
+		if (dao == null)
+			dao = UserDAO.getInstance();
 		Map<String, Object> result = new HashMap<>();
 		// User has already login the system, he/she cannot register
 		if (checkLogin(parameter.get("login_username"), parameter.get("login_password"))) {
@@ -68,7 +70,9 @@ public class UserManager {
 		return result;
 	}
 
-	public Map<String, Object> login() {
+	public Map<String, Object> login(Map<String, String> parameter) {
+		if (dao == null)
+			dao = UserDAO.getInstance();
 		Map<String, Object> result = new HashMap<>();
 		String text_username = null;
 		String text_password = null;
@@ -135,6 +139,8 @@ public class UserManager {
 	}
 
 	public static boolean checkLogin(String username, String password) {
+		if (dao == null)
+			dao = UserDAO.getInstance();
 		Map<String, String> para = new HashMap<>();
 		para.put("Text_username", username);
 		para.put("Text_password", password);
@@ -146,6 +152,8 @@ public class UserManager {
 	}
 
 	public static boolean checkLogin(Object username, Object password) {
+		if (dao == null)
+			dao = UserDAO.getInstance();
 		Map<String, String> para = new HashMap<>();
 		if (username == null || password == null)
 			return false;
@@ -165,6 +173,8 @@ public class UserManager {
 	 * matches password, but also user_id matches username.
 	 */
 	public static boolean checkLogin(String user_id, String username, String password) {
+		if (dao == null)
+			dao = UserDAO.getInstance();
 		Map<String, String> para = new HashMap<>();
 		para.put("Text_user_id", user_id);
 		para.put("Text_username", username);
@@ -181,6 +191,8 @@ public class UserManager {
 	 * matches password, but also user_id matches username.
 	 */
 	public static boolean checkLogin(Object user_id, Object username, Object password) {
+		if (dao == null)
+			dao = UserDAO.getInstance();
 		Map<String, String> para = new HashMap<>();
 		if (user_id == null || username == null || password == null)
 			return false;
@@ -197,6 +209,8 @@ public class UserManager {
 	}
 
 	public static boolean checkUsername(String username) {
+		if (dao == null)
+			dao = UserDAO.getInstance();
 		Map<String, String> para = new HashMap<>();
 		para.put("Text_username", username);
 		long rs = (long) dao.checkUsername(para).get(0);
@@ -211,6 +225,8 @@ public class UserManager {
 	}
 
 	public static String getUserIDByName(String username) {
+		if (dao == null)
+			dao = UserDAO.getInstance();
 		try {
 			List<Object> query_result = dao.getUserIDByName(username);
 			return (String) query_result.get(0);

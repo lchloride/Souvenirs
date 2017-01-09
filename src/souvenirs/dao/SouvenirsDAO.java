@@ -10,7 +10,12 @@ import tool.DB;
 
 public class SouvenirsDAO {
 	private Logger logger = Logger.getLogger(SouvenirsDAO.class);
-
+	private static SouvenirsDAO souvernirs_dao = new SouvenirsDAO();
+	
+	public static SouvenirsDAO getInstance() {
+		return souvernirs_dao;
+	}
+	
 	public List<Object> getAlbumName(String user_id) {
 		List<List<Object>> rs = new ArrayList<List<Object>>();
 		String sql = "SELECT album_name FROM souvenirs.query_available_album where user_id=? order by album_name asc";

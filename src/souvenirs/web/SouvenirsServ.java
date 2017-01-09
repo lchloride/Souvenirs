@@ -77,7 +77,7 @@ public class SouvenirsServ extends HttpServlet {
 			para.put("login_user_id",
 					session.getAttribute("user_id") == null ? "" : (String) session.getAttribute("user_id"));
 
-			sm.setParameter(para);
+			//sm.setParameter(para);
 
 			Map<String, Object> result = new HashMap<>();
 
@@ -86,19 +86,17 @@ public class SouvenirsServ extends HttpServlet {
 			query_url = query_url.substring(query_url.lastIndexOf('/') + 1);
 
 			if (query_url.contentEquals("homepage")) {
-				result = sm.displayContent();
+				result = sm.displayContent(para);
 			} else if (query_url.contentEquals("logout")) {
 				session.invalidate();
 				response.sendRedirect("index.jsp");
 				return;
 			} else if (query_url.contentEquals("formPicture")) {
 				String content = request.getParameter("picture");
-				logger.debug(content.substring(0, 50)+", "+content.substring(content.length()-50));
 				String content_base64 = content.substring(content.indexOf("base64,") + 7,
 						content.length());
-				logger.debug(content_base64.substring(0, 50)+", "+content_base64.substring(content_base64.length()-50));
 				byte[] rs_byte = Base64.decodeBytes(content_base64);
-				logger.debug(content_base64.length() + " " + rs_byte.length);
+				logger.debug("Base64 code length:"+content_base64.length() + ", Image bit length:" + rs_byte.length);
 				try {
 					OutputStream os = null;
 
@@ -123,9 +121,9 @@ public class SouvenirsServ extends HttpServlet {
 				}
 				return;
 			} else if (query_url.contentEquals("making")) {
-				result = sm.makingSouvenirs();
+				result = sm.makingSouvenirs(para);
 			} else if (query_url.contains("AlbumAjax")) {
-				String rs = sm.getImageAddrInAlbum();
+				String rs = sm.getImageAddrInAlbum(para);
 				response.setContentType("text/xml; charset=UTF-8");
 				// 以下两句为取消在本地的缓存
 				response.setHeader("Cache-Control", "no-cache");

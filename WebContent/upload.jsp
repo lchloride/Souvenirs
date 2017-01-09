@@ -34,8 +34,7 @@
 		var filepath = document.getElementById('upload_file').value;
 		document.getElementById('filename_display').innerHTML = filepath
 				.substring(filepath.lastIndexOf('\\') + 1);
-		document.getElementById('pic_name').value = filepath
-		.substring(filepath.lastIndexOf('\\') + 1, filepath.lastIndexOf('.'));
+		document.getElementById('pic_name').value = filepath.substring(filepath.lastIndexOf('\\') + 1, filepath.lastIndexOf('.'));
 	}
 
 	/* Check whether all parameters assigned by user is valid or not. */
@@ -48,6 +47,13 @@
 				|| document.getElementById("upload_file").value == ""
 				|| document.getElementById("upload_file").value == null) {
 			alert("Please choose a file!");
+			return false;
+		}
+		var filepath = document.getElementById('upload_file').value;
+		if (filepath.substring(filepath.lastIndexOf('.') + 1)!="jpg" 
+				&& filepath.substring(filepath.lastIndexOf('.') + 1)!="png" 
+				&& filepath.substring(filepath.lastIndexOf('.') + 1)!="gif")	{
+			alert("Only allow jpg, png and gif image!");
 			return false;
 		}
 		return true;
@@ -102,7 +108,7 @@
 			</div>
 		</div>
 		</nav>
-		
+
 		<!-- Main part of uploading operation panel  -->
 		<div class="mainbody-content">
 			<h3 class="heading">Image Upload</h3>
@@ -183,13 +189,19 @@
 					<h4 class="modal-title" id="myModalLabel">Message</h4>
 				</div>
 				<div class="modal-body">
-					<c:if test="${Upload_result }">Uploading Picture Succeeded!<br><small style="color:#999999"><strong>Album:</strong> ${Album_name }, <strong>Filename:</strong> ${Filename }</small></c:if>
-					<c:if test="${not Upload_result }">Uploading Picture Failed!<br><small style="color:#999999">Error Message: ${Error_msg }</small></c:if>
+					<c:if test="${Upload_result }">Uploading Picture Succeeded!<br>
+						<small style="color: #999999"><strong>Album:</strong>
+							${Album_name }, <strong>Filename:</strong> ${Filename }</small>
+					</c:if>
+					<c:if test="${not Upload_result }">Uploading Picture Failed!<br>
+						<small style="color: #999999">Error Message: ${Error_msg }</small>
+					</c:if>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">Upload
 						Again</button>
-					<button type="button" class="btn btn-primary" onclick="location.href='/Souvenirs/homepage'">Go to
+					<button type="button" class="btn btn-primary"
+						onclick="location.href='/Souvenirs/homepage'">Go to
 						Homepage</button>
 				</div>
 			</div>

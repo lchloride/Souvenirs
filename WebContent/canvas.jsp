@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ page import="java.io.*,java.util.*,java.awt.*"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 
 <!-- canvas页面主要是完成souvenir的绘制与下载，页面的布局会随着souvenir模板的大小以及窗口的大小进行调整 -->
@@ -21,8 +22,9 @@
 
 <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
 <script src="/Souvenirs/res/bootstrap/js/bootstrap.min.js"></script>
-
+<!-- Text Color Picker -->
 <script src="/Souvenirs/res/js/iColorPicker.js" type="text/javascript"></script>
+
 <link href="/Souvenirs/res/css/website.css" rel="stylesheet" type="text/css">
 <script>
 	/*Declarion of useful global variants  */
@@ -54,7 +56,7 @@
 	//This indicates the position where user clicked (in other words, the index of active part in templete)
 	var proc_position = 0;
 	//index of processing templete part when drawing
-	var idx = 1;
+	//var idx = 1;
 	var isError = false;
 	var isDrawing = true;
 	var isFinished = false;
@@ -88,7 +90,7 @@
 		document.getElementById("size").innerHTML = JSON
 				.stringify(souvenir_obj);
 		//Processing first part of templete
-		idx = 1;
+		var idx = 1;
 		isFinished = false;
 		//Loading background image
 		bg = new Image();
@@ -99,13 +101,13 @@
 			//Creating displaying parts
 			drawClip(ctx);
 			//Drawing content
-			drawContent(ctx);
+			drawContent(ctx, idx);
 			if (callback != null && callback != "")
 				callback();
 		}
 
 	}
-	
+
 	//本函数用来绘制要显示的区域。只有在这个区域中的内容才会被显示，其他位置的内容会被隐藏
 	//目前只支持绘制矩形和圆形区域
 	function drawClip(ctx) {
@@ -144,10 +146,10 @@
 		}
 		ctx.clip();
 	}
-	
+
 	//This function is to select proper sub-function of drawing
 	//本函数根据idx决定要调用的绘图方法
-	function drawContent(ctx) {
+	function drawContent(ctx, idx) {
 		//If idx points to an invalid item in templete, just return
 		if (isError || souvenir_obj[idx] == undefined
 				|| souvenir_obj[idx] == null
@@ -172,14 +174,14 @@
 
 	//Draw an assigned image
 	//绘制制定的图片
-	function drawImg(ctx) {
+	function drawImg(ctx, idx) {
 		if (isError)
 			return;
 		//Create image and load it
 		image = new Image();
 		image.src = souvenir_obj[idx].url;
 
-		image.onload = function() {
+		image.onload = (function(idx) {
 			var d = souvenir_obj[idx].zoom;
 			var moveX = souvenir_obj[idx].moveX;
 			var moveY = souvenir_obj[idx].moveY;
@@ -194,8 +196,8 @@
 					R(souvenir_obj[idx].drawW), R(souvenir_obj[idx].drawH));
 			idx++;
 			//Draw the next image/text
-			drawContent(ctx);
-		}
+			drawContent(ctx, idx);
+		})(idx)
 
 		image.onerror = function() {
 			isError = true;
@@ -205,7 +207,7 @@
 
 	//Draw text
 	//绘制文字
-	function drawText(ctx) {
+	function drawText(ctx, idx) {
 		if (isError)
 			return;
 		//Form style string
@@ -222,7 +224,7 @@
 		ctx.fillStyle = souvenir_obj[idx].color;
 		/* 		ctx.fillText(souvenir_obj[idx].text, R(souvenir_obj[idx].startX+souvenir_obj[idx].paddingL),
 		 R(souvenir_obj[idx].startY+souvenir_obj[idx].paddingT+souvenir_obj[idx].size), R(souvenir_obj[idx].maxW));  */
-		 //Call draw_long_text() to draw text at specific position considering text auto-wrap and line height
+		//Call draw_long_text() to draw text at specific position considering text auto-wrap and line height
 		draw_long_text(souvenir_obj[idx].text, ctx, R(souvenir_obj[idx].startX
 				+ souvenir_obj[idx].paddingL),
 				R(souvenir_obj[idx].startY + souvenir_obj[idx].paddingT)
@@ -233,7 +235,7 @@
 						: Math.round(souvenir_obj[idx].size / ratio
 								* download_ratio)), souvenir_obj[idx].lineH);
 		idx++;
-		drawContent(ctx);
+		drawContent(ctx, idx);
 	}
 
 	//Auxiliary function of auto-wrap, without considering of vertical out-of-range condition
@@ -324,6 +326,8 @@
 								+ souvenir_obj[i].paddingB) + 2)
 						+ 'px" onclick="changeOperContent(\'edit_text\', ' + i
 						+ ')"></div></a>';
+			else
+				alert("Internal Error!");
 		}
 		div_id.innerHTML = div_str;
 	}
@@ -358,12 +362,16 @@
 			// IE6, IE5 浏览器执行代码
 			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
 		}
+		//Having a response
 		xmlhttp.onreadystatechange = function() {
+			//Check response status 
 			if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
 				image_json = xmlhttp.responseText;
 			}
+			//Assign displaying image using image_json 
 			assignImage();
 		}
+		//From URL and create connection
 		xmlhttp.open("GET", "AlbumAjax?album_name=" + album, true);
 		xmlhttp.send();
 	}
@@ -383,7 +391,9 @@
 					+ (i + 1)
 					+ '" src="'
 					+ obj[i].Addr
-					+ '" alt="'+obj[i].Filename+'" width="120" height="120"></a><div class="desc" ><a style="color:black">'
+					+ '" alt="'
+					+ obj[i].Filename
+					+ '" width="120" height="120"></a><div class="desc" ><a style="color:black">'
 					+ obj[i].Filename + '</a></div></div>';
 		}
 		document.getElementById("img_content").innerHTML = img_content;
@@ -397,7 +407,7 @@
 		document.getElementById(onshowContentId).style.display = "none";
 		if (proc_position >= 1)
 			document.getElementById("border_rect_" + proc_position).className = "border-rect";
-		//For editing text panel, clear all the value in  forms
+		//For editing text panel, clear all the value in forms
 		if (onshowContentId == "edit_text") {
 			document.getElementById("size_" + souvenir_obj[proc_position].size).selected = "";
 			document.getElementById("style_"
@@ -511,7 +521,7 @@
 		drawSouvenir("myCanvas");
 		drawBorderRect();
 	}
-	
+
 	//本函数是用户单击加粗按钮时的响应函数，如果之前是加粗状态就改成不加粗，否则改成加粗，同时对显示按钮的样式进行修改
 	function changeBold() {
 		souvenir_obj[proc_position].bold = !souvenir_obj[proc_position].bold;
@@ -551,13 +561,13 @@
 		if (document.getElementById("origin_size").checked)
 			download_ratio = 1;
 		else if (document.getElementById("SHD_size").checked)
-			download_ratio = 1080/souvenir_obj[0].originH;
+			download_ratio = 1080 / souvenir_obj[0].originH;
 		else if (document.getElementById("HD_size").checked)
-			download_ratio = 720/souvenir_obj[0].originH;
+			download_ratio = 720 / souvenir_obj[0].originH;
 		else if (document.getElementById("SD_size").checked)
-			download_ratio = 576/souvenir_obj[0].originH;
+			download_ratio = 576 / souvenir_obj[0].originH;
 		else if (document.getElementById("LD_size").checked)
-			download_ratio = 480/souvenir_obj[0].originH;
+			download_ratio = 480 / souvenir_obj[0].originH;
 		else if (document.getElementById("edit_size").checked)
 			download_ratio = ratio;
 		else
@@ -569,7 +579,7 @@
 
 		//isDrawing = true;
 	}
-	
+
 	//checkSubmit()中计时器的响应函数，在隐藏的canvas中绘制完成后将canvas的转码为png图片并上传
 	function fun() {
 		if (isFinished) {
@@ -585,13 +595,13 @@
 			clearInterval(intervalid);
 			document.getElementById('making_form').submit();
 			isDrawing = true;
-			$('#myModal').modal('toggle'); 
+			$('#myModal').modal('toggle');
 			document.getElementById("loading_content").style.display = "none";
 			document.getElementById("select_size_content").style.display = "block";
 			document.getElementById("modal_dialog").style.cssText = "";
 		}
 	}
-	
+
 	//This function calculates several size of downloading which would be displayed on the modal
 	//Calculate width of downloading image based on its height
 	//There are six kinds of resolution: template-original, Super High Definition(verticle 1080px), 
@@ -608,7 +618,10 @@
 				.round(souvenir_obj[0].originW
 						* (720 / souvenir_obj[0].originH))
 				+ "px * 720px";
-		document.getElementById("SD_size_text").innerHTML = Math	.round(souvenir_obj[0].originW* (576 / souvenir_obj[0].originH))	+ "px * 576px";
+		document.getElementById("SD_size_text").innerHTML = Math
+				.round(souvenir_obj[0].originW
+						* (576 / souvenir_obj[0].originH))
+				+ "px * 576px";
 		document.getElementById("LD_size_text").innerHTML = Math
 				.round(souvenir_obj[0].originW
 						* (480 / souvenir_obj[0].originH))
@@ -758,49 +771,39 @@ div.border-rect-active {
 			</div>
 			<div>
 				<ul class="nav navbar-nav">
-					<li class="active">
-						<a href="homepage">HomePage</a>
-					</li>
-					<li>
-						<a href="#">Group</a>
-					</li>
-					<li>
-						<a href="#">Upload</a>
-					</li>
+					<li class="active"><a href="homepage">HomePage</a></li>
+					<li><a href="#">Group</a></li>
+					<li><a href="#">Upload</a></li>
 				</ul>
 
 				<ul class="nav navbar-nav navbar-right" style="padding-right: 5%">
-					<li>
-						<img class="navbar-form" src="${empty Avatar?'/Souvenirs/res/image/default_avatar.png':Avatar}" alt="avatar" width="32"
-							height="32">
-					</li>
-					<li class="dropdown">
-						<a href="#" class="dropdown-toggle" data-toggle="dropdown">${sessionScope.username} <b class="caret"></b>
-						</a>
+					<li><img class="navbar-form" src="${empty Avatar?'/Souvenirs/res/image/default_avatar.png':Avatar}"
+						alt="avatar" width="32" height="32"></li>
+					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">${sessionScope.username} <b
+							class="caret"></b>
+					</a>
 						<ul class="dropdown-menu">
-							<li>
-								<a href="account.jsp">Account</a>
-							</li>
+							<li><a href="account.jsp">Account</a></li>
 							<li class="divider"></li>
-							<li>
-								<a href="logout">Logout</a>
-							</li>
-						</ul>
-					</li>
+							<li><a href="logout">Logout</a></li>
+						</ul></li>
 				</ul>
 			</div>
 		</div>
 		</nav>
 
 		<form class="from" role="form" action="formPicture" method="post" id="making_form">
-			<!-- 			<input type="hidden" value="" id="picture" name="picture" /> -->
+			<!-- Hidden textarea for storing base64 code of downloading image -->
 			<textarea id="picture" style="display: none" name="picture"></textarea>
-			<textarea id="picture1" style="display: none" name="picture1"></textarea>
+
 			<div id="div_canvas">
-				<canvas id="myCanvas" width="400" height="300" style="border:1px solid #c3c3c3;"> Sorry, your browser does not
-				support HTML5 canvas tag, we suggest using Chrome or Firefox to achieve best experience. </canvas>
+				<canvas id="myCanvas" width="400" height="300" style="border:1px solid #c3c3c3;"> Sorry, your browser does
+				not support HTML5 canvas tag, we suggest using Chrome or Firefox to achieve best experience. </canvas>
+				<!-- Hidden canvas for drawing downloading image in assigned size -->
 				<canvas id="download_canvas" width="400" height="300" style="display:none"></canvas>
+				<!-- Show border of each component -->
 				<div id="border_rect"></div>
+				<!-- Download Button -->
 				<div>
 					<input type="button" class="btn btn-primary " value="Make Souvenir" id="submit_btn" data-toggle="modal"
 						data-target="#myModal" />
@@ -810,9 +813,8 @@ div.border-rect-active {
 
 			<div class="oper-content" id="div_oper">
 				<!-- The following content is the one of display hint page -->
-				<div id="hint" style="padding-top:40%">
-					<h4 style="text-align: center;">Click on the rectangle area in the preview image to modify its
-						content.</h4>
+				<div id="hint" style="padding-top: 40%">
+					<h4 style="text-align: center;">Click on the rectangle area in the preview image to modify its content.</h4>
 				</div>
 
 				<!-- The following content is the one of selecting a picture from album -->
@@ -820,8 +822,8 @@ div.border-rect-active {
 					<h4>Select Pictures from Album</h4>
 
 					<div class="form-group">
-						<label for="name">Album</label>
-						<select class="form-control" name="Select_album_name" onchange="queryImageInAlbum()" id="select_album_name">
+						<label for="name">Album</label> <select class="form-control" name="Select_album_name"
+							onchange="queryImageInAlbum()" id="select_album_name">
 							<c:forEach var="album_name" items="${Album_List}">
 								<option>${album_name }</option>
 							</c:forEach>
@@ -837,7 +839,8 @@ div.border-rect-active {
 
 					<!-- Add button -->
 					<div style="margin-top: 10px;">
-						<button class="btn-sm btn-primary" id="add_pic_btn" type="button" onclick="addImage2Canvas()">Add Selected Image</button>
+						<button class="btn-sm btn-primary" id="add_pic_btn" type="button" onclick="addImage2Canvas()">Add
+							Selected Image</button>
 					</div>
 				</div>
 
@@ -847,11 +850,13 @@ div.border-rect-active {
 					<div class="form-group">
 						<label for="name">Input your words below </label>
 						<textarea id="text_content" class="form-control" rows="3" style="width: 100%"></textarea>
-						<span class="help-block"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> Notice: Over-long
-							text may be displayed improperly.</span>
+						<span class="help-block"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> Notice:
+							Over-long text may be displayed improperly.</span>
 					</div>
 
 					<h5 style="font-weight: bold">Set Attributes</h5>
+					
+					<!-- Choose fonts -->
 					<div class="row">
 						<div class="col-sm-7 col-md-4 col-lg-4 narrow-col">
 							<div class="form-group">
@@ -862,10 +867,25 @@ div.border-rect-active {
 									<option id="style_Micro">Microsoft YaHei UI</option>
 									<option id="style_Times">Times New Roman</option>
 									<option id="style_Verda">Verdana</option>
+									<%
+										Locale loc = request.getLocale();
+										//out.println(loc.toString());
+/* 										String[] fontnames = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames(loc);//获得当前系统字体  
+										for (int i=0; i<fontnames.length; i++) {
+											out.println("<option id='style_'>"+fontnames[i]+"</option>");
+										} */
+										if (loc.toString().compareTo("zh_CN") == 0) {
+											out.println("<option id='style_Verda'>宋体</option>");
+											out.println("<option id='style_Verda'>楷体</option>");
+										} else if (loc.toString().compareTo("ja_JP") == 0) {
+											out.println("<option id='style_Verda'>Yu Mincho</option>");
+										}
+									%>
 								</select>
 							</div>
 						</div>
 
+						<!-- Choose Size -->
 						<div class="col-sm-5 col-md-4  col-lg-2 narrow-col">
 							<div class="form-group">
 								<select class="form-control" id="size_select">
@@ -877,12 +897,16 @@ div.border-rect-active {
 									<option id="size_16">16</option>
 									<option id="size_18">18</option>
 									<option id="size_20">20</option>
+									<option id="size_22">22</option>
+									<option id="size_24">24</option>
+									<option id="size_28">28</option>
+									<option id="size_32">32</option>
 								</select>
 							</div>
 						</div>
 
 						<div class="clearfix visible-xs"></div>
-
+						<!-- Choose text color -->
 						<div class="col-sm-7 col-md-4 col-lg-3 narrow-col">
 							<div class="form-group">
 								<input id="color1" class="iColorPicker form-control" type="text" value="#000000"
@@ -892,25 +916,28 @@ div.border-rect-active {
 					</div>
 
 					<div class="row">
+						<!-- Bold Button -->
 						<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 narrow-col">
 							<button type="button" id="bold_btn" class="btn btn-default" aria-label="Left Align" onclick="changeBold()"
 								style="margin-top: 5px;">
 								<span class="glyphicon glyphicon-bold" aria-hidden="true"></span>
 							</button>
-
+							<!-- Italic Button -->
 							<button type="button" id="italic_btn" class="btn btn-default" aria-label="Left Align" onclick="changeItalic()"
 								style="margin-top: 5px;">
 								<span class="glyphicon glyphicon-italic" aria-hidden="true"></span>
 							</button>
 						</div>
 
+						<!-- Choose Line Height -->
 						<div class="col-xs-8 col-sm-7 col-md-7 col-lg-6 narrow-col">
 							<!-- 							<div class="row">
 								<div class="col-xs-5 col-sm-5 col-md-5 col-lg-4 narrow-col">Line
 									Height</div>
 								<div class="col-xs-6 narrow-col"> -->
-							<span style="float: left; padding: 10px">Line Height</span>
-							<select class="form-control" id="line_height_select" style="float: left; width: 50%"
+								
+							<span style="float: left; padding: 10px">Line Height</span> <select class="form-control" id="line_height_select"
+								style="float: left; width: 50%"
 								onchange="souvenir_obj[proc_position].lineH=parseFloat(document.getElementById('line_height_select').value)">
 								<option id="line_height_10">1</option>
 								<option id="line_height_15">1.5</option>
@@ -938,52 +965,50 @@ div.border-rect-active {
 	<div class="footer">Copyright &copy; 2016 Souvenirs, All Rights Reserved.</div>
 
 	<!-- 模态框（Modal） -->
-	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" >
-		<div class="modal-dialog"  id="modal_dialog">
-			<div class="modal-content"  style="display:block" id="select_size_content">
+	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog" id="modal_dialog">
+			<div class="modal-content" style="display: block" id="select_size_content">
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
 					<h4 class="modal-title" id="myModalLabel">Select Souvenir Size</h4>
 				</div>
 
 				<div class="modal-body">
-					<div class="radio" style="margin-bottom:10px;padding-bottom:10px;border-bottom-style:solid;border-width:1px;border-color:#999999;">
-						<label>
-							<input type="radio" name="optionsRadios" id="origin_size" value="origin_size" >
-							Origin Resolution (<span id="origin_size_text"></span>)
+					<div class="radio"
+						style="margin-bottom: 10px; padding-bottom: 10px; border-bottom-style: solid; border-width: 1px; border-color: #999999;">
+						<label> <input type="radio" name="optionsRadios" id="origin_size" value="origin_size"> Origin
+							Resolution (<span id="origin_size_text"></span>)
 						</label>
 					</div>
 					<div class="radio">
-						<label>
-							<input type="radio" name="optionsRadios" id="SHD_size" value="SHD_size">
-							Super High Resolution (<span id="SHD_size_text"></span>)
+						<label> <input type="radio" name="optionsRadios" id="SHD_size" value="SHD_size"> Super High
+							Resolution (<span id="SHD_size_text"></span>)
 						</label>
 					</div>
 					<div class="radio">
-						<label>
-							<input type="radio" name="optionsRadios" id="HD_size" value="HD_size" checked>
-							High Resolution(<span id="HD_size_text"></span>)
+						<label> <input type="radio" name="optionsRadios" id="HD_size" value="HD_size" checked> High
+							Resolution(<span id="HD_size_text"></span>)
 						</label>
 					</div>
 					<div class="radio">
-						<label>
-							<input type="radio" name="optionsRadios" id="SD_size" value="SD_size">
-							Standard Resolution (<span id="SD_size_text"></span>)
+						<label> <input type="radio" name="optionsRadios" id="SD_size" value="SD_size"> Standard Resolution
+							(<span id="SD_size_text"></span>)
 						</label>
 					</div>
-					<div class="radio" style="margin-bottom:10px;padding-bottom:10px;border-bottom-style:solid;border-width:1px;border-color:#999999">
-						<label>
-							<input type="radio" name="optionsRadios" id="LD_size" value="LD_size">
-							Low Resolution (<span id="LD_size_text"></span>)
+					<div class="radio"
+						style="margin-bottom: 10px; padding-bottom: 10px; border-bottom-style: solid; border-width: 1px; border-color: #999999">
+						<label> <input type="radio" name="optionsRadios" id="LD_size" value="LD_size"> Low Resolution (<span
+							id="LD_size_text"></span>)
 						</label>
 					</div>
 					<div class="radio">
-						<label>
-							<input type="radio" name="optionsRadios" id="edit_size" value="edit_size">
-							Resolution of Editing Image (<span id="edit_size_text"></span>)
+						<label> <input type="radio" name="optionsRadios" id="edit_size" value="edit_size"> Resolution of
+							Editing Image (<span id="edit_size_text"></span>)
 						</label>
 					</div>
-					<h5><strong>Notice:</strong></h5>
+					<h5>
+						<strong>Notice:</strong>
+					</h5>
 					<ul>
 						<li>Image components with low resolution may be obscure when making a high-resolution souvenir.</li>
 						<li>Resolution of HD or above is recommended for printing and postcard making.</li>
@@ -995,8 +1020,8 @@ div.border-rect-active {
 					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
 				</div>
 			</div>
-			
-			<div class="modal-content" id="loading_content" style="display:none">
+
+			<div class="modal-content" id="loading_content" style="display: none">
 				<img src="/Souvenirs/res/image/loading.gif" width="400" height="300">
 			</div>
 			<!-- /.modal-content -->

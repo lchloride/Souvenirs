@@ -13,26 +13,26 @@ import tool.ImageLoader;
 
 public class SouvenirsManager {
 	private static SouvenirsManager souvenirs_manager = new SouvenirsManager();
-	private Map<String, String> parameter = null;
+	//private Map<String, String> parameter = null;
 	private static Logger logger = Logger.getLogger(SouvenirsManager.class);
-	SouvenirsDAO dao = null;
+	private SouvenirsDAO dao = null;
 	final int OWNER_ID = 0;
 	final int OWNER_ALBUM_NAME = 1;
 	final int OWNER_FILENAME = 2;
 	
 	public SouvenirsManager() {
-		dao = new SouvenirsDAO();
+		dao = SouvenirsDAO.getInstance();
 	}
 	
-	public void setParameter(Map<String, String> parameter) {
+/*	public void setParameter(Map<String, String> parameter) {
 		this.parameter = parameter;
-	}
+	}*/
 	
 	public static SouvenirsManager getInstance() {
 		return souvenirs_manager;
 	}
 	
-	public Map<String, Object> displayContent() {
+	public Map<String, Object> displayContent(Map<String, String> parameter) {
 		Map<String, Object> result = new HashMap<>();
 		List<String> para = new ArrayList<>();
 		para.add("user");
@@ -43,13 +43,13 @@ public class SouvenirsManager {
 		return result;
 	}
 
-	public Map<String, Object> makingSouvenirs() {
+	public Map<String, Object> makingSouvenirs(Map<String, String> parameter) {
 		Map<String, Object> result = new HashMap<>();
 		if (!parameter.containsKey("query_type")){
 			List<Object> album_name_list = dao.getAlbumName(parameter.get("login_user_id"));
 			result.put("Album_List", album_name_list);
 			parameter.put("album_name", (String)album_name_list.get(0));
-			result.put("Image_JSON", getImageAddrInAlbum());
+			result.put("Image_JSON", getImageAddrInAlbum(parameter));
 			result.put("DispatchURL", "canvas.jsp");
 		}else {
 			result.put("DispatchURL", "canvas.jsp");
@@ -57,7 +57,7 @@ public class SouvenirsManager {
 		return result;
 	}
 	
-	public String getImageAddrInAlbum() {
+	public String getImageAddrInAlbum(Map<String, String> parameter) {
 		List<List<Object>> image_list = dao.getPictureAddrInAlbum(parameter.get("login_user_id"), parameter.get("album_name"));
 		List<Map<String, String>> image_addr_list = new ArrayList<>();
 		for (List<Object> list : image_list) {

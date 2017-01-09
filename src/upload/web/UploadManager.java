@@ -1,7 +1,6 @@
 package upload.web;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,31 +13,21 @@ import upload.dao.UploadDAO;
 
 public class UploadManager {
 	private static UploadManager upload_manager = new UploadManager();
-	private Map<String, String> parameter = null;
 	private static Logger logger = Logger.getLogger(UploadManager.class);
 	private UploadDAO dao = null;
-	private FileItem file_handle = null;
 	final int OWNER_ID = 0;
 	final int OWNER_ALBUM_NAME = 1;
 	final int OWNER_FILENAME = 2;
 
 	public UploadManager() {
-		dao = new UploadDAO();
-	}
-
-	public void setParameter(Map<String, String> parameter) {
-		this.parameter = parameter;
-	}
-
-	public void setFile_handle(FileItem file_handle) {
-		this.file_handle = file_handle;
+		dao = UploadDAO.getInstance();
 	}
 
 	public static UploadManager getInstance() {
 		return upload_manager;
 	}
 
-	public Map<String, Object> uploadPicture() {
+	public Map<String, Object> uploadPicture(Map<String, String> parameter, FileItem file_handle) {
 		// TODO Auto-generated method stub
 		Map<String, String> para = new HashMap<>();
 		Map<String, Object> result = new HashMap<>();
@@ -70,7 +59,7 @@ public class UploadManager {
 			if (!uploadDir.exists()) {
 				logger.debug(uploadDir.mkdirs());
 			}
-System.getenv();
+
 			String fileName = new File(para.get("filename")).getName();
 			System.out.println("filename:"+fileName);
 			String filePath = null;
@@ -86,7 +75,7 @@ System.getenv();
 				// TODO Auto-generated catch block
 				//e.printStackTrace();
 				parameter.put("filename", para.get("filename"));
-				if ((boolean) delPicture().get("Delete_result")) {
+				if ((boolean) delPicture(parameter).get("Delete_result")) {
 					logger.info("User(id=<" + parameter.get("login_user_id")
 							+ ">) deleted the uploaded picture since there are something wrong when writing files.");
 				} else {
@@ -108,7 +97,7 @@ System.getenv();
 		return result;
 	}
 
-	public Map<String, Object> displayContent() {
+	public Map<String, Object> displayContent(Map<String, String> parameter) {
 		Map<String, Object> result = new HashMap<>();
 		// Obtain album list
 		List<Object> album_name_list = dao.getAlbumName(parameter.get("login_user_id"));
@@ -116,7 +105,7 @@ System.getenv();
 		return result;
 	}
 
-	public Map<String, Object> delPicture() {
+	public Map<String, Object> delPicture(Map<String, String> parameter) {
 		Map<String, String> para = new HashMap<>();
 		Map<String, Object> result = new HashMap<>();
 		para.put("user_id", parameter.get("login_user_id"));
