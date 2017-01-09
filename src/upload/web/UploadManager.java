@@ -11,6 +11,9 @@ import org.apache.log4j.Logger;
 import tool.PropertyOper;
 import upload.dao.UploadDAO;
 
+/*
+ * Upload Image Operator
+ */
 public class UploadManager {
 	private static UploadManager upload_manager = new UploadManager();
 	private static Logger logger = Logger.getLogger(UploadManager.class);
@@ -20,17 +23,33 @@ public class UploadManager {
 	final int OWNER_FILENAME = 2;
 
 	public UploadManager() {
-		dao = UploadDAO.getInstance();
+		
 	}
 
+	/*
+	 * 获取UploadManager单例对象
+	 * @return UploadManager对象
+	 */
 	public static UploadManager getInstance() {
 		return upload_manager;
 	}
 
+	/*
+	 * 上传一张照片，完成两个子操作组成的原子操作：向数据库中添加一条记录；将文件写入磁盘<br>
+	 * 向数据库添加失败则不可写文件；文件写入失败需要将添加的那条记录删除
+	 * @param parameter 从Servlet传来的前端表单值
+	 * @param file_handle 文件操作句柄
+	 * @return 发送给前端的参数key-value对集合
+	 */
 	public Map<String, Object> uploadPicture(Map<String, String> parameter, FileItem file_handle) {
 		// TODO Auto-generated method stub
+		if (dao == null)
+			dao = UploadDAO.getInstance();
+		
 		Map<String, String> para = new HashMap<>();
 		Map<String, Object> result = new HashMap<>();
+		
+		//Prepare parameters for querying album name and adding image 
 		para.put("user_id", parameter.get("login_user_id"));
 		para.put("album_name", parameter.get("select_album_name"));
 		String origin_filename = parameter.get("origin_filename");
@@ -38,66 +57,86 @@ public class UploadManager {
 		para.put("format", format);
 		para.put("filename", parameter.get("pic_name") + "." + format);
 		para.put("img_description", parameter.get("img_description"));
+		
+		//Query album_name of specific user
 		List<Object> album_name_list = dao.getAlbumName(parameter.get("login_user_id"));
+		
 		result.put("Album_list", album_name_list);
+		
+		//Add a row of image into DB 
 		Map<String, Object> sql_exec_result = dao.addPicture(para);
 		logger.debug(sql_exec_result.get("process_state")+", "+sql_exec_result.get("affect_row_count"));
+		
+		//Check result of adding operation
 		if (!(boolean) sql_exec_result.get("process_state")) {
+			//Adding failed
 			result.put("Upload_result", false);
 			result.put("Error_msg", sql_exec_result.get("error_msg"));
 			logger.info("User failed to upload picture, error:<" + sql_exec_result.get("error_msg")
 					+ "> with parameters:<" + parameter + ">");
 		} else {
-			// 构造临时路径来存储上传的文件
-			// 这个路径相对当前应用的目录
+			// Adding succeeded
+			// Form absolute file path 
 			String uploadPath = PropertyOper.GetValueByKey("souvenirs.properties", "data_path") + File.separator
 					+ para.get("user_id") + File.separator + para.get("album_name");
 
-			// 如果目录不存在则创建
+			// Create path if it does not exist
 			File uploadDir = new File(uploadPath);
 			logger.debug("upload_path:"+uploadDir.getPath()+" "+uploadDir.exists());
 			if (!uploadDir.exists()) {
 				logger.debug(uploadDir.mkdirs());
 			}
-
+			
+			//Obtain filename and generate whole file path for writting
 			String fileName = new File(para.get("filename")).getName();
 			System.out.println("filename:"+fileName);
 			String filePath = null;
 			filePath = (uploadPath + File.separator + fileName);
+			
 			//System.getProperties().list(System.out);
+			//Create new file
 			File storeFile = new File(filePath);
-			// 在控制台输出文件的上传路径
-			System.out.println(filePath);
-			// 保存文件到硬盘
+			logger.debug(filePath);
+
+			// Save image to disk
 			try {
 				file_handle.write(storeFile);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
-				//e.printStackTrace();
+				//Delete added row of image if there is exception when writing image
 				parameter.put("filename", para.get("filename"));
 				if ((boolean) delPicture(parameter).get("Delete_result")) {
 					logger.info("User(id=<" + parameter.get("login_user_id")
 							+ ">) deleted the uploaded picture since there are something wrong when writing files.");
 				} else {
+					// Deletion failed, there is uniformity between database and file data
 					logger.error("User(id=<" + parameter.get("login_user_id")
 							+ ">) failed to delete the uploaded picture although there are something wrong when writing files, which leads to inconsistency in database!");
 				}
+				// Set error message and quit
 				result.put("Upload_result", false);
 				result.put("Error_msg", e.getMessage());
 				logger.info("User failed to write uploading picture, error:<" + e.getMessage() + "> with parameters:<"
 						+ parameter + ">");
 				return result;
 			}
+			//Set success message
 			result.put("Album_name", para.get("album_name"));
 			result.put("Filename", para.get("filename"));
 			result.put("Upload_result", true);
 			logger.info("User(id="+parameter.get("login_user_id")+") uploaded a picture. Parameters:<"+parameter+">");
-			// request.setAttribute("message", "文件上传成功!");
 		}
 		return result;
 	}
-
+	
+	/*
+	 * 在首次打开upload页面的时候，返回该用户的相册名列表
+	 * @param parameter 前端传来的参数
+	 * @return 发送给前端的参数表
+	 */
 	public Map<String, Object> displayContent(Map<String, String> parameter) {
+		if (dao == null)
+			dao = UploadDAO.getInstance();
 		Map<String, Object> result = new HashMap<>();
 		// Obtain album list
 		List<Object> album_name_list = dao.getAlbumName(parameter.get("login_user_id"));
@@ -105,7 +144,14 @@ public class UploadManager {
 		return result;
 	}
 
+	/*
+	 * 删除一张照片
+	 * @param parameter 要删除的相片的主键(user_id, album_name, filename)的key-value对
+	 * @return 删除结果，参考tool.DB的execSQLUpdate方法
+	 */
 	public Map<String, Object> delPicture(Map<String, String> parameter) {
+		if (dao == null)
+			dao = UploadDAO.getInstance();
 		Map<String, String> para = new HashMap<>();
 		Map<String, Object> result = new HashMap<>();
 		para.put("user_id", parameter.get("login_user_id"));

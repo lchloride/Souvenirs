@@ -24,14 +24,13 @@ public class SouvenirsManager {
 		dao = SouvenirsDAO.getInstance();
 	}
 	
-/*	public void setParameter(Map<String, String> parameter) {
-		this.parameter = parameter;
-	}*/
-	
 	public static SouvenirsManager getInstance() {
 		return souvenirs_manager;
 	}
 	
+	/*
+	 * 显示用户主页，获取相册的信息。未完成
+	 */
 	public Map<String, Object> displayContent(Map<String, String> parameter) {
 		Map<String, Object> result = new HashMap<>();
 		List<String> para = new ArrayList<>();
@@ -43,6 +42,11 @@ public class SouvenirsManager {
 		return result;
 	}
 
+	/*
+	 * 首次打开making页面，完成初始化部分内容的显示
+	 * @param 前端传来的参数
+	 * @return 操作完成发送给前端的参数
+	 */
 	public Map<String, Object> makingSouvenirs(Map<String, String> parameter) {
 		Map<String, Object> result = new HashMap<>();
 		if (!parameter.containsKey("query_type")){
@@ -57,6 +61,11 @@ public class SouvenirsManager {
 		return result;
 	}
 	
+	/*
+	 * 获取特定相册中的所有图片地址，并组成json字符串
+	 * @param parameter 前端传来的参数
+	 * @return 相册中所有图片名字和地址所组成的json字符串
+	 */
 	public String getImageAddrInAlbum(Map<String, String> parameter) {
 		List<List<Object>> image_list = dao.getPictureAddrInAlbum(parameter.get("login_user_id"), parameter.get("album_name"));
 		List<Map<String, String>> image_addr_list = new ArrayList<>();

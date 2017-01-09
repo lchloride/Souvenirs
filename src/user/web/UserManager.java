@@ -9,10 +9,8 @@ import user.dao.UserDAO;
 
 public class UserManager {
 	private static UserManager user_manager = new UserManager();
-	//private Map<String, String> parameter = null;
 	private static UserDAO dao = null;
 	private static Logger logger = Logger.getLogger(UserManager.class);
-
 	final int REGISTER_DEFAULT_PARA = 2;// login_username,login_password
 	final int LOGIN_DEFAULT_PARA = 2;// login_username, login_password
 
@@ -21,14 +19,14 @@ public class UserManager {
 		 
 	}
 
-/*	public void setParameter(Map<String, String> parameter) {
-		this.parameter = parameter;
-	}*/
-
 	public static UserManager getInstance() {
 		return user_manager;
 	}
 
+	/*
+	 * 注册操作
+	 * @param parameter 前端传来的参数表，包括用户名/密码
+	 */
 	public Map<String, Object> register(Map<String, String> parameter) {
 		if (dao == null)
 			dao = UserDAO.getInstance();
@@ -40,7 +38,7 @@ public class UserManager {
 			result.put("Msg", "Already login");
 			logger.info("Register failed: <" + parameter.get("login_username") + "> has already login.");
 		} else {
-			if (parameter.size() > REGISTER_DEFAULT_PARA) {
+			if (parameter.size() > REGISTER_DEFAULT_PARA) {//Large than means there are valid parameters for creating a new user
 				// Check whether username is duplicated or not
 				if (checkUsername(parameter.get("Text_username"))) {
 					result.put("DispatchURL", "register.jsp");
@@ -51,13 +49,11 @@ public class UserManager {
 					// Key operation
 					int rs = dao.register(parameter);
 					if (rs == 0) {
-						result.put("DispatchURL", "register.jsp"); // Insert
-																	// successfully
+						result.put("DispatchURL", "register.jsp"); // Insert successfully
 						result.put("Result", true);
 						logger.info("Register succeeded:Username <" + parameter.get("Text_username") + ">");
 					} else {
-						result.put("DispatchURL", "register.jsp");// Insert
-																	// failed
+						result.put("DispatchURL", "register.jsp");// Insert failed
 						result.put("Result", false);
 						result.put("Msg", "Database Error occured, please try again");
 						logger.info("Register failed: Database internal error");
@@ -70,16 +66,24 @@ public class UserManager {
 		return result;
 	}
 
+	/*
+	 * 主页的登录操作
+	 * @param parameter 前端传来的参数，包括用户名/密码/验证码
+	 * @return 发回前端的参数
+	 */
 	public Map<String, Object> login(Map<String, String> parameter) {
 		if (dao == null)
 			dao = UserDAO.getInstance();
 		Map<String, Object> result = new HashMap<>();
 		String text_username = null;
 		String text_password = null;
+		//Check invalidation of username and password in parameters 
 		if (parameter.get("Text_username") == null || parameter.get("Text_password") == null) {
 			result.put("DispatchURL", "index.jsp");
 			result.put("Redirect", true);
 		} else if (!parameter.get("Text_username").isEmpty() || !parameter.get("Text_password").isEmpty()) {
+			// Check whether username and password in parameters are empty
+			//If not empty
 			text_username = parameter.get("Text_username");
 			text_password = parameter.get("Text_password");
 			if (parameter.get("login_verifycode_name") == null) {
@@ -94,8 +98,7 @@ public class UserManager {
 				// Check verify code input by user
 				if (VerifyCode.checkVerifyCodeAns(parameter.get("login_verifycode_name"),
 						parameter.get("Text_verifycode")))
-					// Fill the login form and click submit, just check what the
-					// user wrote
+					// Fill the login form and click submit, just check what the user wrote
 					if (checkLogin(text_username, text_password)) {
 						result.put("DispatchURL", "homepage");
 						result.put("Redirect", true);

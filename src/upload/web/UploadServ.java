@@ -30,7 +30,7 @@ import user.web.UserManager;
 public class UploadServ extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
-	// 上传配置
+	// Properties of uploading
 	private static final int MEMORY_THRESHOLD = Integer
 			.parseInt(PropertyOper.GetValueByKey("souvenirs.properties", "MEMORY_THRESHOLD"), 16);
 	private static final int MAX_FILE_SIZE = Integer
@@ -96,7 +96,7 @@ public class UploadServ extends HttpServlet {
 			if (!ServletFileUpload.isMultipartContent(request)) {
 				// 如果不是则停止
 				PrintWriter writer = response.getWriter();
-				writer.println("Error: 表单必须包含 enctype=multipart/form-data");
+				writer.println("Error: Form type must be 'enctype=multipart/form-data'");
 				writer.flush();
 				return;
 			}
@@ -134,7 +134,7 @@ public class UploadServ extends HttpServlet {
 						} else {
 							//Store file handler
 							file_item = item;
-							// Java设置的默认字符编码是GBK，由于前端发来的二进制流未指定解析编码，Java会使用默认的GBK来编码
+							// 在本服务器中Java设置的默认字符编码是GBK，由于前端发来的二进制流未指定解析编码，Java会使用默认的GBK来编码
 							// 如果GBK的文件名存到文件中，中文必定会乱码，所以要将文件名转成UTF-8。
 							// 由于不同Java配置不同，所以对文件名统一进行一次转码，保证无乱码
 							para.put("origin_filename", new String(item.getName().getBytes(System.getProperty("sun.jnu.encoding")), "UTF-8"));
@@ -146,7 +146,6 @@ public class UploadServ extends HttpServlet {
 						session.getAttribute("user_id") == null ? "" : (String) session.getAttribute("user_id"));
 
 				//Send parameters and file handler to UploadManager
-				//um.setParameter(para);
 				result = um.uploadPicture(para, file_item);
 
 				for (Entry<String, Object> entry : result.entrySet()) {
