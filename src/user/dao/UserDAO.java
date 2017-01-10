@@ -8,6 +8,11 @@ import tool.DB;
 
 public class UserDAO {
 	private Logger logger = Logger.getLogger(UserDAO.class);
+	private static UserDAO user_dao = new UserDAO();
+	
+	public static UserDAO getInstance() {
+		return user_dao;
+	}
 	
 	public List<Object> getLogin(Map<String, String> para) {
 		List<String>parameter = new ArrayList<>();

@@ -7,6 +7,11 @@ import java.util.Map;
 import tool.DB;
 
 public class UploadDAO {
+	private static UploadDAO upload_dao = new UploadDAO();
+	
+	public static UploadDAO getInstance() {
+		return upload_dao;
+	}
 	
 	public List<Object> getAlbumName(String user_id) {
 		List<List<Object>> rs = new ArrayList<List<Object>>();

@@ -3,7 +3,6 @@ package upload.web;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,42 +32,29 @@ public class UploadServ extends HttpServlet {
 
 	// 上传配置
 	private static final int MEMORY_THRESHOLD = Integer
-			.parseInt(PropertyOper.GetValueByKey("souvenirs.properties", "MEMORY_THRESHOLD"), 16);// 1024
-																									// *
-																									// 1024
-																									// *
-																									// 3;
-																									// //
-																									// 3MB
+			.parseInt(PropertyOper.GetValueByKey("souvenirs.properties", "MEMORY_THRESHOLD"), 16);
 	private static final int MAX_FILE_SIZE = Integer
-			.parseInt(PropertyOper.GetValueByKey("souvenirs.properties", "MAX_FILE_SIZE"), 16);// 1024
-																								// *
-																								// 1024
-																								// *
-																								// 40;
-																								// //
-																								// 40MB
+			.parseInt(PropertyOper.GetValueByKey("souvenirs.properties", "MAX_FILE_SIZE"), 16);
 	private static final int MAX_REQUEST_SIZE = Integer
-			.parseInt(PropertyOper.GetValueByKey("souvenirs.properties", "MAX_REQUEST_SIZE"), 16);// 1024
-																									// *
-																									// 1024
-																									// *
-																									// 50;
-																									// //
-																									// 50MB
+			.parseInt(PropertyOper.GetValueByKey("souvenirs.properties", "MAX_REQUEST_SIZE"), 16);																					// *
 
 	private Logger logger = Logger.getLogger(UploadServ.class);
 
+	/*
+	 * 前端发来GET请求，可能是用户第一次打开页面或者用户以错误的方式发送了数据
+	 * 这两种情况处理方式一样，都是重新加载该页面
+	 */
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		HttpSession session = request.getSession(true);
-		// If login information is wrong, redirect to index.jsp in order to
-		// login in again
+		// If login information is wrong, redirect to index.jsp in order to login in again
 		logger.debug(session + " " + session.getAttribute("username") + " " + session.getAttribute("password"));
+		//Check login status
 		if (!UserManager.checkLogin(session.getAttribute("user_id"), session.getAttribute("username"),
 				session.getAttribute("password"))) {
+			//Auto login failed, redirect to loginfail.jsp
 			session.invalidate();
 			response.sendRedirect("loginfail.jsp");
 		} else {
@@ -78,8 +64,11 @@ public class UploadServ extends HttpServlet {
 			// Send user_id as primary key of user to manager object
 			para.put("login_user_id",
 					session.getAttribute("user_id") == null ? "" : (String) session.getAttribute("user_id"));
-			um.setParameter(para);
-			result = um.displayContent();
+			
+			//um.setParameter(para);
+			result = um.displayContent(para);
+			
+			//Put every parameters back to front side 
 			for (Entry<String, Object> entry : result.entrySet()) {
 				request.setAttribute(entry.getKey(), entry.getValue());
 			}
@@ -90,7 +79,7 @@ public class UploadServ extends HttpServlet {
 	}
 
 	/**
-	 * 上传数据及保存文件
+	 * 上传数据并解析，将数据传给UploadManager
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
@@ -143,12 +132,12 @@ public class UploadServ extends HttpServlet {
 							String val = new String(item.getString().getBytes("ISO-8859-1"), "UTF-8");
 							para.put(key, val);
 						} else {
+							//Store file handler
 							file_item = item;
-							// Mention: Windows in simplified Chinese always set
-							// filename in GBK, not in utf-8. 
-							//Moreover, filename encoded with GBK would be send to server
-							// without changing to UTF-8
-							para.put("origin_filename", new String(item.getName().getBytes("GBK"), "UTF-8"));
+							// Java设置的默认字符编码是GBK，由于前端发来的二进制流未指定解析编码，Java会使用默认的GBK来编码
+							// 如果GBK的文件名存到文件中，中文必定会乱码，所以要将文件名转成UTF-8。
+							// 由于不同Java配置不同，所以对文件名统一进行一次转码，保证无乱码
+							para.put("origin_filename", new String(item.getName().getBytes(System.getProperty("sun.jnu.encoding")), "UTF-8"));
 						}
 					}
 				}
@@ -156,10 +145,9 @@ public class UploadServ extends HttpServlet {
 				para.put("login_user_id",
 						session.getAttribute("user_id") == null ? "" : (String) session.getAttribute("user_id"));
 
-				logger.debug("val=" + para);
-				um.setParameter(para);
-				um.setFile_handle(file_item);
-				result = um.uploadPicture();
+				//Send parameters and file handler to UploadManager
+				//um.setParameter(para);
+				result = um.uploadPicture(para, file_item);
 
 				for (Entry<String, Object> entry : result.entrySet()) {
 					request.setAttribute(entry.getKey(), entry.getValue());

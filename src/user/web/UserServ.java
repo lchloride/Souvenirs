@@ -43,10 +43,6 @@ public class UserServ extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		/*
-		 * response.getWriter().append("Served at: "
-		 * ).append(request.getContextPath());
-		 */
 		HttpSession session = request.getSession(true);
 		UserManager um = UserManager.getInstance();
 		Map<String, String> para = new HashMap<String, String>();
@@ -73,7 +69,7 @@ public class UserServ extends HttpServlet {
 		para.put("register_verifycode_name", session.getAttribute("register_verifycode_name") == null ? ""
 				: (String) session.getAttribute("register_verifycode_name"));
 		// Transfer parameters to AnimeManager
-		um.setParameter(para);
+		//um.setParameter(para);
 
 		Map<String, Object> result = new HashMap<>();
 
@@ -82,9 +78,9 @@ public class UserServ extends HttpServlet {
 		query_url = query_url.substring(query_url.lastIndexOf('/') + 1);
 
 		if (query_url.contentEquals("register")) {
-			result = um.register();
+			result = um.register(para);
 		} else if (query_url.contentEquals("login")) {
-			result = um.login();
+			result = um.login(para);
 		} else {
 			result.put("DispatchURL", "index.jsp");
 		}
