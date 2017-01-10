@@ -11,17 +11,19 @@ import tool.DB;
  * 以单例模式实现
  */
 public class UserDAO {
-	private Logger logger = Logger.getLogger(UserDAO.class);
-	private static UserDAO user_dao = new UserDAO();
+	private static Logger logger = Logger.getLogger(UserDAO.class);
+	//private static UserDAO user_dao = new UserDAO();
+	private static final UserDAO user_dao = new UserDAO();  
+
 	
 	/**
 	 * 单例模式获取对象的方法
 	 * @return UserDAO类的对象
 	 */	
-	public static UserDAO getInstance() {
-		return user_dao;
-	}
-	
+    public static UserDAO getInstance() {  
+        return user_dao;  
+    }  
+    
 	/**
 	 * 用户登录时检查用户名和密码是否匹配的函数，调用DB的execSQLQuery执行
 	 * <strong>注意：DAO负责结果合法性的检查</strong> 
@@ -40,7 +42,7 @@ public class UserDAO {
 		sql += ") and password = ?";
 		parameter.add(para.get("Text_password"));
 		List<Object> result = DB.execSQLQuery(sql, parameter).get(0);
-		if ((int)result.get(0) >1 || (int)result.get(0) < 0) {
+		if ((long)result.get(0) >1 || (long)result.get(0) < 0) {
 			logger.error("Duplicate Users: username=<"+para.get("Text_username")+">");
 			throw new Exception("Duplicate result found. Please contact administrator.");
 		}else
@@ -68,7 +70,7 @@ public class UserDAO {
 		String sql = "select count(*) from user where username = ?";
 		List<String> parameter = Arrays.asList(para.get("Text_username"));
 		List<Object> result =  DB.execSQLQuery(sql, parameter).get(0);
-		if ((int)result.get(0) > 1) {
+		if ((long)result.get(0) > 1) {
 			logger.error("Duplicate Users: username=<"+para.get("Text_username")+">");
 			throw new Exception("Duplicate result found. Please contact administrator.");
 		}else

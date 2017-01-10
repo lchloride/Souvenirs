@@ -86,7 +86,7 @@
 		</div>
 		
 		<!-- Footer part at the bottom of page -->
-		<div class="bottom-pos">Copyright &copy; 2016 Souvenirs, All
+		<div class="bottom-pos">Copyright &copy; 2016-2017 Souvenirs, All
 			Rights Reserved.</div>
 	</div>
 </body>

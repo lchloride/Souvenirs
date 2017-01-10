@@ -16,7 +16,9 @@ public class Base64 {
      */
     public static String encode(String str) {  
         byte[] b = null;  
-        String s = null;  
+        String s = null; 
+        if (str == null)
+        	return null;
         try {  
             b = str.getBytes("utf-8");  
         } catch (UnsupportedEncodingException e) {  

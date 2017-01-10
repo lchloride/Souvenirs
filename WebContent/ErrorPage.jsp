@@ -144,7 +144,7 @@ body {
 		</div>
 	</div>
 	
-	<div class="footer">Copyright &copy; 2016 Souvenirs, All
+	<div class="footer">Copyright &copy; 2016-2017 Souvenirs, All
 			Rights Reserved.
 	</div>
 	

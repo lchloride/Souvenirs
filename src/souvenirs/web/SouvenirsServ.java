@@ -81,6 +81,7 @@ public class SouvenirsServ extends HttpServlet {
 			para.put("login_user_id",
 					session.getAttribute("user_id") == null ? "" : (String) session.getAttribute("user_id"));
 
+			logger.debug(para);
 			Map<String, Object> result = new HashMap<>();
 
 			// Obtain operation
@@ -96,6 +97,7 @@ public class SouvenirsServ extends HttpServlet {
 				// front side as an attachment
 				// This method is called when downloading souvenir
 				String content = request.getParameter("picture");
+				logger.debug(content==null);
 				String content_base64 = content.substring(content.indexOf("base64,") + 7, content.length());
 				byte[] rs_byte = Base64.decodeBytes(content_base64);
 				logger.debug("Base64 code length:" + content_base64.length() + ", Image bit length:" + rs_byte.length);

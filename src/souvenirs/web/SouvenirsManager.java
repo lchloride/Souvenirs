@@ -10,6 +10,7 @@ import org.json.JSONArray;
 
 import souvenirs.dao.SouvenirsDAO;
 import tool.ImageLoader;
+import tool.PropertyOper;
 
 /**
  * Souvenir制作和相册、照片管理的业务类
@@ -23,7 +24,7 @@ public class SouvenirsManager {
 	final int OWNER_FILENAME = 2;
 	
 	public SouvenirsManager() {
-		checkValidDAO();
+		//checkValidDAO();
 	}
 	
 	/**
@@ -72,6 +73,10 @@ public class SouvenirsManager {
 			result.put("Album_List", album_name_list);
 			parameter.put("album_name", (String)album_name_list.get(0));
 			result.put("Image_JSON", getImageAddrInAlbum(parameter));
+			String template = PropertyOper.GetValueByKey("template.properties", parameter.get("template"));
+			if (template==null || template.isEmpty())
+				template = "[]";
+			result.put("Template_json", template);
 			result.put("DispatchURL", "canvas.jsp");
 		}else {
 			result.put("DispatchURL", "canvas.jsp");

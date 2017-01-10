@@ -44,7 +44,9 @@
 	//If there is some error with Ajax, it would be assign to empty json string and would not display anything
 	var image_json = '${empty Image_JSON?"[]":Image_JSON}';
 	//souvenir_json is the json string of souvenir template obtained from server
-	var souvenir_json = '[{"background":"BBB.jpg","originW":1960,"originH":2240},{"type":"image","url":"/Souvenirs/res/image/default_avatar.png","startX":107,"startY":252,"drawW":1092,"drawH":658,"zoom":0,"moveX":0,"moveY":0,"t11":1,"t12":0,"t13":0,"t21":0,"t22":1,"t23":0,"clipShape":"circle","clipPara":[653,581,329]},{"type":"text","text":"abcde","startX":1204,"startY":337,"maxW":531,"maxH":263,"style":"Arial","size":16,"color":"black","bold":false,"italic":false,"paddingL":96,"paddingR":87,"paddingT":51,"paddingB":44,"lineH":1.5,"clipShape":"rect"},{"type":"text","text":"text2","startX":86,"startY":1036,"maxW":387,"maxH":345,"style":"Comic Sans MS","size":16,"color":"blue","bold":true,"italic":false,"paddingL":62,"paddingR":60,"paddingT":100,"paddingB":103,"lineH":1.5,"clipShape":"rect"},{"type":"image","url":"/Souvenirs/res/image/index_bg.jpg","startX":618,"startY":951,"drawW":1144,"drawH":618,"zoom":0,"moveX":0,"moveY":0,"t11":1,"t12":0,"t13":0,"t21":0,"t22":1,"t23":0,"clipShape":"rect"},{"type":"image","url":"/Souvenirs/res/image/bg.jpg","startX":113,"startY":1593,"drawW":1152,"drawH":548,"zoom":0,"moveX":0,"moveY":0,"t11":1,"t12":0,"t13":0,"t21":0,"t22":1,"t23":0,"clipShape":"rect"},{"type":"text","text":"text3","startX":1329,"startY":1606,"maxW":498,"maxH":476,"style":"Times New Roman","size":18,"color":"Green","bold":false,"italic":true,"paddingL":20,"paddingR":18,"paddingT":17,"paddingB":17,"lineH":1.5,"clipShape":"rect"}]';
+	//var souvenir_json = '[{"background":"bbb.jpg","originW":1960,"originH":2240},{"type":"image","url":"/Souvenirs/res/image/default_avatar.png","startX":107,"startY":252,"drawW":1092,"drawH":658,"zoom":0,"moveX":0,"moveY":0,"t11":1,"t12":0,"t13":0,"t21":0,"t22":1,"t23":0,"clipShape":"circle","clipPara":[653,581,329]},{"type":"text","text":"abcde","startX":1204,"startY":337,"maxW":531,"maxH":263,"style":"Arial","size":16,"color":"black","bold":false,"italic":false,"paddingL":96,"paddingR":87,"paddingT":51,"paddingB":44,"lineH":1.5,"clipShape":"rect"},{"type":"text","text":"text2","startX":86,"startY":1036,"maxW":387,"maxH":345,"style":"Comic Sans MS","size":16,"color":"blue","bold":true,"italic":false,"paddingL":62,"paddingR":60,"paddingT":100,"paddingB":103,"lineH":1.5,"clipShape":"rect"},{"type":"image","url":"/Souvenirs/res/image/index_bg.jpg","startX":618,"startY":951,"drawW":1144,"drawH":618,"zoom":0,"moveX":0,"moveY":0,"t11":1,"t12":0,"t13":0,"t21":0,"t22":1,"t23":0,"clipShape":"rect"},{"type":"image","url":"/Souvenirs/res/image/bg.jpg","startX":113,"startY":1593,"drawW":1152,"drawH":548,"zoom":0,"moveX":0,"moveY":0,"t11":1,"t12":0,"t13":0,"t21":0,"t22":1,"t23":0,"clipShape":"rect"},{"type":"text","text":"text3","startX":1329,"startY":1606,"maxW":498,"maxH":476,"style":"Times New Roman","size":18,"color":"Green","bold":false,"italic":true,"paddingL":20,"paddingR":18,"paddingT":17,"paddingB":17,"lineH":1.5,"clipShape":"rect"}]';
+	var souvenir_json = '${Template_json}';
+
 	//souvenir_obj is a object parsed from souvenir_json, almost every drawing would operate souvenir_obj 
 	var souvenir_obj = JSON.parse(souvenir_json);
 	//This is the ratio of canvas's real height to original background height. 
@@ -65,6 +67,15 @@
 
 	//在页面加载完成后执行的脚本
 	window.onload = function() {
+		if (souvenir_json == "[]") {
+			document.getElementById("div_canvas").style.display = "none";
+			document.getElementById("hint_text").innerHTML = "Sorry, selected template seems to be missing, please check parameter. For more information, please contact administrator or go to <a href='/Souvenirs/homepage'>homepage</a> to select a template.";
+			document.getElementById("hint").style.position = "static";
+			document.getElementById("hint").style.paddingTop = "0px";
+			document.getElementById("main_body").style.minHeight = "10em";
+			alert("Invalid template name!");
+			//throw SyntaxError();
+		}
 		//set height and width of canvas that fits the displaying area
 		//设置能够匹配窗口大小的canvas宽度和高度
 		changeContentSize();
@@ -94,7 +105,7 @@
 		isFinished = false;
 		//Loading background image
 		bg = new Image();
-		bg.src = "res/image/" + souvenir_obj[0].background;
+		bg.src = "res/image/template/" + souvenir_obj[0].background;
 		bg.onload = function() {
 			//Drawing bavkground image
 			ctx.drawImage(bg, 0, 0, c.width, c.height);
@@ -585,6 +596,7 @@
 		if (isFinished) {
 			document.getElementById('picture').innerHTML = document
 					.getElementById('download_canvas').toDataURL('image/png');
+			//alert(document.getElementById('picture').innerHTML.length/1024/1024);
 			if (document.getElementById('picture').innerHTML.length >= 10485760) {
 				alert("Souvenir is too large, its size should be less than 7MB");
 				clearInterval(intervalid);
@@ -814,7 +826,8 @@ div.border-rect-active {
 			<div class="oper-content" id="div_oper">
 				<!-- The following content is the one of display hint page -->
 				<div id="hint" style="padding-top: 40%">
-					<h4 style="text-align: center;">Click on the rectangle area in the preview image to modify its content.</h4>
+					<h4 id="hint_text" style="text-align: center;">Click on the rectangle area in the preview image to modify its
+						content.</h4>
 				</div>
 
 				<!-- The following content is the one of selecting a picture from album -->
@@ -855,7 +868,7 @@ div.border-rect-active {
 					</div>
 
 					<h5 style="font-weight: bold">Set Attributes</h5>
-					
+
 					<!-- Choose fonts -->
 					<div class="row">
 						<div class="col-sm-7 col-md-4 col-lg-4 narrow-col">
@@ -870,10 +883,10 @@ div.border-rect-active {
 									<%
 										Locale loc = request.getLocale();
 										//out.println(loc.toString());
-/* 										String[] fontnames = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames(loc);//获得当前系统字体  
-										for (int i=0; i<fontnames.length; i++) {
-											out.println("<option id='style_'>"+fontnames[i]+"</option>");
-										} */
+										/* 										String[] fontnames = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames(loc);//获得当前系统字体  
+																				for (int i=0; i<fontnames.length; i++) {
+																					out.println("<option id='style_'>"+fontnames[i]+"</option>");
+																				} */
 										if (loc.toString().compareTo("zh_CN") == 0) {
 											out.println("<option id='style_Verda'>宋体</option>");
 											out.println("<option id='style_Verda'>楷体</option>");
@@ -935,7 +948,7 @@ div.border-rect-active {
 								<div class="col-xs-5 col-sm-5 col-md-5 col-lg-4 narrow-col">Line
 									Height</div>
 								<div class="col-xs-6 narrow-col"> -->
-								
+
 							<span style="float: left; padding: 10px">Line Height</span> <select class="form-control" id="line_height_select"
 								style="float: left; width: 50%"
 								onchange="souvenir_obj[proc_position].lineH=parseFloat(document.getElementById('line_height_select').value)">
@@ -962,7 +975,7 @@ div.border-rect-active {
 	</div>
 
 	<div id="size" style="display: none"></div>
-	<div class="footer">Copyright &copy; 2016 Souvenirs, All Rights Reserved.</div>
+	<div class="footer">Copyright &copy; 2016-2017 Souvenirs, All Rights Reserved.</div>
 
 	<!-- 模态框（Modal） -->
 	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
