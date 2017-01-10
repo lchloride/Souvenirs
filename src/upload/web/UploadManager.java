@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
 import tool.PropertyOper;
 import upload.dao.UploadDAO;
 
-/*
+/**
  * Upload Image Operator
  */
 public class UploadManager {
@@ -26,7 +26,7 @@ public class UploadManager {
 		
 	}
 
-	/*
+	/**
 	 * 获取UploadManager单例对象
 	 * @return UploadManager对象
 	 */
@@ -34,12 +34,15 @@ public class UploadManager {
 		return upload_manager;
 	}
 
-	/*
+	/**
 	 * 上传一张照片，完成两个子操作组成的原子操作：向数据库中添加一条记录；将文件写入磁盘<br>
 	 * 向数据库添加失败则不可写文件；文件写入失败需要将添加的那条记录删除
-	 * @param parameter 从Servlet传来的前端表单值
+	 * @param parameter 从Servlet传来的前端表单值，key包含login_user_id(用户ID)，select_album_name(要上传到的相册)，
+	 * origin_filename(本地照片的路径)，pic_name(保存到服务器上的照片名)，img_description(照片的描述)
 	 * @param file_handle 文件操作句柄
-	 * @return 发送给前端的参数key-value对集合
+	 * @return 发送给前端的参数key-value对集合，包括该用户的相册列表(显示新页面中，key=Album_list)，
+	 * 上传结果(key=Upload_result)，错误信息(部分情况，key=Error_msg)，上传的相册名(用在上传成功后的显示，key=Album_name)，
+	 * 上传的相册名(用在上传成功后的显示，key=Filename)
 	 */
 	public Map<String, Object> uploadPicture(Map<String, String> parameter, FileItem file_handle) {
 		// TODO Auto-generated method stub
@@ -60,7 +63,6 @@ public class UploadManager {
 		
 		//Query album_name of specific user
 		List<Object> album_name_list = dao.getAlbumName(parameter.get("login_user_id"));
-		
 		result.put("Album_list", album_name_list);
 		
 		//Add a row of image into DB 
@@ -129,10 +131,10 @@ public class UploadManager {
 		return result;
 	}
 	
-	/*
+	/**
 	 * 在首次打开upload页面的时候，返回该用户的相册名列表
-	 * @param parameter 前端传来的参数
-	 * @return 发送给前端的参数表
+	 * @param parameter 前端传来的参数，key包含login_user_id(登录的用户ID)
+	 * @return 发送给前端的参数表，包含该用户拥有的相册列表(key=Album_list)
 	 */
 	public Map<String, Object> displayContent(Map<String, String> parameter) {
 		if (dao == null)
@@ -144,10 +146,11 @@ public class UploadManager {
 		return result;
 	}
 
-	/*
+	/**
 	 * 删除一张照片
-	 * @param parameter 要删除的相片的主键(user_id, album_name, filename)的key-value对
+	 * @param parameter 要删除的相片的主键(Map中的key为login_user_id, select_album_name, filename)组成的参数Map
 	 * @return 删除结果，参考tool.DB的execSQLUpdate方法
+	 * @see tool.DB#execSQLUpdate(String, List)
 	 */
 	public Map<String, Object> delPicture(Map<String, String> parameter) {
 		if (dao == null)

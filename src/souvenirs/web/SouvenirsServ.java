@@ -16,7 +16,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.catalina.User;
 import org.apache.log4j.Logger;
 
 import tool.Base64;
@@ -46,9 +45,9 @@ public class SouvenirsServ extends HttpServlet {
 	}
 
 	/**
+	 * 控制层获取-分发的方法
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
 	 *      response)
-	 * 控制层获取-分发的方法
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
@@ -167,8 +166,10 @@ public class SouvenirsServ extends HttpServlet {
 	}
 
 	/**
+	 * 调用doGet方法
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
 	 *      response)
+	 * @see #doGet(HttpServletRequest, HttpServletResponse)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {

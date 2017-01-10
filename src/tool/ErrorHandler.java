@@ -34,9 +34,10 @@ public class ErrorHandler extends HttpServlet {
 	}
 
 	/**
+	 *      如果程序出现异常，将调用ErrorHandler显示友好的错误页面
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
 	 *      response) <br>
-	 *      如果程序出现异常，将调用ErrorHandler显示友好的错误页面
+	 * 
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
@@ -91,8 +92,10 @@ public class ErrorHandler extends HttpServlet {
 	}
 
 	/**
+	 * 调用doGet方法
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
 	 *      response)
+	 *  @see #doGet(HttpServletRequest, HttpServletResponse)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {

@@ -53,7 +53,7 @@ public class HTTP {
      * In addition, the other parameters in the header will be captured, using
      * the HTTP field names as JSON names, so that <pre>
      *    Date: Sun, 26 May 2002 18:06:04 GMT
-     *    Cookie: Q=q2=PPEAsg--; B=677gi6ouf29bn&b=2&f=s
+     *    Cookie: Q=q2=PPEAsg--; B=677gi6ouf29bn &amp b=2 &amp f=s
      *    Cache-Control: no-cache</pre>
      * become
      * <pre>{...

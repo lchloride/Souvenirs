@@ -13,21 +13,21 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 
-/*
+/**
  * This class is a tool class only to offer database operations
  * @author Chenghong Li
  * @author Yiran Zhao
  * @version 2.1
  */
 public class DB {
-	/*
-	 * This method will obtain an available connection and return it.
-	 */
+
 	private static Logger logger = Logger.getLogger(DB.class);
 
-	/*
-	 * 获取一个数据库连接
+	/**
+	 * 从DBCP连接池中获取一个数据库连接
 	 * @return 数据库连接对象
+	 * @throws NamingException 无法解析DBCP配置时抛出的异常
+	 * @throws SQLException create失败时抛出的异常
 	 */
 	public static Connection getConn() throws NamingException, SQLException {
 		Connection conn = null;
@@ -43,22 +43,27 @@ public class DB {
 		return conn;
 	}
 	
-	/*
+	/**
 	 * 关闭已打开的连接
 	 * @param conn 将要关闭的连接
+	 * @throws SQLException 无法正常关闭时抛出异常
 	 */
 	public static void closeConn(Connection conn) throws SQLException {
 		conn.close();
 	}
 
-	/*
+	/**
 	 * This method executes a SQL sentence and generates a list of query result
 	 * of object
 	 * 
-	 * @param sql is query sentence
+	 * @param sql query sentence template
 	 * 
-	 * @param method indicates the method of Store interface
+	 * @param para parameters for template, with appearance order
 	 * 
+	 * @param method indicating the method of Store interface
+	 * 
+	 * @param <T> template type, usually referring to a Bean class
+	 *  
 	 * @return a set of column names, result content
 	 */
 	public static <T> Object[] execSQLQuery(String sql, List<String> para, Store<T> method) {
@@ -114,8 +119,8 @@ public class DB {
 		return result;
 	}
 
-	/*
-	 * 普通sql查询
+	/**
+	 * 执行普通sql查询(select)
 	 * 
 	 * @param sql 查询语句模板
 	 * 
@@ -163,19 +168,19 @@ public class DB {
 		return result;
 	}
 
-	/*
-	 * 更新表操作
+	/**
+	 * 执行更新表操作(insert/delete/update)
 	 * 
-	 * @param sql变量是要执行的SQL语句模板
+	 * @param sql 变量是要执行的SQL语句模板
 	 * 
-	 * @param para是按照模板中出现的顺序，存储参数的一个List，类型是String
+	 * @param para 按照模板中出现的顺序，存储参数的一个List，类型是String
 	 * 
-	 * @return Map组合，返回了执行结果(成功/失败)+操作影响的行数+错误信息(如果sql语句执行失败)
+	 * @return Map 返回执行结果(成功/失败，key=process_state)，操作影响的行数(key=affect_row_count)，
+	 * 错误信息(sql语句执行失败时存在，key=error_msg)
 	 */
 	public static Map<String, Object> execSQLUpdate(String sql, List<String> para) {
 		Map<String, Object> rs = new HashMap<>();
 		Connection conn = null;
-		/* Statement stmt = null; */
 		PreparedStatement ps = null;
 		int affect_row_count = 0;
 		try {

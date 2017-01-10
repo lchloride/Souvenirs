@@ -44,7 +44,7 @@ public class SouvenirsDAO {
 	 * 生成获取一个album全部照片地址的sql模板，并组织参数交给DB执行
 	 * @param user_id 用户名
 	 * @param album 相册名
-	 * @return 照片主键列表(user_id, album_name, filename)
+	 * @return 照片主键组成的二维列表(user_id, album_name, filename)
 	 */
 	public List<List<Object>> getPictureAddrInAlbum(String user_id, String album) {
 		String sql = "SELECT owner_id, owner_album_name, owner_filename FROM souvenirs.query_available_image where user_id=? and  album_name=? order by album_name asc";

@@ -342,7 +342,7 @@ public class UserManager {
 	 * 
 	 * @param username
 	 *            待查询的用户名
-	 * @result user_id字符串
+	 * @return user_id字符串
 	 */
 	public static String getUserIDByName(String username) {
 		checkValidDAO();

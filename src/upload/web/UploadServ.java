@@ -49,7 +49,7 @@ public class UploadServ extends HttpServlet {
 
 	private Logger logger = Logger.getLogger(UploadServ.class);
 
-	/*
+	/**
 	 * 前端发来GET请求，可能是用户第一次打开页面或者用户以错误的方式发送了数据 这两种情况处理方式一样，都是重新加载该页面
 	 */
 	@Override

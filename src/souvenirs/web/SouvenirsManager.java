@@ -80,9 +80,10 @@ public class SouvenirsManager {
 	}
 	
 	/**
-	 * 获取特定相册中的所有图片地址，并组成json字符串，构造json的方法 @see org.json 
-	 * @param parameter 前端传来的参数，包括user_id, album_name
-	 * @return 相册中所有图片名字和地址所组成的json字符串
+	 * 获取特定相册中的所有图片地址，并组成json字符串，构造json的方法
+	 *  @see org.json 
+	 * @param parameter 前端传来的参数，key包括login_user_id(登录的用户ID), album_name(相册名)
+	 * @return 相册中所有图片名字和地址所组成的json字符串(形如：[{filename: "A", addr:"B"}, {filename: "C", addr:"D"}, ...])
 	 */
 	public String getImageAddrInAlbum(Map<String, String> parameter) {
 		checkValidDAO();

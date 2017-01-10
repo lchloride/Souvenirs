@@ -1,5 +1,8 @@
 package user;
 
+/**
+ * Œ¥∆Ù”√
+ */
 public class User {
 
 }
