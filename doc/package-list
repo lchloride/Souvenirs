@@ -1,0 +1,9 @@
+org.json
+souvenirs.dao
+souvenirs.web
+tool
+upload.dao
+upload.web
+user
+user.dao
+user.web

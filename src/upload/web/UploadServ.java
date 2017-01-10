@@ -30,31 +30,40 @@ import user.web.UserManager;
 public class UploadServ extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
-	// 上传配置
+	// Properties of uploading
+	/**
+	 * 上传内存阈值(文件缓冲区的大小)
+	 */
 	private static final int MEMORY_THRESHOLD = Integer
 			.parseInt(PropertyOper.GetValueByKey("souvenirs.properties", "MEMORY_THRESHOLD"), 16);
+	/**
+	 * 上传文件的最大大小
+	 */
 	private static final int MAX_FILE_SIZE = Integer
 			.parseInt(PropertyOper.GetValueByKey("souvenirs.properties", "MAX_FILE_SIZE"), 16);
+	/**
+	 * 可接收的二进制流的最大大小
+	 */
 	private static final int MAX_REQUEST_SIZE = Integer
-			.parseInt(PropertyOper.GetValueByKey("souvenirs.properties", "MAX_REQUEST_SIZE"), 16);																					// *
+			.parseInt(PropertyOper.GetValueByKey("souvenirs.properties", "MAX_REQUEST_SIZE"), 16); // *
 
 	private Logger logger = Logger.getLogger(UploadServ.class);
 
-	/*
-	 * 前端发来GET请求，可能是用户第一次打开页面或者用户以错误的方式发送了数据
-	 * 这两种情况处理方式一样，都是重新加载该页面
+	/**
+	 * 前端发来GET请求，可能是用户第一次打开页面或者用户以错误的方式发送了数据 这两种情况处理方式一样，都是重新加载该页面
 	 */
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		HttpSession session = request.getSession(true);
-		// If login information is wrong, redirect to index.jsp in order to login in again
+		// If login information is wrong, redirect to index.jsp in order to
+		// login in again
 		logger.debug(session + " " + session.getAttribute("username") + " " + session.getAttribute("password"));
-		//Check login status
+		// Check login status
 		if (!UserManager.checkLogin(session.getAttribute("user_id"), session.getAttribute("username"),
 				session.getAttribute("password"))) {
-			//Auto login failed, redirect to loginfail.jsp
+			// Auto login failed, redirect to loginfail.jsp
 			session.invalidate();
 			response.sendRedirect("loginfail.jsp");
 		} else {
@@ -64,11 +73,11 @@ public class UploadServ extends HttpServlet {
 			// Send user_id as primary key of user to manager object
 			para.put("login_user_id",
 					session.getAttribute("user_id") == null ? "" : (String) session.getAttribute("user_id"));
-			
-			//um.setParameter(para);
+
+			// um.setParameter(para);
 			result = um.displayContent(para);
-			
-			//Put every parameters back to front side 
+
+			// Put every parameters back to front side
 			for (Entry<String, Object> entry : result.entrySet()) {
 				request.setAttribute(entry.getKey(), entry.getValue());
 			}
@@ -96,7 +105,7 @@ public class UploadServ extends HttpServlet {
 			if (!ServletFileUpload.isMultipartContent(request)) {
 				// 如果不是则停止
 				PrintWriter writer = response.getWriter();
-				writer.println("Error: 表单必须包含 enctype=multipart/form-data");
+				writer.println("Error: Form type must be 'enctype=multipart/form-data'");
 				writer.flush();
 				return;
 			}
@@ -132,12 +141,13 @@ public class UploadServ extends HttpServlet {
 							String val = new String(item.getString().getBytes("ISO-8859-1"), "UTF-8");
 							para.put(key, val);
 						} else {
-							//Store file handler
+							// Store file handler
 							file_item = item;
-							// Java设置的默认字符编码是GBK，由于前端发来的二进制流未指定解析编码，Java会使用默认的GBK来编码
+							// 在本服务器中Java设置的默认字符编码是GBK，由于前端发来的二进制流未指定解析编码，Java会使用默认的GBK来编码
 							// 如果GBK的文件名存到文件中，中文必定会乱码，所以要将文件名转成UTF-8。
 							// 由于不同Java配置不同，所以对文件名统一进行一次转码，保证无乱码
-							para.put("origin_filename", new String(item.getName().getBytes(System.getProperty("sun.jnu.encoding")), "UTF-8"));
+							para.put("origin_filename", new String(
+									item.getName().getBytes(System.getProperty("sun.jnu.encoding")), "UTF-8"));
 						}
 					}
 				}
@@ -145,8 +155,7 @@ public class UploadServ extends HttpServlet {
 				para.put("login_user_id",
 						session.getAttribute("user_id") == null ? "" : (String) session.getAttribute("user_id"));
 
-				//Send parameters and file handler to UploadManager
-				//um.setParameter(para);
+				// Send parameters and file handler to UploadManager
 				result = um.uploadPicture(para, file_item);
 
 				for (Entry<String, Object> entry : result.entrySet()) {

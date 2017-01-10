@@ -13,16 +13,22 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 
-
-/*
+/**
  * This class is a tool class only to offer database operations
+ * @author Chenghong Li
+ * @author Yiran Zhao
+ * @version 2.1
  */
 public class DB {
-	/*
-	 * This method will obtain an available connection and return it.
-	 */
+
 	private static Logger logger = Logger.getLogger(DB.class);
-	
+
+	/**
+	 * 从DBCP连接池中获取一个数据库连接
+	 * @return 数据库连接对象
+	 * @throws NamingException 无法解析DBCP配置时抛出的异常
+	 * @throws SQLException create失败时抛出的异常
+	 */
 	public static Connection getConn() throws NamingException, SQLException {
 		Connection conn = null;
 		Context ctx = new InitialContext();
@@ -36,19 +42,28 @@ public class DB {
 
 		return conn;
 	}
-
+	
+	/**
+	 * 关闭已打开的连接
+	 * @param conn 将要关闭的连接
+	 * @throws SQLException 无法正常关闭时抛出异常
+	 */
 	public static void closeConn(Connection conn) throws SQLException {
 		conn.close();
 	}
 
-	/*
+	/**
 	 * This method executes a SQL sentence and generates a list of query result
 	 * of object
 	 * 
-	 * @param sql is query sentence
+	 * @param sql query sentence template
 	 * 
-	 * @param method indicates the method of Store interface
+	 * @param para parameters for template, with appearance order
 	 * 
+	 * @param method indicating the method of Store interface
+	 * 
+	 * @param <T> template type, usually referring to a Bean class
+	 *  
 	 * @return a set of column names, result content
 	 */
 	public static <T> Object[] execSQLQuery(String sql, List<String> para, Store<T> method) {
@@ -56,20 +71,17 @@ public class DB {
 		List<String> col_name = new ArrayList<>();
 
 		Connection conn = null;
-		/*Statement stmt = null;*/
 		ResultSet rs = null;
-		PreparedStatement ps=null;
-		
+		PreparedStatement ps = null;
+
 		try {
 			if (method == null)
 				throw new Exception("Invalid Format Method in DB.java");
 			conn = getConn();
 			ps = conn.prepareStatement(sql);
-			for (int i=1; para!=null && i<=para.size(); i++)
-				ps.setString(i, para.get(i-1));
+			for (int i = 1; para != null && i <= para.size(); i++)
+				ps.setString(i, para.get(i - 1));
 			rs = ps.executeQuery();
-			/*stmt = conn.createStatement();
-			rs = stmt.executeQuery(sql);*/
 
 			ResultSetMetaData rsmd = rs.getMetaData();
 			for (int i = 1; i <= rsmd.getColumnCount(); i++)
@@ -83,9 +95,8 @@ public class DB {
 				item_obj = method.format(item);
 				form.add(item_obj);
 			}
-			// System.out.println("querysize:"+form.size());
 		} catch (Exception e) {
-			logger.warn("exec SQL failed! SQL:<"+sql+"> Msg:<"+e.getMessage()+">", e);
+			logger.warn("exec SQL failed! SQL:<" + sql + "> Msg:<" + e.getMessage() + ">", e);
 		} finally {
 			// TODO: handle finally clause
 			try {
@@ -95,12 +106,6 @@ public class DB {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-/*			try {
-				stmt.close();
-			} catch (SQLException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}*/
 			try {
 				conn.close();
 			} catch (SQLException e) {
@@ -114,23 +119,28 @@ public class DB {
 		return result;
 	}
 
-	// 普通查表
+	/**
+	 * 执行普通sql查询(select)
+	 * 
+	 * @param sql 查询语句模板
+	 * 
+	 * @param para 模板参数，依出现序
+	 * 
+	 * @return 查询结果，以二维List的形式
+	 */
 	public static List<List<Object>> execSQLQuery(String sql, List<String> para) {
 		List<List<Object>> result = new ArrayList<List<Object>>();
-		List<Object>result_entry = null;
+		List<Object> result_entry = null;
 		Connection conn = null;
-		/*Statement stmt = null;*/
+		/* Statement stmt = null; */
 		ResultSet rs = null;
-		PreparedStatement ps=null;
+		PreparedStatement ps = null;
 		try {
 			conn = getConn();
 			ps = conn.prepareStatement(sql);
-			for (int i=1; para!=null&&i<=para.size(); i++)
-				ps.setString(i, para.get(i-1));
+			for (int i = 1; para != null && i <= para.size(); i++)
+				ps.setString(i, para.get(i - 1));
 			rs = ps.executeQuery();
-/*			stmt = conn.createStatement();
-			rs = stmt.executeQuery(sql);*/
-
 			ResultSetMetaData rsmd = rs.getMetaData();
 			while (rs.next()) {
 				result_entry = new ArrayList<>();
@@ -139,7 +149,7 @@ public class DB {
 				result.add(result_entry);
 			}
 		} catch (Exception e) {
-			logger.warn("exec SQL failed! SQL:<"+sql+"> Msg:<"+e.getMessage()+">", e);
+			logger.warn("exec SQL failed! SQL:<" + sql + "> Msg:<" + e.getMessage() + ">", e);
 		} finally {
 			// TODO: handle finally clause
 			try {
@@ -148,12 +158,6 @@ public class DB {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-/*			try {
-				stmt.close();
-			} catch (SQLException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}*/
 			try {
 				conn.close();
 			} catch (SQLException e) {
@@ -164,35 +168,34 @@ public class DB {
 		return result;
 	}
 
-	// 更新表
-	public static Map<String, Object> execSQLUpdate(String sql, List<String>para) {
+	/**
+	 * 执行更新表操作(insert/delete/update)
+	 * 
+	 * @param sql 变量是要执行的SQL语句模板
+	 * 
+	 * @param para 按照模板中出现的顺序，存储参数的一个List，类型是String
+	 * 
+	 * @return Map 返回执行结果(成功/失败，key=process_state)，操作影响的行数(key=affect_row_count)，
+	 * 错误信息(sql语句执行失败时存在，key=error_msg)
+	 */
+	public static Map<String, Object> execSQLUpdate(String sql, List<String> para) {
 		Map<String, Object> rs = new HashMap<>();
 		Connection conn = null;
-		/*Statement stmt = null;*/
 		PreparedStatement ps = null;
 		int affect_row_count = 0;
 		try {
 			conn = getConn();
 			ps = conn.prepareStatement(sql);
-			for (int i=1; para!=null && i<=para.size(); i++)
-				ps.setString(i, para.get(i-1));
-/*			stmt = conn.createStatement();
-			affect_row_count = stmt.executeUpdate(sql);*/
+			for (int i = 1; para != null && i <= para.size(); i++)
+				ps.setString(i, para.get(i - 1));
 			affect_row_count = ps.executeUpdate();
 			rs.put("process_state", true);
 			rs.put("affect_row_count", affect_row_count);
 		} catch (Exception e) {
-			logger.warn("exec SQL failed! SQL:<"+sql+"> Msg:<"+e.getMessage()+">", e);
+			logger.warn("exec SQL failed! SQL:<" + sql + "> Msg:<" + e.getMessage() + ">", e);
 			rs.put("process_state", false);
-			rs.put("error_msg", e.getMessage());			
+			rs.put("error_msg", e.getMessage());
 		} finally {
-			// TODO: handle finally clause
-/*			try {
-				stmt.close();
-			} catch (SQLException e1) {
-				// TODO Auto-generated catch block
-				logger.warn("Cannot close statement of sql", e1);
-			}*/
 			try {
 				conn.close();
 			} catch (SQLException e) {
@@ -202,10 +205,5 @@ public class DB {
 		}
 		return rs;
 	}
-	
-	public static String parsePara(String para) {
-		String rs = new String();
-		rs = para.replaceAll("[\']", "\\\\\'");
-		return rs;
-	}
+
 }

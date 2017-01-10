@@ -19,7 +19,23 @@ import javax.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
 
 /**
- * Servlet implementation class ImageLoader
+ * ImageLoader用来处理图片url的编码、解码与显示。
+	 * <p>
+	 * 项目中的图片有4种可能来源：<br>
+	 * 1. 来自某个用户的相册, 3个参数(user_id, album_name, filename)<br>
+	 * 2. 来自某用户的头像，1个参数(user_id) <br>
+	 * 3. 来自某相册的封面，2个参数(user_id, album_name) <br>
+	 * 4. 来自某小组的共享相册的封面，1个参数(group_id) <br>
+	 * </p>
+	 * <pre>
+	 * 加上区分这四种情形的参数，一共需要4个参数。参数表分配如下：<br>
+	 *     method    para1        para2           para3             privilege<br>
+	 * 1   direct      user_id  album_name  filename    user self+users in shared group<br>
+	 * 2   query      "user"       user_id            ——             user self <br>
+	 * 3   query      "album"   user_id            ——             user self<br>    
+	 * 4   query      "group"  group_id          ——         users in this group<br>
+	 * </pre>
+	 * 图片url的编码规则详情请参阅技术文档。
  */
 // @WebServlet("/ImageLoader")
 public class ImageLoader extends HttpServlet {
@@ -42,6 +58,7 @@ public class ImageLoader extends HttpServlet {
 	}
 
 	/**
+	 * 根据图片的url获取图片，并以二进制的形式发给浏览器。本函数由浏览器调用。
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
@@ -50,6 +67,7 @@ public class ImageLoader extends HttpServlet {
 		// TODO Auto-generated method stub
 		HttpSession session = request.getSession(true);
 		String user_id = "";
+		//Check validation of session
 		if (session.isNew()) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN);
 			logger.debug("Invalid Login Session");
@@ -57,13 +75,17 @@ public class ImageLoader extends HttpServlet {
 		} else {
 			try {
 				user_id = session.getAttribute("user_id") == null ? "" : (String) session.getAttribute("user_id");
+				//Set header of HTTP
 				response.setHeader("Pragma", "No-cache");
 				response.setHeader("Cache-Control", "no-cache");
 				response.setDateHeader("Expires", 0);
-
+				
+				//base_path is the folder storing all users' pictures
 				String base_path = PropertyOper.GetValueByKey("souvenirs.properties", "data_path");
+				//file_path is the true path that is formed from url based on parameters method and content 
 				String file_path = getPathFromPara(request.getParameter("method"), request.getParameter("content"),
 						user_id);
+				
 				if (file_path.isEmpty()) {
 					throw new Exception("Invalid file path");
 				}
@@ -72,19 +94,14 @@ public class ImageLoader extends HttpServlet {
 				BufferedInputStream bis = null;
 				OutputStream os = null;
 				FileInputStream fileInputStream = new FileInputStream(new File(img));
-
+				
+				//Send bytes of image to browser
 				bis = new BufferedInputStream(fileInputStream);
 				byte[] buffer = new byte[512];
 				response.reset();
 				response.setCharacterEncoding("UTF-8");
-				// 不同类型的文件对应不同的MIME类型
+				// Set MIME of image
 				response.setContentType("image/*");
-				// 文件以流的方式发送到客户端浏览器
-				// response.setHeader("Content-Disposition","attachment;
-				// filename=img.jpg");
-				// response.setHeader("Content-Disposition", "inline;
-				// filename=img.jpg");
-
 				response.setContentLength(bis.available());
 
 				os = response.getOutputStream();
@@ -97,6 +114,7 @@ public class ImageLoader extends HttpServlet {
 				os.close();
 			} catch (Exception e) {
 				// e.printStackTrace();
+				//There are something wrong with reading and sending image
 				logger.info(e.getMessage() + ", request: <" + request.getQueryString() + ">, request user id = <"
 						+ user_id + ">");
 				response.sendError(HttpServletResponse.SC_FORBIDDEN);
@@ -106,8 +124,10 @@ public class ImageLoader extends HttpServlet {
 	}
 
 	/**
+	 * 调用doGet方法
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
 	 *      response)
+	 * @see #doGet(HttpServletRequest, HttpServletResponse)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
@@ -115,6 +135,12 @@ public class ImageLoader extends HttpServlet {
 		doGet(request, response);
 	}
 
+	/**
+	 * 静态函数genImageQuery用来根据用户的指令通过base64生成图片的url
+	 * @param isDirect 标示要访问的图片是用户相册中的图片还是附属于其他项目上的图片(比如封面图、头像图)
+	 * @param para 最多3个元素，按照一定的规则存储了获取这个图片需要的参数，<strong>在生成url的时候并不需要关心三个参数代表的含义</strong>
+	 * @return 该图片的访问url字符串
+	 */
 	public static String genImageQuery(boolean isDirect, List<String> para) {
 		String query = "/Souvenirs/image?method=";
 		String content = null;
@@ -135,7 +161,16 @@ public class ImageLoader extends HttpServlet {
 		logger.debug("Image Query URL: " + query);
 		return query;
 	}
+	
+	/**
+	 * genPathFromPara根据图片的url生成访问该图片相对base_path的路径，同时进行权限检查<br>
 
+	 * @param method 两种可能："direct"或"query", 标示要访问的图片是用户相册中的图片还是附属于其他项目上的图片(比如封面图、头像图)
+	 * @param content_base64 存储了解析的参数
+	 * @param user_id 进行操作的用户ID
+	 * @return 该图片相对于base_path的路径
+	 * @throws Exception 当图片url无法被解析或者用户没有权限浏览该图片的时候会抛出异常
+	 */
 	private String getPathFromPara(String method, String content_base64, String user_id) throws Exception {
 		if (method == null || method.isEmpty()) {
 			logger.warn("ImageLoader METHOD parameter missed");
@@ -171,7 +206,6 @@ public class ImageLoader extends HttpServlet {
 			}
 		} else if (method.contentEquals("query")) {
 			if (para_str[0].contentEquals("user")) {
-				// logger.debug("ImageLoader Para:"+para[0] + " " + para[1]);
 				if (para_str[1].contentEquals(user_id))
 					// Query avatar path of user stored in database
 					try {
@@ -216,9 +250,9 @@ public class ImageLoader extends HttpServlet {
 				else
 					throw new Exception("Request is refused because of invalid privillege.");
 			} else
-				;
+				throw new Exception("Invalid parameters of image URL");
 		} else {
-			;
+			throw new Exception("Invalid parameters of image URL");
 		}
 		return path;
 	}

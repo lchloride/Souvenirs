@@ -7,9 +7,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-//关于Properties类常用的操作
+/**
+ * 读取/写入properties文件的工具类
+ */
 public class PropertyOper {
-	// 根据Key读取Value
+	/**
+	 *  根据Key在制定的properties文件中读取Value
+	 *  @param filePath properties文件路径
+	 *  @param key 要获取value的key
+	 *  @return key对应的value
+	 */
 	public static String GetValueByKey(String filePath, String key) {
 		Properties pps = new Properties();
 		try {
@@ -26,7 +33,12 @@ public class PropertyOper {
 		}
 	}
 
-	// 读取Properties的全部信息
+	/**
+	 *  读取Properties的全部信息
+	 *  @param filePath properties文件路径
+	 *  @return 存储所有key-value对的map
+	 *  @throws IOException 文件IO操作失败会抛出异常
+	 */
 	public static Map<String, String> GetAllProperties(String filePath) throws IOException {
 		Properties pps = new Properties();
 		InputStream in = PropertyOper.class.getClassLoader().getResourceAsStream(filePath );
@@ -42,7 +54,13 @@ public class PropertyOper {
 		return result;
 	}
 
-	// 写入Properties信息
+	/**
+	 *  写入Properties信息
+	 *  @param filePath properties文件路径
+	 *  @param pKey 要写入的key
+	 *  @param pValue key对应的value
+	 *  @throws IOException 写入IO错误时抛出异常
+	 */
 	public static void WriteProperties(String filePath, String pKey, String pValue) throws IOException {
 		Properties pps = new Properties();
 
@@ -58,7 +76,12 @@ public class PropertyOper {
 		pps.store(out, "Update " + pKey + " name");
 	}
 
-	// 写入Properties信息通过HashMap
+	/**
+	 *  通过HashMap批量写入Properties信息
+	 *  @param  filePath properties文件路径
+	 *  @param map 存储要写入文件的key-value对的Map
+	 *  @throws IOException 当写入IO出现错误时抛出异常
+	 */
 	public static void WriteProperties(String filePath, Map<String, String> map) throws IOException {
 		Properties pps = new Properties();
 

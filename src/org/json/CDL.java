@@ -95,7 +95,7 @@ public class CDL {
      * Produce a JSONArray of strings from a row of comma delimited values.
      * @param x A JSONTokener of the source text.
      * @return A JSONArray of strings.
-     * @throws JSONException
+     * @throws JSONException failure when forming json array
      */
     public static JSONArray rowToJSONArray(JSONTokener x) throws JSONException {
         JSONArray ja = new JSONArray();
