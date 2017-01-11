@@ -30,7 +30,7 @@
 				|| document.documentElement.clientWidth
 				|| document.body.clientWidth;
 		var mainbody_width = display_width * 0.8 - 50 * 2;
-		var template_width = Math.round(mainbody_width / 5 - 28) - 1;
+		var template_width = Math.round(mainbody_width / 5 - 28) - 2;
 		var template_height = template_width * 4 / 3;
 		for (i = 1; i <= 5; i++) {
 			document.getElementById("template" + i).width = template_width;

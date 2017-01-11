@@ -61,8 +61,8 @@ public class SouvenirsManager {
 	}
 
 	/**
-	 * 首次打开making页面，完成初始化部分内容(第一个选中的album_list所包含图片的地址json串)的显示
-	 * @param parameter 前端传来的参数，key包括login_user_id(登录用户user_id)
+	 * 首次打开making页面，完成初始化部分内容(第一个选中的album_list所包含图片的地址json串)的显示以及制作模板的下载
+	 * @param parameter 前端传来的参数，key包括login_user_id(登录用户user_id)，template(用户选择的模板名称)                                                                                                               
 	 * @return 操作完成发送给前端的参数，包括album名称列表、默认显示的album内全部图片地址的json字符串
 	 */
 	public Map<String, Object> makingSouvenirs(Map<String, String> parameter) {

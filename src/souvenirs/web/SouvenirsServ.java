@@ -81,7 +81,6 @@ public class SouvenirsServ extends HttpServlet {
 			para.put("login_user_id",
 					session.getAttribute("user_id") == null ? "" : (String) session.getAttribute("user_id"));
 
-			logger.debug(para);
 			Map<String, Object> result = new HashMap<>();
 
 			// Obtain operation
@@ -96,8 +95,8 @@ public class SouvenirsServ extends HttpServlet {
 				// Covert base64 code of image to bit flow and send it back to
 				// front side as an attachment
 				// This method is called when downloading souvenir
+				session.setAttribute("souvenir_making_done", false);
 				String content = request.getParameter("picture");
-				logger.debug(content==null);
 				String content_base64 = content.substring(content.indexOf("base64,") + 7, content.length());
 				byte[] rs_byte = Base64.decodeBytes(content_base64);
 				logger.debug("Base64 code length:" + content_base64.length() + ", Image bit length:" + rs_byte.length);
@@ -105,7 +104,7 @@ public class SouvenirsServ extends HttpServlet {
 						+ ">) made a souvenir, original base64 code size:<" + content_base64.length() + ">");
 				try {
 					OutputStream os = null;
-
+					Thread.sleep(5000);
 					response.reset();
 					response.setCharacterEncoding("UTF-8");
 					// Set MIME type as image
@@ -126,7 +125,11 @@ public class SouvenirsServ extends HttpServlet {
 					e.printStackTrace();
 					logger.info("User(id=<" + session.getAttribute("user_id") + ">) making souvenir failed. ErrorMsg:<"
 							+ e.getMessage() + ">");
+					session.setAttribute("souvenir_making_err_msg", e.getMessage());
 				}
+				//Set the flag of making done to session, in order to support checking from browser
+				//Reference of URL checkMakingDone processing part
+				session.setAttribute("souvenir_making_done", true);
 				return;
 			} else if (query_url.contentEquals("making")) {
 				// Display making page when firstly open making page
@@ -149,9 +152,45 @@ public class SouvenirsServ extends HttpServlet {
 							+ ">) obtained json string of image address in album <" + para.get("album_name") + ">");
 				} catch (Exception e) {
 					// TODO: handle exception
+					
 				}
 				return;
-			} else {
+			} else if (query_url.contentEquals("checkMakingDone")) {
+				//This part of code aims to check whether souvenir making has been done or not,which helps browser load proper page(modal)
+				//Browser asks for making flag. If making has been done, it will send "true" to browser, else it will send "false" to browser.
+				//To obtain making flag in time, browser should asks for it in a specific period.
+				String rs = new String("false");
+				if (session.getAttribute("souvenir_making_done") == null || !(boolean)session.getAttribute("souvenir_making_done"))
+					//invalid making flag or making flag equals to false
+					rs = "false";
+				else {
+					//making flag equals to true, which means souvenir making has been done
+					rs = "true";
+					//if attribute souvenir_making_err_msg in session is valid, there are some errors when making souvenir.
+					//In this situation, send error message to browser
+					if (session.getAttribute("souvenir_making_err_msg") != null) {
+						rs += ", "+session.getAttribute("souvenir_making_err_msg");
+						session.removeAttribute("souvenir_making_err_msg");
+						logger.info("Notify user's(id=<"+session.getAttribute("user_id")+">) browser that making souvenir failed.");
+					} else 
+						logger.info("Notify user's(id=<"+session.getAttribute("user_id")+">) browser that making souvenir succeed.");
+					session.removeAttribute("souvenir_making_done");
+				}
+				response.setContentType("text/xml; charset=UTF-8");
+				// Let browser not to store cache
+				response.setHeader("Cache-Control", "no-cache");
+				response.setHeader("Pragma", "no-cache");
+				try {
+					PrintWriter out = response.getWriter();
+					out.write(rs);
+					out.close();
+				} catch (Exception e) {
+					// TODO: handle exception
+					logger.warn("发送一个字符串还有异常，真是没救了."+e.getMessage());
+					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+				}
+				return;
+			}else {
 				// query_url is wrong
 				response.sendError(HttpServletResponse.SC_NOT_FOUND);
 				return;

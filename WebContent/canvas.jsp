@@ -64,6 +64,7 @@
 	var isFinished = false;
 	//Use to set interval
 	var intervalid;
+	var making_time;
 
 	//在页面加载完成后执行的脚本
 	window.onload = function() {
@@ -586,6 +587,7 @@
 		document.getElementById("download_canvas").width = R(souvenir_obj[0].originW);
 		document.getElementById("download_canvas").height = R(souvenir_obj[0].originH);
 		intervalid = setInterval("fun()", 200);
+		making_time = setInterval("checkMakingDone()", 500);
 		drawSouvenir("download_canvas");
 
 		//isDrawing = true;
@@ -606,14 +608,51 @@
 			//alert('making finished');
 			clearInterval(intervalid);
 			document.getElementById('making_form').submit();
-			isDrawing = true;
+/* 			isDrawing = true;
 			$('#myModal').modal('toggle');
 			document.getElementById("loading_content").style.display = "none";
 			document.getElementById("select_size_content").style.display = "block";
-			document.getElementById("modal_dialog").style.cssText = "";
+			document.getElementById("modal_dialog").style.cssText = ""; */
 		}
 	}
 
+	function checkMakingDone() {
+		var xmlhttp;
+		if (window.XMLHttpRequest) {
+			// IE7+, Firefox, Chrome, Opera, Safari 浏览器执行代码
+			xmlhttp = new XMLHttpRequest();
+		} else {
+			// IE6, IE5 浏览器执行代码
+			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+		}
+		//Having a response
+		xmlhttp.onreadystatechange = function() {
+			//Check response status 
+			if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+				if (xmlhttp.responseText == "true") {
+					clearInterval(making_time);
+					isDrawing = true;
+					$('#myModal').modal('toggle');
+					document.getElementById("loading_content").style.display = "none";
+					document.getElementById("select_size_content").style.display = "block";
+					document.getElementById("modal_dialog").style.cssText = "";
+				} else if (xmlhttp.responseText.indexOf("true")>=0&&xmlhttp.responseText.length>4){
+					clearInterval(making_time);
+					isDrawing = true;
+					$('#myModal').modal('toggle');
+					document.getElementById("loading_content").style.display = "none";
+					document.getElementById("select_size_content").style.display = "block";
+					document.getElementById("modal_dialog").style.cssText = "";
+					alert("Sorry, making souvenir failed! Error: "+xmlhttp.responseText.substring(5));
+				}else{
+					return;
+				}
+			}
+		}
+		//From URL and create connection
+		xmlhttp.open("GET", "checkMakingDone",  true);
+		xmlhttp.send();
+	}	
 	//This function calculates several size of downloading which would be displayed on the modal
 	//Calculate width of downloading image based on its height
 	//There are six kinds of resolution: template-original, Super High Definition(verticle 1080px), 
