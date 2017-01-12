@@ -49,14 +49,15 @@
 	border-width: 2px;
 	border-radius: 10px;
 	border-color: #99ccff;
-
 }
 
 div.album-manage-title {
 	background-color: #99ccff;
-	margin-left: -10px; border : solid;
+	margin-left: -10px;
+	border: solid;
 	border-width: 2px;
-	border: solid; border-width : 2px;
+	border: solid;
+	border-width: 2px;
 	border-color: #E8FFFF;
 }
 
@@ -96,6 +97,7 @@ div.desc {
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	overflow: hidden;
+	width:120px;
 }
 
 div.desc:hover {
@@ -225,11 +227,12 @@ div.desc a:active {
 			</div>
 		</div>
 
-		<div style="clear: both;padding-top:20px;">
+		<div style="clear: both; padding-top: 20px;">
 			<div class="album-manage">
 				<div class="album-manage-title">
 					<h4>Available Albums</h4>
 				</div>
+
 				<div class="row">
 					<div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
 
@@ -245,93 +248,50 @@ div.desc a:active {
 							<div id="TabContent" class="tab-content">
 								<div class="tab-pane fade" id="my_albums">
 
-									<div class="img">
-										<a target="_blank" href="#"><img src="/Souvenirs/res/image/default_avatar.png" alt="default_avatar"
-											width="120" height="120"></a>
-										<div class="desc">
-											<a target="_blank" href="#">My Album1</a>
-										</div>
-									</div>
+									<c:forEach var="pAlbum_item" items="${PAlbum_json_list }" varStatus="idx">
 
-									<div class="img">
-										<a target="_blank" href="#"><img src="/Souvenirs/res/image/Carousel_1.png" alt="Carousel_1" width="120"
-											height="120"></a>
-										<div class="desc">
-											<a target="_blank" href="#">My Album2</a>
+										<div class="img">
+											<a id="pAlbum_item_frame_${idx.count }" target="_blank" href="#"> <img id="pAlbum_item_img_${idx.count }" src=""
+												alt="" width="120" height="120"></a>
+											<div class="desc">
+												<a id="pAlbum_item_text_${idx.count }" target="_blank" href="#"></a>
+											</div>
 										</div>
-									</div>
 
-									<div class="img">
-										<a target="_blank" href="#"><img src="/Souvenirs/res/image/Carousel_2.png" alt="Carousel_2" width="120"
-											height="120"></a>
-										<div class="desc">
-											<a target="_blank" href="#">My Album3</a>
-										</div>
-									</div>
+										<script>
+											pAlbum_item_json = '${pAlbum_item}';
+											idx = ${	idx.count};
+											pAlbum_item_obj = JSON.parse(pAlbum_item_json);
+											document.getElementById("pAlbum_item_img_" + idx).src = pAlbum_item_obj.cover_addr;
+											document.getElementById("pAlbum_item_img_" + idx).alt = pAlbum_item_obj.album_name;
+											document.getElementById("pAlbum_item_text_" + idx).innerHTML = pAlbum_item_obj.album_name;
+										</script>
+									</c:forEach>
 
-									<div class="img">
-										<a target="_blank" href="#"><img src="/Souvenirs/res/image/Carousel_3.png" alt="Carousel_3" width="120"
-											height="120"></a>
-										<div class="desc">
-											<a target="_blank" href="#">My Album4</a>
-										</div>
-									</div>
-
-									<div class="img">
-										<a target="_blank" href="#"><img src="/Souvenirs/res/image/Carousel_4.png" alt="Carousel_4" width="120"
-											height="120"></a>
-										<div class="desc">
-											<a target="_blank" href="#">My Album5</a>
-										</div>
-									</div>
-
-									<div style="clear: both; padding-top: 5px;">
-										<ul class="pager">
-											<li style="margin-right: 10%"><a href="#">&larr; Previous</a></li>
-											<li class="page-number">Page 1 of 3</li>
-											<li style="margin-left: 10%"><a href="#">Next &rarr;</a></li>
-										</ul>
-									</div>
 								</div>
 
 								<div class="tab-pane fade" id="shared_albums">
-									<div class="img">
-										<a target="_blank" href="#"><img src="/Souvenirs/res/image/default_avatar.png" alt="default_avatar"
-											width="120" height="120"></a>
-										<div class="desc">Shared Album1</div>
-									</div>
+								
+									<c:forEach var="sAlbum_item" items="${SAlbum_json_list }" varStatus="idx">
 
-									<div class="img">
-										<a target="_blank" href="#"><img src="/Souvenirs/res/image/Carousel_1.png" alt="Carousel_1" width="120"
-											height="120"></a>
-										<div class="desc">Shared Album2</div>
-									</div>
+										<div class="img">
+											<a id="sAlbum_item_frame_${idx.count }" target="_blank" href="#"> <img id="sAlbum_item_img_${idx.count }" src=""
+												alt="" width="120" height="120"></a>
+											<div class="desc">
+												<a id="sAlbum_item_text_${idx.count }" target="_blank" href="#"></a>
+											</div>
+										</div>
 
-									<div class="img">
-										<a target="_blank" href="#"><img src="/Souvenirs/res/image/Carousel_2.png" alt="Carousel_2" width="120"
-											height="120"></a>
-										<div class="desc">Shared Album3</div>
-									</div>
-
-									<div class="img">
-										<a target="_blank" href="#"><img src="/Souvenirs/res/image/Carousel_3.png" alt="Carousel_3" width="120"
-											height="120"></a>
-										<div class="desc">Shared Album4</div>
-									</div>
-
-									<div class="img">
-										<a target="_blank" href="#"><img src="/Souvenirs/res/image/Carousel_4.png" alt="Carousel_4" width="120"
-											height="120"></a>
-										<div class="desc">Shared Album5</div>
-									</div>
-
-									<div style="clear: both; padding-top: 5px;">
-										<ul class="pager">
-											<li style="margin-right: 10%"><a href="#">&larr; Previous</a></li>
-											<li class="page-number">Page 1 of 3</li>
-											<li style="margin-left: 10%"><a href="#">Next &rarr;</a></li>
-										</ul>
-									</div>
+										<script>
+											sAlbum_item_json = '${sAlbum_item}';
+											idx = ${	idx.count};
+											sAlbum_item_obj = JSON.parse(sAlbum_item_json);
+											document.getElementById("sAlbum_item_img_" + idx).src = sAlbum_item_obj.cover_addr;
+											document.getElementById("sAlbum_item_img_" + idx).alt = sAlbum_item_obj.album_name;
+											document.getElementById("sAlbum_item_text_" + idx).innerHTML = sAlbum_item_obj.album_name;
+										</script>
+									</c:forEach>
+								
 								</div>
 
 								<div class="tab-pane fade" id="create_album">

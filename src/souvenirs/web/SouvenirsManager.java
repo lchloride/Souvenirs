@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
+import org.json.JSONObject;
 
+import souvenirs.PersonalAlbum;
+import souvenirs.SharedAlbum;
 import souvenirs.dao.SouvenirsDAO;
 import tool.ImageLoader;
 import tool.PropertyOper;
@@ -47,15 +49,39 @@ public class SouvenirsManager {
 	 * 显示用户主页，获取相册的信息。<strong>注意：本方法未完成</strong>
 	 * @param parameter 前端传来的参数
 	 * @return 发回前端的显示参数
+	 * @throws Exception 获取Album信息失败会抛出异常
+	 * @see souvenirs.dao.SouvenirsDAO#getAlbumInfo(String)
 	 */
-	public Map<String, Object> displayContent(Map<String, String> parameter) {
+	public Map<String, Object> displayContent(Map<String, String> parameter) throws Exception {
 		checkValidDAO();
 		Map<String, Object> result = new HashMap<>();
-		List<String> para = new ArrayList<>();
-		para.add("user");
-		para.add(parameter.get("login_user_id"));
-		logger.debug("Image Query Parameter: "+para);
-		result.put("Avatar" ,ImageLoader.genImageQuery(false, para));
+		result.put("Avatar" ,ImageLoader.genAddrOfAvatar(parameter.get("login_user_id")));
+		
+		List<PersonalAlbum> rPAlbums = dao.getPAlbumInfo(parameter.get("login_user_id"), SouvenirsDAO.PERSONAL_ALBUM);
+		JSONObject personal_album_json = null;
+		Map<String, String> personal_album_map = new HashMap<>();
+		List<String> person_album_json_list = new ArrayList<>();
+		for (PersonalAlbum personalAlbum : rPAlbums) {
+			personal_album_map.put("album_name", personalAlbum.getAlbumName());
+			personal_album_map.put("cover_addr", ImageLoader.genAddrOfPAlbumCover(parameter.get("login_user_id"), personalAlbum.getAlbumName()));
+			personal_album_json = new JSONObject(personal_album_map);
+			person_album_json_list.add(personal_album_json.toString().replaceAll("'", "&apos;"));
+		}
+		result.put("PAlbum_json_list", person_album_json_list);
+		//logger.debug("personal_album_json=<"+person_album_json_list+">");
+	
+		List<SharedAlbum> rSAlbums = dao.getSAlbumInfo(parameter.get("login_user_id"), SouvenirsDAO.SHARED_ALBUM);
+		JSONObject shared_album_json = null;
+		Map<String, String> shared_album_map = new HashMap<>();
+		List<String> shared_album_json_list = new ArrayList<>();
+		for (SharedAlbum sharedAlbum : rSAlbums) {
+			shared_album_map.put("album_name", sharedAlbum.getSharedAlbumName());
+			shared_album_map.put("cover_addr", ImageLoader.genAddrOfSAlbumCover(sharedAlbum.getGroupId()));
+			shared_album_json = new JSONObject(shared_album_map);
+			shared_album_json_list.add(shared_album_json.toString().replaceAll("'", "&apos;"));
+		}
+		result.put("SAlbum_json_list", shared_album_json_list);
+		//logger.debug("personal_album_json=<"+person_album_json_list+">");
 		result.put("DispatchURL", "homepage.jsp");
 		return result;
 	}
@@ -97,15 +123,10 @@ public class SouvenirsManager {
 		List<List<Object>> image_list = dao.getPictureAddrInAlbum(parameter.get("login_user_id"), parameter.get("album_name"));
 		List<Map<String, String>> image_addr_list = new ArrayList<>();
 		for (List<Object> list : image_list) {
-			//Form parameters for generating image address
-			List<String> para = new ArrayList<>();
-			para.add((String)list.get(OWNER_ID));
-			para.add((String)list.get(OWNER_ALBUM_NAME));
-			para.add((String)list.get(OWNER_FILENAME));
 			//Form json object of filename and address
 			Map<String, String> image_content = new HashMap<>();
 			image_content.put("Filename", (String)list.get(OWNER_FILENAME));
-			image_content.put("Addr", ImageLoader.genImageQuery(true, para));
+			image_content.put("Addr", ImageLoader.genAddrOfPicture((String)list.get(OWNER_ID), (String)list.get(OWNER_ALBUM_NAME), (String)list.get(OWNER_FILENAME)));
 			image_addr_list.add(image_content);
 		}
 		//From json string from image_addr_list which stores json object of each image
