@@ -74,6 +74,8 @@
 			document.getElementById("hint").style.position = "static";
 			document.getElementById("hint").style.paddingTop = "0px";
 			document.getElementById("main_body").style.minHeight = "10em";
+			document.getElementById("div_oper").style.width = (display_width * 0.8)
+					+ "px";
 			alert("Invalid template name!");
 			//throw SyntaxError();
 		}
@@ -570,25 +572,29 @@
 		document.getElementById("select_size_content").style.display = "none";
 		document.getElementById("loading_content").style.display = "block";
 		document.getElementById("modal_dialog").style.width = "400px";
-		if (document.getElementById("origin_size").checked)
-			download_ratio = 1;
-		else if (document.getElementById("SHD_size").checked)
-			download_ratio = 1080 / souvenir_obj[0].originH;
-		else if (document.getElementById("HD_size").checked)
-			download_ratio = 720 / souvenir_obj[0].originH;
-		else if (document.getElementById("SD_size").checked)
-			download_ratio = 576 / souvenir_obj[0].originH;
-		else if (document.getElementById("LD_size").checked)
-			download_ratio = 480 / souvenir_obj[0].originH;
-		else if (document.getElementById("edit_size").checked)
-			download_ratio = ratio;
-		else
-			download_ratio = ratio;
-		document.getElementById("download_canvas").width = R(souvenir_obj[0].originW);
-		document.getElementById("download_canvas").height = R(souvenir_obj[0].originH);
-		intervalid = setInterval("fun()", 200);
-		making_time = setInterval("checkMakingDone()", 500);
-		drawSouvenir("download_canvas");
+		//休眠1秒，防止页面瞬间卡死
+		var t1 = setTimeout(
+				function() {
+					if (document.getElementById("origin_size").checked)
+						download_ratio = 1;
+					else if (document.getElementById("SHD_size").checked)
+						download_ratio = 1080 / souvenir_obj[0].originH;
+					else if (document.getElementById("HD_size").checked)
+						download_ratio = 720 / souvenir_obj[0].originH;
+					else if (document.getElementById("SD_size").checked)
+						download_ratio = 576 / souvenir_obj[0].originH;
+					else if (document.getElementById("LD_size").checked)
+						download_ratio = 480 / souvenir_obj[0].originH;
+					else if (document.getElementById("edit_size").checked)
+						download_ratio = ratio;
+					else
+						download_ratio = ratio;
+					document.getElementById("download_canvas").width = R(souvenir_obj[0].originW);
+					document.getElementById("download_canvas").height = R(souvenir_obj[0].originH);
+					intervalid = setInterval("fun()", 200);
+					making_time = setInterval("checkMakingDone()", 500);
+					drawSouvenir("download_canvas");
+				}, 1000);
 
 		//isDrawing = true;
 	}
@@ -608,11 +614,6 @@
 			//alert('making finished');
 			clearInterval(intervalid);
 			document.getElementById('making_form').submit();
-/* 			isDrawing = true;
-			$('#myModal').modal('toggle');
-			document.getElementById("loading_content").style.display = "none";
-			document.getElementById("select_size_content").style.display = "block";
-			document.getElementById("modal_dialog").style.cssText = ""; */
 		}
 	}
 
@@ -636,23 +637,25 @@
 					document.getElementById("loading_content").style.display = "none";
 					document.getElementById("select_size_content").style.display = "block";
 					document.getElementById("modal_dialog").style.cssText = "";
-				} else if (xmlhttp.responseText.indexOf("true")>=0&&xmlhttp.responseText.length>4){
+				} else if (xmlhttp.responseText.indexOf("true") >= 0
+						&& xmlhttp.responseText.length > 4) {
 					clearInterval(making_time);
 					isDrawing = true;
 					$('#myModal').modal('toggle');
 					document.getElementById("loading_content").style.display = "none";
 					document.getElementById("select_size_content").style.display = "block";
 					document.getElementById("modal_dialog").style.cssText = "";
-					alert("Sorry, making souvenir failed! Error: "+xmlhttp.responseText.substring(5));
-				}else{
+					alert("Sorry, making souvenir failed! Error: "
+							+ xmlhttp.responseText.substring(5));
+				} else {
 					return;
 				}
 			}
 		}
 		//From URL and create connection
-		xmlhttp.open("GET", "checkMakingDone",  true);
+		xmlhttp.open("GET", "checkMakingDone", true);
 		xmlhttp.send();
-	}	
+	}
 	//This function calculates several size of downloading which would be displayed on the modal
 	//Calculate width of downloading image based on its height
 	//There are six kinds of resolution: template-original, Super High Definition(verticle 1080px), 
@@ -691,10 +694,10 @@
 }
 
 .oper-content {
-	margin-left: 20px;
+	padding-left: 20px;
 	position: absolute;
 	top: 70px;
-	margin-right: 20px;
+	padding-right: 20px;
 }
 
 #div_canvas {
@@ -822,22 +825,35 @@ div.border-rect-active {
 			</div>
 			<div>
 				<ul class="nav navbar-nav">
-					<li class="active"><a href="homepage">HomePage</a></li>
-					<li><a href="#">Group</a></li>
-					<li><a href="#">Upload</a></li>
+					<li class="active">
+						<a href="homepage">HomePage</a>
+					</li>
+					<li>
+						<a href="#">Group</a>
+					</li>
+					<li>
+						<a href="#">Upload</a>
+					</li>
 				</ul>
 
 				<ul class="nav navbar-nav navbar-right" style="padding-right: 5%">
-					<li><img class="navbar-form" src="${empty Avatar?'/Souvenirs/res/image/default_avatar.png':Avatar}"
-						alt="avatar" width="32" height="32"></li>
-					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">${sessionScope.username} <b
-							class="caret"></b>
-					</a>
+					<li>
+						<img class="navbar-form" src="${empty Avatar?'/Souvenirs/res/image/default_avatar.png':Avatar}" alt="avatar" width="32"
+							height="32">
+					</li>
+					<li class="dropdown">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown">${sessionScope.username} <b class="caret"></b>
+						</a>
 						<ul class="dropdown-menu">
-							<li><a href="account.jsp">Account</a></li>
+							<li>
+								<a href="account.jsp">Account</a>
+							</li>
 							<li class="divider"></li>
-							<li><a href="logout">Logout</a></li>
-						</ul></li>
+							<li>
+								<a href="logout">Logout</a>
+							</li>
+						</ul>
+					</li>
 				</ul>
 			</div>
 		</div>
@@ -848,8 +864,8 @@ div.border-rect-active {
 			<textarea id="picture" style="display: none" name="picture"></textarea>
 
 			<div id="div_canvas">
-				<canvas id="myCanvas" width="400" height="300" style="border:1px solid #c3c3c3;"> Sorry, your browser does
-				not support HTML5 canvas tag, we suggest using Chrome or Firefox to achieve best experience. </canvas>
+				<canvas id="myCanvas" width="400" height="300" style="border:1px solid #c3c3c3;"> Sorry, your browser does not
+				support HTML5 canvas tag, we suggest using Chrome or Firefox to achieve best experience. </canvas>
 				<!-- Hidden canvas for drawing downloading image in assigned size -->
 				<canvas id="download_canvas" width="400" height="300" style="display:none"></canvas>
 				<!-- Show border of each component -->
@@ -865,8 +881,7 @@ div.border-rect-active {
 			<div class="oper-content" id="div_oper">
 				<!-- The following content is the one of display hint page -->
 				<div id="hint" style="padding-top: 40%">
-					<h4 id="hint_text" style="text-align: center;">Click on the rectangle area in the preview image to modify its
-						content.</h4>
+					<h4 id="hint_text" style="text-align: center;">Click on the rectangle area in the preview image to modify its content.</h4>
 				</div>
 
 				<!-- The following content is the one of selecting a picture from album -->
@@ -874,8 +889,8 @@ div.border-rect-active {
 					<h4>Select Pictures from Album</h4>
 
 					<div class="form-group">
-						<label for="name">Album</label> <select class="form-control" name="Select_album_name"
-							onchange="queryImageInAlbum()" id="select_album_name">
+						<label for="name">Album</label>
+						<select class="form-control" name="Select_album_name" onchange="queryImageInAlbum()" id="select_album_name">
 							<c:forEach var="album_name" items="${Album_List}">
 								<option>${album_name }</option>
 							</c:forEach>
@@ -891,8 +906,7 @@ div.border-rect-active {
 
 					<!-- Add button -->
 					<div style="margin-top: 10px;">
-						<button class="btn-sm btn-primary" id="add_pic_btn" type="button" onclick="addImage2Canvas()">Add
-							Selected Image</button>
+						<button class="btn-sm btn-primary" id="add_pic_btn" type="button" onclick="addImage2Canvas()">Add Selected Image</button>
 					</div>
 				</div>
 
@@ -902,8 +916,8 @@ div.border-rect-active {
 					<div class="form-group">
 						<label for="name">Input your words below </label>
 						<textarea id="text_content" class="form-control" rows="3" style="width: 100%"></textarea>
-						<span class="help-block"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> Notice:
-							Over-long text may be displayed improperly.</span>
+						<span class="help-block"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> Notice: Over-long
+							text may be displayed improperly.</span>
 					</div>
 
 					<h5 style="font-weight: bold">Set Attributes</h5>
@@ -988,8 +1002,8 @@ div.border-rect-active {
 									Height</div>
 								<div class="col-xs-6 narrow-col"> -->
 
-							<span style="float: left; padding: 10px">Line Height</span> <select class="form-control" id="line_height_select"
-								style="float: left; width: 50%"
+							<span style="float: left; padding: 10px">Line Height</span>
+							<select class="form-control" id="line_height_select" style="float: left; width: 50%"
 								onchange="souvenir_obj[proc_position].lineH=parseFloat(document.getElementById('line_height_select').value)">
 								<option id="line_height_10">1</option>
 								<option id="line_height_15">1.5</option>
@@ -1028,34 +1042,40 @@ div.border-rect-active {
 				<div class="modal-body">
 					<div class="radio"
 						style="margin-bottom: 10px; padding-bottom: 10px; border-bottom-style: solid; border-width: 1px; border-color: #999999;">
-						<label> <input type="radio" name="optionsRadios" id="origin_size" value="origin_size"> Origin
-							Resolution (<span id="origin_size_text"></span>)
+						<label>
+							<input type="radio" name="optionsRadios" id="origin_size" value="origin_size">
+							Origin Resolution (<span id="origin_size_text"></span>)
 						</label>
 					</div>
 					<div class="radio">
-						<label> <input type="radio" name="optionsRadios" id="SHD_size" value="SHD_size"> Super High
-							Resolution (<span id="SHD_size_text"></span>)
+						<label>
+							<input type="radio" name="optionsRadios" id="SHD_size" value="SHD_size">
+							Super High Resolution (<span id="SHD_size_text"></span>)
 						</label>
 					</div>
 					<div class="radio">
-						<label> <input type="radio" name="optionsRadios" id="HD_size" value="HD_size" checked> High
-							Resolution(<span id="HD_size_text"></span>)
+						<label>
+							<input type="radio" name="optionsRadios" id="HD_size" value="HD_size" checked>
+							High Resolution(<span id="HD_size_text"></span>)
 						</label>
 					</div>
 					<div class="radio">
-						<label> <input type="radio" name="optionsRadios" id="SD_size" value="SD_size"> Standard Resolution
-							(<span id="SD_size_text"></span>)
+						<label>
+							<input type="radio" name="optionsRadios" id="SD_size" value="SD_size">
+							Standard Resolution (<span id="SD_size_text"></span>)
 						</label>
 					</div>
 					<div class="radio"
 						style="margin-bottom: 10px; padding-bottom: 10px; border-bottom-style: solid; border-width: 1px; border-color: #999999">
-						<label> <input type="radio" name="optionsRadios" id="LD_size" value="LD_size"> Low Resolution (<span
-							id="LD_size_text"></span>)
+						<label>
+							<input type="radio" name="optionsRadios" id="LD_size" value="LD_size">
+							Low Resolution (<span id="LD_size_text"></span>)
 						</label>
 					</div>
 					<div class="radio">
-						<label> <input type="radio" name="optionsRadios" id="edit_size" value="edit_size"> Resolution of
-							Editing Image (<span id="edit_size_text"></span>)
+						<label>
+							<input type="radio" name="optionsRadios" id="edit_size" value="edit_size">
+							Resolution of Editing Image (<span id="edit_size_text"></span>)
 						</label>
 					</div>
 					<h5>

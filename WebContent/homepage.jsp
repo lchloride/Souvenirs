@@ -44,6 +44,7 @@
 	margin-right: 0px;
 	padding-left: 10px;
 	padding-right: 0%;
+	padding-bottom:20px;
 	width: 100%;
 	border: solid;
 	border-width: 2px;
@@ -92,8 +93,8 @@ div.img:hover {
 div.desc {
 	text-align: center;
 	font-weight: normal;
-	margin: 2px;
-	margin-top: 5px;
+	margin: 5px auto;
+ 	margin-top: 5px; 
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	overflow: hidden;
@@ -101,8 +102,10 @@ div.desc {
 }
 
 div.desc:hover {
-	text-overflow: inherit;
-	overflow: visible;
+	white-space: normal;
+	text-overflow: clip;
+	 word-wrap: break-word;
+	/*overflow: visible;  */
 }
 
 div.desc a:link {
@@ -121,6 +124,7 @@ div.desc a:active {
 	border-left-style: solid;
 	border-width: 1px;
 	text-align: center;
+	padding-top:10px;
 }
 
 .small-grid {
@@ -278,7 +282,7 @@ div.desc a:active {
 											<a id="sAlbum_item_frame_${idx.count }" target="_blank" href="#"> <img id="sAlbum_item_img_${idx.count }" src=""
 												alt="" width="120" height="120"></a>
 											<div class="desc">
-												<a id="sAlbum_item_text_${idx.count }" target="_blank" href="#"></a>
+												<a id="sAlbum_item_text_${idx.count }" target="_blank" href="#" style="width:120px;"></a>
 											</div>
 										</div>
 
@@ -310,7 +314,7 @@ div.desc a:active {
 											<div class="form-group">
 												<label for="firstname" class="col-sm-3 control-label small-grid">Cover</label>
 												<div class="col-sm-9 small-grid">
-													<input type="text" class="form-control" id="firstname" placeholder="Choose its cover from file system">
+													<input type="text" class="form-control" id="firstname" placeholder="Choose cover from local files">
 												</div>
 											</div>
 										</div>
