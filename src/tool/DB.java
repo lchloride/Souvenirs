@@ -65,8 +65,12 @@ public class DB {
 	 * @param <T> template type, usually referring to a Bean class
 	 *  
 	 * @return a set of column names, result content
+	 * 
+	 * @throws Exception exception from database operation or from method.format() method
+	 * 
+	 * @see tool.Store#format(List)
 	 */
-	public static <T> Object[] execSQLQuery(String sql, List<String> para, Store<T> method) {
+	public static <T> List<T> execSQLQuery (String sql, List<String> para, Store<T> method) throws Exception {
 		List<T> form = new ArrayList<T>();
 		List<String> col_name = new ArrayList<>();
 
@@ -97,6 +101,7 @@ public class DB {
 			}
 		} catch (Exception e) {
 			logger.warn("exec SQL failed! SQL:<" + sql + "> Msg:<" + e.getMessage() + ">", e);
+			throw e;
 		} finally {
 			// TODO: handle finally clause
 			try {
@@ -113,10 +118,7 @@ public class DB {
 				e.printStackTrace();
 			}
 		}
-		Object[] result = new Object[2];
-		result[0] = col_name;
-		result[1] = form;
-		return result;
+		return form;
 	}
 
 	/**

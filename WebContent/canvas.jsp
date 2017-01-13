@@ -44,7 +44,9 @@
 	//If there is some error with Ajax, it would be assign to empty json string and would not display anything
 	var image_json = '${empty Image_JSON?"[]":Image_JSON}';
 	//souvenir_json is the json string of souvenir template obtained from server
-	var souvenir_json = '[{"background":"BBB.jpg","originW":1960,"originH":2240},{"type":"image","url":"/Souvenirs/res/image/default_avatar.png","startX":107,"startY":252,"drawW":1092,"drawH":658,"zoom":0,"moveX":0,"moveY":0,"t11":1,"t12":0,"t13":0,"t21":0,"t22":1,"t23":0,"clipShape":"circle","clipPara":[653,581,329]},{"type":"text","text":"abcde","startX":1204,"startY":337,"maxW":531,"maxH":263,"style":"Arial","size":16,"color":"black","bold":false,"italic":false,"paddingL":96,"paddingR":87,"paddingT":51,"paddingB":44,"lineH":1.5,"clipShape":"rect"},{"type":"text","text":"text2","startX":86,"startY":1036,"maxW":387,"maxH":345,"style":"Comic Sans MS","size":16,"color":"blue","bold":true,"italic":false,"paddingL":62,"paddingR":60,"paddingT":100,"paddingB":103,"lineH":1.5,"clipShape":"rect"},{"type":"image","url":"/Souvenirs/res/image/index_bg.jpg","startX":618,"startY":951,"drawW":1144,"drawH":618,"zoom":0,"moveX":0,"moveY":0,"t11":1,"t12":0,"t13":0,"t21":0,"t22":1,"t23":0,"clipShape":"rect"},{"type":"image","url":"/Souvenirs/res/image/bg.jpg","startX":113,"startY":1593,"drawW":1152,"drawH":548,"zoom":0,"moveX":0,"moveY":0,"t11":1,"t12":0,"t13":0,"t21":0,"t22":1,"t23":0,"clipShape":"rect"},{"type":"text","text":"text3","startX":1329,"startY":1606,"maxW":498,"maxH":476,"style":"Times New Roman","size":18,"color":"Green","bold":false,"italic":true,"paddingL":20,"paddingR":18,"paddingT":17,"paddingB":17,"lineH":1.5,"clipShape":"rect"}]';
+	//var souvenir_json = '[{"background":"bbb.jpg","originW":1960,"originH":2240},{"type":"image","url":"/Souvenirs/res/image/default_avatar.png","startX":107,"startY":252,"drawW":1092,"drawH":658,"zoom":0,"moveX":0,"moveY":0,"t11":1,"t12":0,"t13":0,"t21":0,"t22":1,"t23":0,"clipShape":"circle","clipPara":[653,581,329]},{"type":"text","text":"abcde","startX":1204,"startY":337,"maxW":531,"maxH":263,"style":"Arial","size":16,"color":"black","bold":false,"italic":false,"paddingL":96,"paddingR":87,"paddingT":51,"paddingB":44,"lineH":1.5,"clipShape":"rect"},{"type":"text","text":"text2","startX":86,"startY":1036,"maxW":387,"maxH":345,"style":"Comic Sans MS","size":16,"color":"blue","bold":true,"italic":false,"paddingL":62,"paddingR":60,"paddingT":100,"paddingB":103,"lineH":1.5,"clipShape":"rect"},{"type":"image","url":"/Souvenirs/res/image/index_bg.jpg","startX":618,"startY":951,"drawW":1144,"drawH":618,"zoom":0,"moveX":0,"moveY":0,"t11":1,"t12":0,"t13":0,"t21":0,"t22":1,"t23":0,"clipShape":"rect"},{"type":"image","url":"/Souvenirs/res/image/bg.jpg","startX":113,"startY":1593,"drawW":1152,"drawH":548,"zoom":0,"moveX":0,"moveY":0,"t11":1,"t12":0,"t13":0,"t21":0,"t22":1,"t23":0,"clipShape":"rect"},{"type":"text","text":"text3","startX":1329,"startY":1606,"maxW":498,"maxH":476,"style":"Times New Roman","size":18,"color":"Green","bold":false,"italic":true,"paddingL":20,"paddingR":18,"paddingT":17,"paddingB":17,"lineH":1.5,"clipShape":"rect"}]';
+	var souvenir_json = '${Template_json}';
+
 	//souvenir_obj is a object parsed from souvenir_json, almost every drawing would operate souvenir_obj 
 	var souvenir_obj = JSON.parse(souvenir_json);
 	//This is the ratio of canvas's real height to original background height. 
@@ -62,9 +64,21 @@
 	var isFinished = false;
 	//Use to set interval
 	var intervalid;
+	var making_time;
 
 	//在页面加载完成后执行的脚本
 	window.onload = function() {
+		if (souvenir_json == "[]") {
+			document.getElementById("div_canvas").style.display = "none";
+			document.getElementById("hint_text").innerHTML = "Sorry, selected template seems to be missing, please check parameter. For more information, please contact administrator or go to <a href='/Souvenirs/homepage'>homepage</a> to select a template.";
+			document.getElementById("hint").style.position = "static";
+			document.getElementById("hint").style.paddingTop = "0px";
+			document.getElementById("main_body").style.minHeight = "10em";
+			document.getElementById("div_oper").style.width = (display_width * 0.8)
+					+ "px";
+			alert("Invalid template name!");
+			//throw SyntaxError();
+		}
 		//set height and width of canvas that fits the displaying area
 		//设置能够匹配窗口大小的canvas宽度和高度
 		changeContentSize();
@@ -87,14 +101,14 @@
 		var c = document.getElementById(canvas_id);
 		var ctx = c.getContext("2d");
 
-		document.getElementById("size").innerHTML = JSON
-				.stringify(souvenir_obj);
+/* 		document.getElementById("size").innerHTML = JSON
+				.stringify(souvenir_obj); */
 		//Processing first part of templete
 		var idx = 1;
 		isFinished = false;
 		//Loading background image
 		bg = new Image();
-		bg.src = "res/image/" + souvenir_obj[0].background;
+		bg.src = "res/image/template/" + souvenir_obj[0].background;
 		bg.onload = function() {
 			//Drawing bavkground image
 			ctx.drawImage(bg, 0, 0, c.width, c.height);
@@ -151,6 +165,7 @@
 	//本函数根据idx决定要调用的绘图方法
 	function drawContent(ctx, idx) {
 		//If idx points to an invalid item in templete, just return
+		document.getElementById("size").innerHTML += idx+", ";
 		if (isError || souvenir_obj[idx] == undefined
 				|| souvenir_obj[idx] == null
 				|| souvenir_obj[idx].type == undefined
@@ -197,7 +212,7 @@
 			idx++;
 			//Draw the next image/text
 			drawContent(ctx, idx);
-		})(idx)
+		})(idx);
 
 		image.onerror = function() {
 			isError = true;
@@ -519,7 +534,7 @@
 				+ "px";
 
 		drawSouvenir("myCanvas");
-		drawBorderRect();
+		setTimeout(drawBorderRect(), 200);
 	}
 
 	//本函数是用户单击加粗按钮时的响应函数，如果之前是加粗状态就改成不加粗，否则改成加粗，同时对显示按钮的样式进行修改
@@ -558,24 +573,29 @@
 		document.getElementById("select_size_content").style.display = "none";
 		document.getElementById("loading_content").style.display = "block";
 		document.getElementById("modal_dialog").style.width = "400px";
-		if (document.getElementById("origin_size").checked)
-			download_ratio = 1;
-		else if (document.getElementById("SHD_size").checked)
-			download_ratio = 1080 / souvenir_obj[0].originH;
-		else if (document.getElementById("HD_size").checked)
-			download_ratio = 720 / souvenir_obj[0].originH;
-		else if (document.getElementById("SD_size").checked)
-			download_ratio = 576 / souvenir_obj[0].originH;
-		else if (document.getElementById("LD_size").checked)
-			download_ratio = 480 / souvenir_obj[0].originH;
-		else if (document.getElementById("edit_size").checked)
-			download_ratio = ratio;
-		else
-			download_ratio = ratio;
-		document.getElementById("download_canvas").width = R(souvenir_obj[0].originW);
-		document.getElementById("download_canvas").height = R(souvenir_obj[0].originH);
-		intervalid = setInterval("fun()", 200);
-		drawSouvenir("download_canvas");
+		//休眠1秒，防止页面瞬间卡死
+		var t1 = setTimeout(
+				function() {
+					if (document.getElementById("origin_size").checked)
+						download_ratio = 1;
+					else if (document.getElementById("SHD_size").checked)
+						download_ratio = 1080 / souvenir_obj[0].originH;
+					else if (document.getElementById("HD_size").checked)
+						download_ratio = 720 / souvenir_obj[0].originH;
+					else if (document.getElementById("SD_size").checked)
+						download_ratio = 576 / souvenir_obj[0].originH;
+					else if (document.getElementById("LD_size").checked)
+						download_ratio = 480 / souvenir_obj[0].originH;
+					else if (document.getElementById("edit_size").checked)
+						download_ratio = ratio;
+					else
+						download_ratio = ratio;
+					document.getElementById("download_canvas").width = R(souvenir_obj[0].originW);
+					document.getElementById("download_canvas").height = R(souvenir_obj[0].originH);
+					intervalid = setInterval("fun()", 200);
+					making_time = setInterval("checkMakingDone()", 500);
+					drawSouvenir("download_canvas");
+				}, 1000);
 
 		//isDrawing = true;
 	}
@@ -585,6 +605,7 @@
 		if (isFinished) {
 			document.getElementById('picture').innerHTML = document
 					.getElementById('download_canvas').toDataURL('image/png');
+			//alert(document.getElementById('picture').innerHTML.length/1024/1024);
 			if (document.getElementById('picture').innerHTML.length >= 10485760) {
 				alert("Souvenir is too large, its size should be less than 7MB");
 				clearInterval(intervalid);
@@ -594,14 +615,48 @@
 			//alert('making finished');
 			clearInterval(intervalid);
 			document.getElementById('making_form').submit();
-			isDrawing = true;
-			$('#myModal').modal('toggle');
-			document.getElementById("loading_content").style.display = "none";
-			document.getElementById("select_size_content").style.display = "block";
-			document.getElementById("modal_dialog").style.cssText = "";
 		}
 	}
 
+	function checkMakingDone() {
+		var xmlhttp;
+		if (window.XMLHttpRequest) {
+			// IE7+, Firefox, Chrome, Opera, Safari 浏览器执行代码
+			xmlhttp = new XMLHttpRequest();
+		} else {
+			// IE6, IE5 浏览器执行代码
+			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+		}
+		//Having a response
+		xmlhttp.onreadystatechange = function() {
+			//Check response status 
+			if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+				if (xmlhttp.responseText == "true") {
+					clearInterval(making_time);
+					isDrawing = true;
+					$('#myModal').modal('toggle');
+					document.getElementById("loading_content").style.display = "none";
+					document.getElementById("select_size_content").style.display = "block";
+					document.getElementById("modal_dialog").style.cssText = "";
+				} else if (xmlhttp.responseText.indexOf("true") >= 0
+						&& xmlhttp.responseText.length > 4) {
+					clearInterval(making_time);
+					isDrawing = true;
+					$('#myModal').modal('toggle');
+					document.getElementById("loading_content").style.display = "none";
+					document.getElementById("select_size_content").style.display = "block";
+					document.getElementById("modal_dialog").style.cssText = "";
+					alert("Sorry, making souvenir failed! Error: "
+							+ xmlhttp.responseText.substring(5));
+				} else {
+					return;
+				}
+			}
+		}
+		//From URL and create connection
+		xmlhttp.open("GET", "checkMakingDone", true);
+		xmlhttp.send();
+	}
 	//This function calculates several size of downloading which would be displayed on the modal
 	//Calculate width of downloading image based on its height
 	//There are six kinds of resolution: template-original, Super High Definition(verticle 1080px), 
@@ -640,10 +695,10 @@
 }
 
 .oper-content {
-	margin-left: 20px;
+	padding-left: 20px;
 	position: absolute;
 	top: 70px;
-	margin-right: 20px;
+	padding-right: 20px;
 }
 
 #div_canvas {
@@ -795,6 +850,8 @@ div.border-rect-active {
 		<form class="from" role="form" action="formPicture" method="post" id="making_form">
 			<!-- Hidden textarea for storing base64 code of downloading image -->
 			<textarea id="picture" style="display: none" name="picture"></textarea>
+			<!-- Hidden input form for storing souvenir name appearing at filename-->
+			<input id="Text_souvenir_name_instead" name="Text_souvenir_name" style="display: none" />
 
 			<div id="div_canvas">
 				<canvas id="myCanvas" width="400" height="300" style="border:1px solid #c3c3c3;"> Sorry, your browser does
@@ -814,7 +871,8 @@ div.border-rect-active {
 			<div class="oper-content" id="div_oper">
 				<!-- The following content is the one of display hint page -->
 				<div id="hint" style="padding-top: 40%">
-					<h4 style="text-align: center;">Click on the rectangle area in the preview image to modify its content.</h4>
+					<h4 id="hint_text" style="text-align: center;">Click on the rectangle area in the preview image to modify its
+						content.</h4>
 				</div>
 
 				<!-- The following content is the one of selecting a picture from album -->
@@ -855,7 +913,7 @@ div.border-rect-active {
 					</div>
 
 					<h5 style="font-weight: bold">Set Attributes</h5>
-					
+
 					<!-- Choose fonts -->
 					<div class="row">
 						<div class="col-sm-7 col-md-4 col-lg-4 narrow-col">
@@ -870,10 +928,10 @@ div.border-rect-active {
 									<%
 										Locale loc = request.getLocale();
 										//out.println(loc.toString());
-/* 										String[] fontnames = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames(loc);//获得当前系统字体  
-										for (int i=0; i<fontnames.length; i++) {
-											out.println("<option id='style_'>"+fontnames[i]+"</option>");
-										} */
+										/* 										String[] fontnames = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames(loc);//获得当前系统字体  
+																				for (int i=0; i<fontnames.length; i++) {
+																					out.println("<option id='style_'>"+fontnames[i]+"</option>");
+																				} */
 										if (loc.toString().compareTo("zh_CN") == 0) {
 											out.println("<option id='style_Verda'>宋体</option>");
 											out.println("<option id='style_Verda'>楷体</option>");
@@ -935,7 +993,7 @@ div.border-rect-active {
 								<div class="col-xs-5 col-sm-5 col-md-5 col-lg-4 narrow-col">Line
 									Height</div>
 								<div class="col-xs-6 narrow-col"> -->
-								
+
 							<span style="float: left; padding: 10px">Line Height</span> <select class="form-control" id="line_height_select"
 								style="float: left; width: 50%"
 								onchange="souvenir_obj[proc_position].lineH=parseFloat(document.getElementById('line_height_select').value)">
@@ -961,8 +1019,8 @@ div.border-rect-active {
 		</form>
 	</div>
 
-	<div id="size" style="display: none"></div>
-	<div class="footer">Copyright &copy; 2016 Souvenirs, All Rights Reserved.</div>
+	<div id="size" style="display: block"></div>
+	<div class="footer">Copyright &copy; 2016-2017 Souvenirs, All Rights Reserved.</div>
 
 	<!-- 模态框（Modal） -->
 	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -1005,6 +1063,12 @@ div.border-rect-active {
 						<label> <input type="radio" name="optionsRadios" id="edit_size" value="edit_size"> Resolution of
 							Editing Image (<span id="edit_size_text"></span>)
 						</label>
+					</div>
+					<div class="input-group" style="width: 60%">
+						<span class="input-group-addon">Filename</span>
+						<input type="text" class="form-control" value="img"
+							onchange="document.getElementById('Text_souvenir_name_instead').value=this.value">
+						<span class="input-group-addon">.png</span>
 					</div>
 					<h5>
 						<strong>Notice:</strong>

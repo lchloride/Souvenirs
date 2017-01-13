@@ -6,6 +6,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>Login Failed</title>
 <link href="/Souvenirs/res/image/logo.ico" rel="icon">
+<link href="/Souvenirs/res/css/website.css" rel="stylesheet" type="text/css">
 <style type="text/css">
 html, body {
 	width: 100%;

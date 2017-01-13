@@ -21,7 +21,7 @@ public class UserManager {
 
 	public UserManager() {
 		// TODO Auto-generated constructor stub
-		checkValidDAO();
+		//checkValidDAO();
 	}
 
 	/**
@@ -200,8 +200,10 @@ public class UserManager {
 		List<Object> query_result = null;
 		try {
 			query_result = dao.getLogin(para);
+			logger.debug("query_result:"+query_result);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
+			logger.error("", e);
 			return false;
 		}
 		if ((long) query_result.get(0) == 1)
