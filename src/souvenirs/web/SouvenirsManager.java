@@ -46,9 +46,10 @@ public class SouvenirsManager {
 	}
 	
 	/**
-	 * 显示用户主页，获取相册的信息。<strong>注意：本方法未完成</strong>
-	 * @param parameter 前端传来的参数
-	 * @return 发回前端的显示参数
+	 * 获取相册的信息，显示在用户主页上。
+	 * @param parameter 前端传来的参数，key包括login_user_id(用户ID)
+	 * @return 发回前端的显示参数，包括用户头像(key=Avatar)、个人相册json字符串列表(key=PAlbum_json_list)、
+	 * 共享相册json字符串列表(key=SAlbum_json_list)、待转向的页面(key=DispatchURL)
 	 * @throws Exception 获取Album信息失败会抛出异常
 	 * @see souvenirs.dao.SouvenirsDAO#getAlbumInfo(String)
 	 */
@@ -112,9 +113,9 @@ public class SouvenirsManager {
 	
 	/**
 	 * 获取特定相册中的所有图片地址，并组成json字符串，构造json的方法
-	 *  @see org.json 
+	 * @see org.json 
 	 * @param parameter 前端传来的参数，key包括login_user_id(登录的用户ID), album_name(相册名)
-	 * @return 相册中所有图片名字和地址所组成的json字符串(形如：[{filename: "A", addr:"B"}, {filename: "C", addr:"D"}, ...])
+	 * @return 相册中所有图片名字和地址所组成的json字符串(形如：[{Filename: "A", Addr:"B"}, {Filename: "C", Addr:"D"}, ...])
 	 */
 	public String getImageAddrInAlbum(Map<String, String> parameter) {
 		checkValidDAO();

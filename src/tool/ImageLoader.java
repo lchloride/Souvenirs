@@ -176,13 +176,16 @@ public class ImageLoader extends HttpServlet {
 			logger.warn("ImageLoader METHOD parameter missed");
 			return "";
 		}
+		
 		if (content_base64 == null || content_base64.isEmpty()) {
 			logger.warn("ImageLoader CONTENT parameter missed");
 			return "";
 		}
+		
 		if (user_id.isEmpty()) {
 			return "";
 		}
+		
 		String path = "";
 		String content = Base64.decode(content_base64);
 		String[] para_str = content.split("/");
@@ -207,8 +210,7 @@ public class ImageLoader extends HttpServlet {
 					// Query avatar path of user stored in database
 					try {
 						logger.debug(para);
-						path = (String) DB
-								.execSQLQuery("select avatar from user where user_id= ?", Arrays.asList(para_str[1]))
+						path = (String) DB.execSQLQuery("select avatar from user where user_id= ?", Arrays.asList(para_str[1]))
 								.get(0).get(0);
 					} catch (IndexOutOfBoundsException e) {
 						// Cannot find result of username
@@ -219,13 +221,12 @@ public class ImageLoader extends HttpServlet {
 				}
 			} else if (para_str[0].contentEquals("group")) {
 				para = Arrays.asList(user_id, para_str[1]);
-				if ((long) DB
-						.execSQLQuery("select count(*) from user_belong_group where user_id=? and group_id=?", para)
+				if ((long) DB.execSQLQuery(
+						"select count(*) from user_belong_group where user_id=? and group_id=?", para)
 						.get(0).get(0) == 1)
 					try {
-						path = (String) DB
-								.execSQLQuery("select album_cover from souvenirs.group where group_id=?", Arrays.asList(para_str[1])).get(0)
-								.get(0);
+						path = (String) DB.execSQLQuery("select album_cover from souvenirs.group where group_id=?", 
+								Arrays.asList(para_str[1])).get(0)	.get(0);
 					} catch (IndexOutOfBoundsException e) {
 						// TODO: handle exception
 						return "";
@@ -239,13 +240,12 @@ public class ImageLoader extends HttpServlet {
 				para = Arrays.asList(para_str[1], para_str[2]);
 				if (para_str[1].contentEquals(user_id))
 					try {
-						path = (String) DB
-								.execSQLQuery("select album_cover from album where user_id=? and album_name = ?", para)
-								.get(0).get(0);
-						logger.debug("album_cover_path: "+path);
+						path = (String) DB.execSQLQuery(
+								"select album_cover from album where user_id=? and album_name = ?", para)	.get(0).get(0);
+						//logger.debug("album_cover_path: "+path);
 					} catch (Exception e) {
 						// TODO: handle exception
-						logger.debug("", e);
+						//logger.debug("", e);
 						throw e;
 					}
 				else

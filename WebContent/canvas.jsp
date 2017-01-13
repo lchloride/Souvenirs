@@ -101,8 +101,8 @@
 		var c = document.getElementById(canvas_id);
 		var ctx = c.getContext("2d");
 
-		document.getElementById("size").innerHTML = JSON
-				.stringify(souvenir_obj);
+/* 		document.getElementById("size").innerHTML = JSON
+				.stringify(souvenir_obj); */
 		//Processing first part of templete
 		var idx = 1;
 		isFinished = false;
@@ -165,6 +165,7 @@
 	//本函数根据idx决定要调用的绘图方法
 	function drawContent(ctx, idx) {
 		//If idx points to an invalid item in templete, just return
+		document.getElementById("size").innerHTML += idx+", ";
 		if (isError || souvenir_obj[idx] == undefined
 				|| souvenir_obj[idx] == null
 				|| souvenir_obj[idx].type == undefined
@@ -211,7 +212,7 @@
 			idx++;
 			//Draw the next image/text
 			drawContent(ctx, idx);
-		})(idx)
+		})(idx);
 
 		image.onerror = function() {
 			isError = true;
@@ -533,7 +534,7 @@
 				+ "px";
 
 		drawSouvenir("myCanvas");
-		drawBorderRect();
+		setTimeout(drawBorderRect(), 200);
 	}
 
 	//本函数是用户单击加粗按钮时的响应函数，如果之前是加粗状态就改成不加粗，否则改成加粗，同时对显示按钮的样式进行修改
@@ -825,35 +826,22 @@ div.border-rect-active {
 			</div>
 			<div>
 				<ul class="nav navbar-nav">
-					<li class="active">
-						<a href="homepage">HomePage</a>
-					</li>
-					<li>
-						<a href="#">Group</a>
-					</li>
-					<li>
-						<a href="#">Upload</a>
-					</li>
+					<li class="active"><a href="homepage">HomePage</a></li>
+					<li><a href="#">Group</a></li>
+					<li><a href="#">Upload</a></li>
 				</ul>
 
 				<ul class="nav navbar-nav navbar-right" style="padding-right: 5%">
-					<li>
-						<img class="navbar-form" src="${empty Avatar?'/Souvenirs/res/image/default_avatar.png':Avatar}" alt="avatar" width="32"
-							height="32">
-					</li>
-					<li class="dropdown">
-						<a href="#" class="dropdown-toggle" data-toggle="dropdown">${sessionScope.username} <b class="caret"></b>
-						</a>
+					<li><img class="navbar-form" src="${empty Avatar?'/Souvenirs/res/image/default_avatar.png':Avatar}"
+						alt="avatar" width="32" height="32"></li>
+					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">${sessionScope.username} <b
+							class="caret"></b>
+					</a>
 						<ul class="dropdown-menu">
-							<li>
-								<a href="account.jsp">Account</a>
-							</li>
+							<li><a href="account.jsp">Account</a></li>
 							<li class="divider"></li>
-							<li>
-								<a href="logout">Logout</a>
-							</li>
-						</ul>
-					</li>
+							<li><a href="logout">Logout</a></li>
+						</ul></li>
 				</ul>
 			</div>
 		</div>
@@ -862,10 +850,12 @@ div.border-rect-active {
 		<form class="from" role="form" action="formPicture" method="post" id="making_form">
 			<!-- Hidden textarea for storing base64 code of downloading image -->
 			<textarea id="picture" style="display: none" name="picture"></textarea>
+			<!-- Hidden input form for storing souvenir name appearing at filename-->
+			<input id="Text_souvenir_name_instead" name="Text_souvenir_name" style="display: none" />
 
 			<div id="div_canvas">
-				<canvas id="myCanvas" width="400" height="300" style="border:1px solid #c3c3c3;"> Sorry, your browser does not
-				support HTML5 canvas tag, we suggest using Chrome or Firefox to achieve best experience. </canvas>
+				<canvas id="myCanvas" width="400" height="300" style="border:1px solid #c3c3c3;"> Sorry, your browser does
+				not support HTML5 canvas tag, we suggest using Chrome or Firefox to achieve best experience. </canvas>
 				<!-- Hidden canvas for drawing downloading image in assigned size -->
 				<canvas id="download_canvas" width="400" height="300" style="display:none"></canvas>
 				<!-- Show border of each component -->
@@ -881,7 +871,8 @@ div.border-rect-active {
 			<div class="oper-content" id="div_oper">
 				<!-- The following content is the one of display hint page -->
 				<div id="hint" style="padding-top: 40%">
-					<h4 id="hint_text" style="text-align: center;">Click on the rectangle area in the preview image to modify its content.</h4>
+					<h4 id="hint_text" style="text-align: center;">Click on the rectangle area in the preview image to modify its
+						content.</h4>
 				</div>
 
 				<!-- The following content is the one of selecting a picture from album -->
@@ -889,8 +880,8 @@ div.border-rect-active {
 					<h4>Select Pictures from Album</h4>
 
 					<div class="form-group">
-						<label for="name">Album</label>
-						<select class="form-control" name="Select_album_name" onchange="queryImageInAlbum()" id="select_album_name">
+						<label for="name">Album</label> <select class="form-control" name="Select_album_name"
+							onchange="queryImageInAlbum()" id="select_album_name">
 							<c:forEach var="album_name" items="${Album_List}">
 								<option>${album_name }</option>
 							</c:forEach>
@@ -906,7 +897,8 @@ div.border-rect-active {
 
 					<!-- Add button -->
 					<div style="margin-top: 10px;">
-						<button class="btn-sm btn-primary" id="add_pic_btn" type="button" onclick="addImage2Canvas()">Add Selected Image</button>
+						<button class="btn-sm btn-primary" id="add_pic_btn" type="button" onclick="addImage2Canvas()">Add
+							Selected Image</button>
 					</div>
 				</div>
 
@@ -916,8 +908,8 @@ div.border-rect-active {
 					<div class="form-group">
 						<label for="name">Input your words below </label>
 						<textarea id="text_content" class="form-control" rows="3" style="width: 100%"></textarea>
-						<span class="help-block"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> Notice: Over-long
-							text may be displayed improperly.</span>
+						<span class="help-block"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> Notice:
+							Over-long text may be displayed improperly.</span>
 					</div>
 
 					<h5 style="font-weight: bold">Set Attributes</h5>
@@ -1002,8 +994,8 @@ div.border-rect-active {
 									Height</div>
 								<div class="col-xs-6 narrow-col"> -->
 
-							<span style="float: left; padding: 10px">Line Height</span>
-							<select class="form-control" id="line_height_select" style="float: left; width: 50%"
+							<span style="float: left; padding: 10px">Line Height</span> <select class="form-control" id="line_height_select"
+								style="float: left; width: 50%"
 								onchange="souvenir_obj[proc_position].lineH=parseFloat(document.getElementById('line_height_select').value)">
 								<option id="line_height_10">1</option>
 								<option id="line_height_15">1.5</option>
@@ -1027,7 +1019,7 @@ div.border-rect-active {
 		</form>
 	</div>
 
-	<div id="size" style="display: none"></div>
+	<div id="size" style="display: block"></div>
 	<div class="footer">Copyright &copy; 2016-2017 Souvenirs, All Rights Reserved.</div>
 
 	<!-- 模态框（Modal） -->
@@ -1042,41 +1034,41 @@ div.border-rect-active {
 				<div class="modal-body">
 					<div class="radio"
 						style="margin-bottom: 10px; padding-bottom: 10px; border-bottom-style: solid; border-width: 1px; border-color: #999999;">
-						<label>
-							<input type="radio" name="optionsRadios" id="origin_size" value="origin_size">
-							Origin Resolution (<span id="origin_size_text"></span>)
+						<label> <input type="radio" name="optionsRadios" id="origin_size" value="origin_size"> Origin
+							Resolution (<span id="origin_size_text"></span>)
 						</label>
 					</div>
 					<div class="radio">
-						<label>
-							<input type="radio" name="optionsRadios" id="SHD_size" value="SHD_size">
-							Super High Resolution (<span id="SHD_size_text"></span>)
+						<label> <input type="radio" name="optionsRadios" id="SHD_size" value="SHD_size"> Super High
+							Resolution (<span id="SHD_size_text"></span>)
 						</label>
 					</div>
 					<div class="radio">
-						<label>
-							<input type="radio" name="optionsRadios" id="HD_size" value="HD_size" checked>
-							High Resolution(<span id="HD_size_text"></span>)
+						<label> <input type="radio" name="optionsRadios" id="HD_size" value="HD_size" checked> High
+							Resolution(<span id="HD_size_text"></span>)
 						</label>
 					</div>
 					<div class="radio">
-						<label>
-							<input type="radio" name="optionsRadios" id="SD_size" value="SD_size">
-							Standard Resolution (<span id="SD_size_text"></span>)
+						<label> <input type="radio" name="optionsRadios" id="SD_size" value="SD_size"> Standard Resolution
+							(<span id="SD_size_text"></span>)
 						</label>
 					</div>
 					<div class="radio"
 						style="margin-bottom: 10px; padding-bottom: 10px; border-bottom-style: solid; border-width: 1px; border-color: #999999">
-						<label>
-							<input type="radio" name="optionsRadios" id="LD_size" value="LD_size">
-							Low Resolution (<span id="LD_size_text"></span>)
+						<label> <input type="radio" name="optionsRadios" id="LD_size" value="LD_size"> Low Resolution (<span
+							id="LD_size_text"></span>)
 						</label>
 					</div>
 					<div class="radio">
-						<label>
-							<input type="radio" name="optionsRadios" id="edit_size" value="edit_size">
-							Resolution of Editing Image (<span id="edit_size_text"></span>)
+						<label> <input type="radio" name="optionsRadios" id="edit_size" value="edit_size"> Resolution of
+							Editing Image (<span id="edit_size_text"></span>)
 						</label>
+					</div>
+					<div class="input-group" style="width: 60%">
+						<span class="input-group-addon">Filename</span>
+						<input type="text" class="form-control" value="img"
+							onchange="document.getElementById('Text_souvenir_name_instead').value=this.value">
+						<span class="input-group-addon">.png</span>
 					</div>
 					<h5>
 						<strong>Notice:</strong>

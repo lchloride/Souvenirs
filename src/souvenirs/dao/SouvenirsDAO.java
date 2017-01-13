@@ -1,6 +1,5 @@
 package souvenirs.dao;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -11,9 +10,7 @@ import souvenirs.PAlbumImplStore;
 import souvenirs.PersonalAlbum;
 import souvenirs.SAlbumImplStore;
 import souvenirs.SharedAlbum;
-import sun.net.www.content.text.plain;
 import tool.DB;
-import tool.Store;
 
 /**
  * Souvenirs 数据访问层，单例模式
@@ -52,7 +49,14 @@ public class SouvenirsDAO  {
 	}
 
 	/**
-	 * 
+	 * 获取某用户所有个人相册的全部信息。
+	 * <strong>注意：本函数也可以获取该用户所能访问的共享相册信息，但是获取的信息会以PersonalAlbum的形式存储。请慎重使用。</strong>
+	 * @param user_id 拥有相册的用户名
+	 * @param type 获取的相册类型，类型由SouvenirsDAO的常量定义
+	 * @return 一个列表，每一项都是一个PersonalAlbum对象
+	 * @see souvenirs.dao.SouvenirsDAO#PERSONAL_ALBUM
+	 * @see souvenirs.dao.SouvenirsDAO#ALL_ALBUM
+	 * @see souvenirs.PersonalAlbum
 	 */
 	public List<PersonalAlbum> getPAlbumInfo(String user_id, int type) throws Exception {
 		String sql = "SELECT owner_id, album_name, intro, album_cover, create_timestamp FROM souvenirs.query_available_album where user_id=?";
@@ -65,6 +69,16 @@ public class SouvenirsDAO  {
 		return DB.execSQLQuery(sql, parameter, new PAlbumImplStore());
 	}
 	
+	/**
+	 * 获取某用户可访问的所有共享相册的全部信息
+	 * <strong>注意：本函数也可以获取该用户的个人相册信息，但是获取的信息会以SharedAlbum的形式存储。请慎重使用。</strong>
+	 * @param user_id 用户名
+	 * @param type 获取的相册类型，类型由SouvenirsDAO的常量定义
+	 * @return 一个列表，每一项都是一个SharedAlbum对象
+	 * @see souvenirs.dao.SouvenirsDAO#SHARED_ALBUM
+	 * @see souvenirs.dao.SouvenirsDAO#ALL_ALBUM
+	 * @see souvenirs.SharedAlbum
+	 */
 	public List<SharedAlbum> getSAlbumInfo(String user_id, int type) throws Exception {
 		String sql = "SELECT owner_id, album_name, intro, album_cover, create_timestamp FROM souvenirs.query_available_album where user_id=?";
 		if (type == PERSONAL_ALBUM)
