@@ -1,22 +1,26 @@
 /**
  * 
  */
-package souvenirs;
+package souvenirs.dao;
 
 import java.sql.Timestamp;
 import java.util.List;
 
+import souvenirs.PersonalAlbum;
+import souvenirs.SharedAlbum;
 import tool.Store;
 
 /**
  * @author Chenghong Li
- *
+ * 实现Store接口对SharedAlbum对象进行赋值的类
  */
 public class SAlbumImplStore implements Store<SharedAlbum> {
 
 	/**
-	 * (non-Javadoc)
-	 * @throws Exception 
+	 * 实现Store接口的format方法，将一行数据转换为PersonalAlbum对象
+	 * @param list 通过查询得到的一行数据
+	 * @return 生成的PersonalAlbum对象
+	 * @throws Exception 赋值失败或返回数据数量与PersonalAlbum需要的数量不符的情况会抛出异常
 	 * @see tool.Store#format(java.util.List)
 	 */
 	@Override

@@ -6,9 +6,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import souvenirs.PAlbumImplStore;
 import souvenirs.PersonalAlbum;
-import souvenirs.SAlbumImplStore;
 import souvenirs.SharedAlbum;
 import tool.DB;
 
@@ -54,6 +52,7 @@ public class SouvenirsDAO  {
 	 * @param user_id 拥有相册的用户名
 	 * @param type 获取的相册类型，类型由SouvenirsDAO的常量定义
 	 * @return 一个列表，每一项都是一个PersonalAlbum对象
+	 * @throws Exception 数据库查询错误或store接口调用错误会抛出异常
 	 * @see souvenirs.dao.SouvenirsDAO#PERSONAL_ALBUM
 	 * @see souvenirs.dao.SouvenirsDAO#ALL_ALBUM
 	 * @see souvenirs.PersonalAlbum
@@ -75,6 +74,7 @@ public class SouvenirsDAO  {
 	 * @param user_id 用户名
 	 * @param type 获取的相册类型，类型由SouvenirsDAO的常量定义
 	 * @return 一个列表，每一项都是一个SharedAlbum对象
+	 * @throws Exception 数据库查询错误或store接口调用错误会抛出异常
 	 * @see souvenirs.dao.SouvenirsDAO#SHARED_ALBUM
 	 * @see souvenirs.dao.SouvenirsDAO#ALL_ALBUM
 	 * @see souvenirs.SharedAlbum

@@ -51,7 +51,8 @@ public class SouvenirsManager {
 	 * @return 发回前端的显示参数，包括用户头像(key=Avatar)、个人相册json字符串列表(key=PAlbum_json_list)、
 	 * 共享相册json字符串列表(key=SAlbum_json_list)、待转向的页面(key=DispatchURL)
 	 * @throws Exception 获取Album信息失败会抛出异常
-	 * @see souvenirs.dao.SouvenirsDAO#getAlbumInfo(String)
+	 * @see souvenirs.dao.SouvenirsDAO#getPAlbumInfo(String, int)
+	 * @see souvenirs.dao.SouvenirsDAO#getSAlbumInfo(String, int)
 	 */
 	public Map<String, Object> displayContent(Map<String, String> parameter) throws Exception {
 		checkValidDAO();

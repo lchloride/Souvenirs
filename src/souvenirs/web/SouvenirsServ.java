@@ -157,6 +157,7 @@ public class SouvenirsServ extends HttpServlet {
 	 * @param response Servlet的response对象
 	 * @param session Servlet的session对象
 	 * @param content 图片Base64字符串，包含MIME元数据
+	 * @param filename 下载的souvenir图片的文件名
 	 * @throws Exception 向前端发送数据失败时会抛出异常
 	 */
 	private void formPicture(HttpServletResponse response, HttpSession session, String content, String filename) throws Exception {
@@ -236,7 +237,7 @@ public class SouvenirsServ extends HttpServlet {
 	 * <p>
 	 * 制作完成的标志存在session中，key为souvenir_making_done。该标志有三种状态：不存在，false，true。
 	 * 其中不存在表示未进行souvenir的制作；false表示正在制作但是还未完成；true表示已经制作完成。
-	 * 转化关系是：不存在-->false-->true-->不存在....<br>
+	 * 转化关系是：不存在--&gt;false--&gt;true--&gt;不存在....<br>
 	 * 当该标志位true的时候，如果session中有souvenir_making_err_msg这个属性，说明制作失败；否则说明制作成功。<br>
 	 * </p>
 	 * <p>
