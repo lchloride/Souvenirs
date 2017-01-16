@@ -66,60 +66,6 @@ div.album-manage-title {
 	padding-left: 10px;
 }
 
-div.img {
-	margin: 5px;
-	padding: 3px;
-	border: 2px solid #ffffff;
-	border-radius: 5px;
-	height: auto;
-	width: auto;
-	float: left;
-	text-align: center;
-	height: auto;
-	border: 2px solid #ffffff;
-}
-
-div.img img {
-	display: inline;
-	margin: 3px;
-	border: 1px solid #ffffff;
-}
-
-div.img:hover {
-	background-color: rgba(232, 232, 232, .8);
-	border: 2px solid #cccccc;
-}
-
-div.desc {
-	text-align: center;
-	font-weight: normal;
-	margin: 5px auto;
- 	margin-top: 5px; 
-	white-space: nowrap;
-	text-overflow: ellipsis;
-	overflow: hidden;
-	width:120px;
-}
-
-div.desc:hover {
-	white-space: normal;
-	text-overflow: clip;
-	 word-wrap: break-word;
-	/*overflow: visible;  */
-}
-
-div.desc a:link {
-	color: #000000;
-} /* 未访问链接*/
-div.desc a:visited {
-	color: #000000;
-} /* 已访问链接 */
-div.desc a:hover {
-	color: #000000;
-} /* 鼠标移动到链接上 */
-div.desc a:active {
-	color: #000000;
-} /* 鼠标点击时 */
 .manage-content {
 	border-left-style: solid;
 	border-width: 1px;
@@ -255,10 +201,10 @@ div.desc a:active {
 									<c:forEach var="pAlbum_item" items="${PAlbum_json_list }" varStatus="idx">
 
 										<div class="img">
-											<a id="pAlbum_item_frame_${idx.count }" target="_blank" href="#"> <img id="pAlbum_item_img_${idx.count }" src=""
+											<a id="pAlbum_item_frame_${idx.count }" target="_self" href="#"> <img id="pAlbum_item_img_${idx.count }" src=""
 												alt="" width="120" height="120"></a>
 											<div class="desc">
-												<a id="pAlbum_item_text_${idx.count }" target="_blank" href="#"></a>
+												<a id="pAlbum_item_text_${idx.count }" target="_self" href="#"></a>
 											</div>
 										</div>
 
@@ -269,6 +215,8 @@ div.desc a:active {
 											document.getElementById("pAlbum_item_img_" + idx).src = pAlbum_item_obj.cover_addr;
 											document.getElementById("pAlbum_item_img_" + idx).alt = pAlbum_item_obj.album_name;
 											document.getElementById("pAlbum_item_text_" + idx).innerHTML = pAlbum_item_obj.album_name;
+											document.getElementById("pAlbum_item_frame_" + idx).href = "/Souvenirs/album?album_name="+pAlbum_item_obj.album_name;
+											document.getElementById("pAlbum_item_text_" + idx).href = "/Souvenirs/album?album_name="+pAlbum_item_obj.album_name;
 										</script>
 									</c:forEach>
 

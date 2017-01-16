@@ -27,7 +27,7 @@ public class PAlbumImplStore implements Store<PersonalAlbum> {
 		// TODO Auto-generated method stub
 		PersonalAlbum pAlbum = new PersonalAlbum();
 		try {
-			if (list.size() != PersonalAlbum.para_count)
+			if (list.size() != PersonalAlbum.getMemberCount())
 				throw new Exception("Cannot transform result set from database to PersonalAlbum object!");
 			else {
 				pAlbum.setUserId((String)list.get(0));

@@ -78,10 +78,10 @@ public class UserDAO {
 	}
 	
 	/**
-	 * 通过username获取user_id的SQL模板与参数准备<br><strong>注意：DAO负责结果合法性的检查</strong> 
+	 * 准备由username获取user_id的SQL模板和参数<br><strong>注意：DAO负责结果合法性的检查</strong> 
 	 * @param username 用户名
 	 * @return 一个List，只有一个元素，是其ID；
-	 * @throws Exception 同一个用户名找到了多个ID或者一个ID也没有找到，都是不正常的结果抛出异常
+	 * @throws Exception 同一个用户名找到了多个ID或者一个ID也没有找到，都是不正常的结果会抛出异常；数据库查询执行出错也会抛出异常
 	 */
 	public List<Object> getUserIDByName(String username) throws Exception {
 		String sql = "select user_id from user where username = ?";
@@ -98,5 +98,28 @@ public class UserDAO {
 			else 
 				return result.get(0);
 		}
+	}
+	
+	/**
+	 * 准备由user_id获取username的SQL模板和参数<br><strong>注意：DAO负责结果合法性的检查</strong> 
+	 * @param user_id 用户ID
+	 * @return user_id对应的用户名
+	 * @throws Exception 同一个用户名找到了多个ID或者一个ID也没有找到，都是不正常的结果会抛出异常；数据库查询执行出错也会抛出异常
+	 */
+	public String getUsernameByID(String user_id) throws Exception {
+		String sql = "select username from user where user_id = ?";
+		List<String> parameter = Arrays.asList(user_id);
+		List<List<Object>> result = DB.execSQLQuery(sql, parameter);
+		if (result.size() > 1) {
+			logger.error("Duplicate Users:User ID <"+user_id+">");
+			throw new Exception("Duplicate Users");
+		} else {
+			if (result.size() == 0) {
+				logger.warn("Non-existed Users: User ID <"+user_id+">");
+				throw new Exception("User does not exist.");			
+			}			
+			else 
+				return (String)result.get(0).get(0);
+		}		
 	}
 }

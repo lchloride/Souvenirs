@@ -28,7 +28,7 @@ public class SAlbumImplStore implements Store<SharedAlbum> {
 		// TODO Auto-generated method stub
 		SharedAlbum sAlbum = new SharedAlbum();
 		try {
-			if (list.size() != PersonalAlbum.para_count)
+			if (list.size() != SharedAlbum.getMemberCount())
 				throw new Exception("Cannot transform result set from database to PersonalAlbum object!");
 			else {
 				sAlbum.setGroupId((String)list.get(0));

@@ -8,8 +8,11 @@ public class PersonalAlbum {
 	private String intro;
 	private String album_cover;
 	private Timestamp create_timestamp;
-	final public static int para_count = 5;
+	final private static int MEMBER_COUNT = 5;
 	
+	public static int getMemberCount() {
+		return MEMBER_COUNT;
+	}
 	public String getUserId() {
 		return user_id;
 	}

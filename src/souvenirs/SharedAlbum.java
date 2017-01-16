@@ -15,7 +15,11 @@ public class SharedAlbum {
 	private String intro;
 	private String album_cover;
 	private Timestamp create_timestamp;
+	final private static int MEMBER_COUNT = 5;
 	
+	public static int getMemberCount() {
+		return MEMBER_COUNT;
+	}
 	public String getGroupId() {
 		return group_id;
 	}

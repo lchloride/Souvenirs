@@ -86,6 +86,7 @@ public class SouvenirsServ extends HttpServlet {
 			String query_url = request.getServletPath();
 			query_url = query_url.substring(query_url.lastIndexOf('/') + 1);
 
+			logger.debug("query_url:<"+query_url+">");
 			try {
 				// Select and call specific function according query_url
 				if (query_url.contentEquals("homepage")) {
@@ -116,7 +117,9 @@ public class SouvenirsServ extends HttpServlet {
 					// To obtain making flag in time, browser should asks for it in a specific period.
 					checkMakingDone(response, session);
 					return;
-				} else {
+				} else if (query_url.contentEquals("album")) {
+					result = sm.displayAlbumManager(para);
+				}else {
 					
 					// query_url is wrong
 					response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -124,7 +127,11 @@ public class SouvenirsServ extends HttpServlet {
 				}
 			} catch (Exception e) {
 				logger.error("Souvenirs servlet throws an exception", e);
-				// response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+				if (e.getMessage().contentEquals("Invalid Parameter user_id OR album_name"))
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+				else
+					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+				return;
 			}
 
 			for (Entry<String, Object> entry : result.entrySet()) {

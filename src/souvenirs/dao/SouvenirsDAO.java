@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import souvenirs.PersonalAlbum;
+import souvenirs.Picture;
 import souvenirs.SharedAlbum;
 import tool.DB;
 
@@ -57,7 +58,7 @@ public class SouvenirsDAO  {
 	 * @see souvenirs.dao.SouvenirsDAO#ALL_ALBUM
 	 * @see souvenirs.PersonalAlbum
 	 */
-	public List<PersonalAlbum> getPAlbumInfo(String user_id, int type) throws Exception {
+	public List<PersonalAlbum> getAllPAlbumInfo(String user_id, int type) throws Exception {
 		String sql = "SELECT owner_id, album_name, intro, album_cover, create_timestamp FROM souvenirs.query_available_album where user_id=?";
 		if (type == PERSONAL_ALBUM)
 			sql += " and isPersonal = 'true'";
@@ -66,6 +67,20 @@ public class SouvenirsDAO  {
 		sql += " order by album_name asc";
 		List<String>parameter = Arrays.asList(user_id);
 		return DB.execSQLQuery(sql, parameter, new PAlbumImplStore());
+	}
+
+	/**
+	 * 获取指定个人相册的全部信息
+	 * @param user_id 用户ID
+	 * @param album_name 相册名
+	 * @return 存放相册信息的PersonalAlbum类
+	 * @throws Exception 数据库查询错误或store接口调用错误会抛出异常
+	 * @see souvenirs.PersonalAlbum
+	 */
+	public PersonalAlbum getPAlbumInfo(String user_id, String album_name) throws Exception {
+		String sql = "SELECT owner_id, album_name, intro, album_cover, create_timestamp FROM souvenirs.query_available_album where user_id=? and album_name=? and isPersonal='true'";
+		List<String>parameter = Arrays.asList(user_id, album_name);
+		return DB.execSQLQuery(sql, parameter, new PAlbumImplStore()).get(0);
 	}
 	
 	/**
@@ -79,7 +94,7 @@ public class SouvenirsDAO  {
 	 * @see souvenirs.dao.SouvenirsDAO#ALL_ALBUM
 	 * @see souvenirs.SharedAlbum
 	 */
-	public List<SharedAlbum> getSAlbumInfo(String user_id, int type) throws Exception {
+	public List<SharedAlbum> getAllSAlbumInfo(String user_id, int type) throws Exception {
 		String sql = "SELECT owner_id, album_name, intro, album_cover, create_timestamp FROM souvenirs.query_available_album where user_id=?";
 		if (type == PERSONAL_ALBUM)
 			sql += " and isPersonal = 'true'";
@@ -100,6 +115,22 @@ public class SouvenirsDAO  {
 		String sql = "SELECT owner_id, owner_album_name, owner_filename FROM souvenirs.query_available_image where user_id=? and  album_name=?  order by album_name asc";
 		List<String>parameter = Arrays.asList(user_id, album);
 		return DB.execSQLQuery(sql, parameter);
+	}
+	
+	/**
+	 * 获取指定相册中全部图片的信息
+	 * @param user_id 用户ID
+	 * @param album 相册名
+	 * @return 一个Picture对象的List，存放了该相册中所有照片的信息
+	 * @throws Exception 数据库查询执行失败，PictureImplStore的format方法执行失败都会抛出异常
+	 * @see souvenirs.Picture
+	 * @see souvenirs.dao.PictureImplStore#format(List)
+	 */
+	public List<Picture> getAllPictureInfo(String user_id, String album) throws Exception {
+		String sql = "SELECT owner_id, owner_album_name, owner_filename, owner_format, owner_description, owner_upload_timestamp FROM souvenirs.query_available_image where user_id=? and  album_name=?  order by album_name asc";
+		List<String>parameter = Arrays.asList(user_id, album);
+		logger.debug("parameter:"+parameter);
+		return DB.execSQLQuery(sql, parameter, new PictureImplStore());
 	}
 
 
