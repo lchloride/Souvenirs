@@ -21,6 +21,9 @@
         <dependent-module archiveName="commons-io-2.5.jar" deploy-path="/WEB-INF/lib" handle="module:/classpath/lib/Souvenirs/WebContent/WEB-INF/lib/commons-io-2.5.jar">
             <dependency-type>uses</dependency-type>
         </dependent-module>
+        <dependent-module archiveName="jspSmartUpload.jar" deploy-path="/WEB-INF/lib" handle="module:/classpath/lib/Souvenirs/WebContent/WEB-INF/lib/jspSmartUpload.jar">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <property name="context-root" value="Souvenirs"/>
         <property name="java-output-path" value="/Souvenirs/build/classes"/>
     </wb-module>
