@@ -127,7 +127,7 @@ public class SouvenirsServ extends HttpServlet {
 				}
 			} catch (Exception e) {
 				logger.error("Souvenirs servlet throws an exception", e);
-				if (e.getMessage().contentEquals("Invalid Parameter user_id OR album_name"))
+				if (e!=null && e.getMessage().contentEquals("Invalid Parameter user_id OR album_name"))
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 				else
 					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

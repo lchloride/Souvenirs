@@ -29,7 +29,8 @@
 		var display_width = window.innerWidth
 				|| document.documentElement.clientWidth
 				|| document.body.clientWidth;
-		var mainbody_width = display_width * 0.8 - 50 * 2;
+		var r = (display_width>=1367 ? display_width*0.8 : ( display_width>=768 ? display_width*0.9 : display_width-10));
+		var mainbody_width = r - 50 * 2;
 		var template_width = Math.round(mainbody_width / 5 - 28) - 2;
 		var template_height = template_width * 4 / 3;
 		for (i = 1; i <= 5; i++) {

@@ -22,7 +22,8 @@ public class VerifyCode {
 			// TODO: handle exception
 			logger.error("verifycode_number in souvernir.properties is invalid.");
 		}
-		int idx = (int)Math.random()*(verifycode_num-1)+1;
+		int idx = (int)(Math.random()*verifycode_num)+1;
+		logger.debug(idx+", "+verifycode_num);
 		return new String("verifycode"+idx);
 	}
 	
