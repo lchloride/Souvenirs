@@ -92,7 +92,7 @@ div.album-cover img {
 		</nav>
 
 		<div class="container">
-			<h3 class="">Manage My Album</h3>
+			<h3 class="">Manage My Album (Web Designer has gone home.....)</h3>
 			<div class="row">
 				<div class="col-sm-9" id="album_show">
 					<div class="operations">
