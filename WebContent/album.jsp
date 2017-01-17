@@ -17,6 +17,8 @@
 <link href="/Souvenirs/res/css/website.css" rel="stylesheet" type="text/css">
 <title>Manage Album</title>
 <script type="text/javascript">
+	var original_album_name = '${Album_name}';
+	var original_description = '${Description}';
 	window.onload = function() {
 		if ($("#album_show").innerHeight() < $("#album_info").innerHeight()){
 			document.getElementById("album_show").className = "col-sm-9";
@@ -132,17 +134,30 @@ div.album-cover img {
 						<img id="image_item_img_${idx.count }" src="${Album_cover }" alt="" width="120" height="120">
 						<button type="button" class="btn btn-default btn-sm" style="margin: 5px auto; width: 120px">Change Cover</button>
 					</div>
-					
+	
+					<!-- Display album name -->
 					<div class="form-group">
-						<label for="name">Album Name</label>
+						<label for="name" style="display:block">Album Name
+						<div class="btn-group btn-group-xs" style="float:right">
+   							 <button type="button" class="btn btn-default" disabled>Save</button>
+  							  <button type="button" class="btn btn-default" onclick="document.getElementById('album_name').value=original_album_name">Reset</button>
+						</div></label>
 						<input type="text" class="form-control" id="album_name" placeholder="" value="${Album_name }">
 					</div>
+	
+					<!-- Display owner -->
 					<div class="form-group">
 						<label for="name">Owner</label>
-						<input type="text" class="form-control" id="owner" placeholder="" value="${Owner_name }">
+						<input type="text" class="form-control" id="owner" placeholder="" value="${Owner_name }" disabled>
 					</div>
+					
+					<!-- Display description(field name "intro" in DB) -->
 					<div class="form-group">
-						<label for="name" >Description</label><br>
+						<label for="name" style="display:block">Description
+						<div class="btn-group btn-group-xs" style="float:right">
+   							 <button type="button" class="btn btn-default" disabled>Save</button>
+  							  <button type="button" class="btn btn-default" onclick="document.getElementById('description').value=original_description">Reset</button>
+						</div></label>
 						<textarea id="description" class="form-control" rows="3" >${Description }</textarea>
 					</div>					
 				</div>
