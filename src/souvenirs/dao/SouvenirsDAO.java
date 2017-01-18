@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import souvenirs.Comment;
 import souvenirs.PersonalAlbum;
 import souvenirs.Picture;
 import souvenirs.SharedAlbum;
@@ -127,11 +128,48 @@ public class SouvenirsDAO  {
 	 * @see souvenirs.dao.PictureImplStore#format(List)
 	 */
 	public List<Picture> getAllPictureInfo(String user_id, String album) throws Exception {
-		String sql = "SELECT owner_id, owner_album_name, owner_filename, owner_format, owner_description, owner_upload_timestamp FROM souvenirs.query_available_image where user_id=? and  album_name=?  order by album_name asc";
+		String sql = "SELECT owner_id, owner_album_name, owner_filename, owner_format, owner_description, owner_upload_timestamp "+
+							"FROM souvenirs.query_available_image where user_id=? and  album_name=?  order by album_name asc";
 		List<String>parameter = Arrays.asList(user_id, album);
 		logger.debug("parameter:"+parameter);
 		return DB.execSQLQuery(sql, parameter, new PictureImplStore());
 	}
 
-
+	/**
+	 * 获取指定照片的信息
+	 * @param user_id 用户ID
+	 * @param album 相册名
+	 * @param filename 照片名
+	 * @return 一个存储照片所有信息的Picture对象
+	 * @throws Exception 数据库查询失败或PictureImplStore的format方法执行失败都会抛出异常
+	 * @see souvenirs.Picture
+	 * @see souvenirs.dao.PictureImplStore#format(List)
+	 */
+	public Picture getPictureInfo(String user_id, String album, String filename) throws Exception {
+		String sql = "SELECT owner_id, owner_album_name, owner_filename, owner_format, owner_description, owner_upload_timestamp "+
+							"FROM souvenirs.query_available_image where user_id=? and  album_name=?  and owner_filename=?";
+		List<String>parameter = Arrays.asList(user_id, album, filename);
+		List<Picture> result = DB.execSQLQuery(sql, parameter, new PictureImplStore());
+		if (result.size() == 0)
+			return null;
+		else
+			return result.get(0);
+	}
+	
+	/**
+	 * 获取指定照片的评论信息，包括评论自身的信息以及它回复的那条评论的信息
+	 * @param user_id 用户ID
+	 * @param album_name 相册名
+	 * @param filename 照片名
+	 * @return 一个List，每个成员都是一个存储着评论信息的Comment对象
+	 * @throws Exception 数据库查询失败或CommentImplStore的format方法执行失败都会抛出异常
+	 * @see souvenirs.Comment
+	 * @see souvenirs.dao.CommentImplStore#format(List)
+	 */
+	public List<Comment> getAllComments(String user_id, String album_name, String filename) throws Exception {
+		String sql = "SELECT user_id, album_name, picture_name, comment_user_id, comment_content, time, reply_user_id, reply_content"+
+							" FROM souvenirs.`query_comment_and _reply` WHERE user_id=? and album_name=? and picture_name=? order by time asc";
+		List<String>parameter = Arrays.asList(user_id, album_name, filename);
+		return DB.execSQLQuery(sql, parameter, new CommentImplStore());
+	}
 }

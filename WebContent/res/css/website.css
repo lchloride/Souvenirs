@@ -15,22 +15,6 @@ body {
 	padding-bottom:10px;
 }
 
-@media ( min-width :1367px) {
-	.mainbody {
-		margin-top: auto;
-		margin-bottom: auto;
-		margin-right: 10%;
-		margin-left: 10%;
-		font-family: Tahoma, "Microsoft YaHei", sans-serif;
-		background: rgba(232,255,255,.8);
-		padding-bottom: 20px;
-	}
-	.footer {
-		margin-right: 10%;
-		margin-left: 10%;
-	}
-}
-
 @media ( min-width :768px) {
 	.mainbody {
 		margin-top: auto;
@@ -44,6 +28,22 @@ body {
 	.footer {
 		margin-right: 5%;
 		margin-left: 5%;
+	}
+}
+
+@media ( min-width :1367px) {
+	.mainbody {
+		margin-top: auto;
+		margin-bottom: auto;
+		margin-right: 10%;
+		margin-left: 10%;
+		font-family: Tahoma, "Microsoft YaHei", sans-serif;
+		background: rgba(232,255,255,.8);
+		padding-bottom: 20px;
+	}
+	.footer {
+		margin-right: 10%;
+		margin-left: 10%;
 	}
 }
 

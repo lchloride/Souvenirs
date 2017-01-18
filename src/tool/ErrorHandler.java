@@ -58,6 +58,10 @@ public class ErrorHandler extends HttpServlet {
 			description = "Error Message is Missing";
 		} else if (statusCode != null) {
 			switch (statusCode) {
+			case 400:
+				des_img_path = "/Souvenirs/res/image/404_not_found.png";
+				description = "Sorry, your request cannot be solved. ";
+				break;				
 			case 404:
 				des_img_path = "/Souvenirs/res/image/404_not_found.png";
 				description = "Sorry, the page you requested has been moved or deleted. ";

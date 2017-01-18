@@ -19,6 +19,7 @@ import javax.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
 
 import tool.Base64;
+import tool.exception.BadRequestException;
 import user.web.UserManager;
 
 /**
@@ -119,18 +120,21 @@ public class SouvenirsServ extends HttpServlet {
 					return;
 				} else if (query_url.contentEquals("album")) {
 					result = sm.displayAlbumManager(para);
+				}else if (query_url.contentEquals("picture")) {
+					result = sm.displayPictureManager(para);
 				}else {
 					
 					// query_url is wrong
 					response.sendError(HttpServletResponse.SC_NOT_FOUND);
 					return;
 				}
-			} catch (Exception e) {
+			} catch(BadRequestException bre) {
+				logger.error("Souvenirs servlet throws an exception", bre);
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+				return;
+			}catch (Exception e) {
 				logger.error("Souvenirs servlet throws an exception", e);
-				if (e!=null && e.getMessage().contentEquals("Invalid Parameter user_id OR album_name"))
-					response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-				else
-					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				return;
 			}
 

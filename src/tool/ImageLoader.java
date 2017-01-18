@@ -206,7 +206,7 @@ public class ImageLoader extends HttpServlet {
 			}
 		} else if (method.contentEquals("query")) {
 			if (para_str[0].contentEquals("user")) {
-				if (para_str[1].contentEquals(user_id))
+				if (true || para_str[1].contentEquals(user_id))//Remove privillege checking of querying user's avatar
 					// Query avatar path of user stored in database
 					try {
 						logger.debug(para);

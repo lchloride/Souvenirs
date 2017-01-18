@@ -24,7 +24,8 @@
 
 .info-content {
 	margin-top: 25px;
-	padding-top: 5px; background-color : rgba( 248, 248, 255, 0.5);
+	padding-top: 5px;
+	background-color: rgba(248, 248, 255, 0.5);
 	margin-left: -10px;
 	margin-right: -10px;
 	padding-left: 10px;
@@ -96,19 +97,19 @@ div.comment {
 }
 </style>
 <script type="text/javascript">
-$(document).ready(function() {  
-    $("#onoffswitch").on('click', function(){  
-        clickSwitch()  
-    });  
-  
-    var clickSwitch = function() {  
-        if ($("#onoffswitch").is(':checked')) {  
-            ;//console.log("在ON的状态下");  
-        } else {  
-            ;//console.log("在OFF的状态下");  
-        }  
-    };  
-});  
+	$(document).ready(function() {
+		$("#onoffswitch").on('click', function() {
+			clickSwitch()
+		});
+
+		var clickSwitch = function() {
+			if ($("#onoffswitch").is(':checked')) {
+				;//console.log("在ON的状态下");  
+			} else {
+				;//console.log("在OFF的状态下");  
+			}
+		};
+	});
 </script>
 </head>
 <body>
@@ -121,38 +122,23 @@ $(document).ready(function() {
 			</div>
 			<div>
 				<ul class="nav navbar-nav">
-					<li class="active">
-						<a href="homepage">HomePage</a>
-					</li>
-					<li>
-						<a href="#">Group</a>
-					</li>
-					<li>
-						<a href="upload">Upload</a>
-					</li>
-					<li>
-						<a href="making">Making</a>
-					</li>
+					<li class="active"><a href="homepage">HomePage</a></li>
+					<li><a href="#">Group</a></li>
+					<li><a href="upload">Upload</a></li>
+					<li><a href="making">Making</a></li>
 				</ul>
 
 				<ul class="nav navbar-nav navbar-right" style="padding-right: 5%">
-					<li>
-						<img class="navbar-form" src="${empty Avatar?'/Souvenirs/res/image/default_avatar.png':Avatar}" alt="avatar" width="32"
-							height="32">
-					</li>
-					<li class="dropdown">
-						<a href="#" class="dropdown-toggle" data-toggle="dropdown">${sessionScope.username} <b class="caret"></b>
-						</a>
+					<li><img class="navbar-form" src="${empty Avatar?'/Souvenirs/res/image/default_avatar.png':Avatar}"
+						alt="avatar" width="32" height="32"></li>
+					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">${sessionScope.username} <b
+							class="caret"></b>
+					</a>
 						<ul class="dropdown-menu">
-							<li>
-								<a href="account.jsp">Account</a>
-							</li>
+							<li><a href="account.jsp">Account</a></li>
 							<li class="divider"></li>
-							<li>
-								<a href="logout">Logout</a>
-							</li>
-						</ul>
-					</li>
+							<li><a href="logout">Logout</a></li>
+						</ul></li>
 				</ul>
 			</div>
 		</div>
@@ -163,12 +149,8 @@ $(document).ready(function() {
 				Picutre Management <small>
 					<ol class="breadcrumb"
 						style="background-color: transparent; padding-bottom: 0px; margin-bottom: 0px; display: inline-block;">
-						<li>
-							<a href="#">${Username }</a>
-						</li>
-						<li>
-							<a href="#">${Album_name }</a>
-						</li>
+						<li><a href="#">${Username }</a></li>
+						<li><a href="#">${Album_name }</a></li>
 						<li class="active">${Picture_name }</li>
 					</ol>
 				</small>
@@ -181,8 +163,9 @@ $(document).ready(function() {
 
 							<div class="picture-preview">
 								<h4>Image Preview</h4>
-								<img id="picture_preview" src="${Picture }res/image/BBB.png" alt="${Picture_name }" style="width: 100%">
-								<button type="button" class="btn btn-default btn-sm" style="margin: 5px auto; width: 120px">Original Size</button>
+								<img id="picture_preview" src="${Picture }" alt="${Picture_name }" style="width: 100%">
+								<button type="button" class="btn btn-default btn-sm" style="margin: 5px auto; width: 120px">Original
+									Size</button>
 							</div>
 
 							<div>
@@ -233,14 +216,14 @@ $(document).ready(function() {
 											<option>4</option>
 											<option>5</option>
 										</select>
-<!-- 										<div class="btn-group btn-group-sm" style="margin-top: 10px;">
+										<!-- 										<div class="btn-group btn-group-sm" style="margin-top: 10px;">
 											<button type="button" class="btn btn-success" style="width: 70px">Share</button>
 											<button type="button" class="btn btn-danger" style="width: 70px" disabled>Unshare</button>
 										</div> -->
-										<div class="testswitch" style="margin-top:10px;">
+										<div class="testswitch" style="margin-top: 10px;">
 											<input class="testswitch-checkbox" id="onoffswitch" type="checkbox">
-											<label class="testswitch-label" for="onoffswitch">
-												<span class="testswitch-inner" data-on="Shared" data-off="Unshared"></span> <span class="testswitch-switch"></span>
+											<label class="testswitch-label" for="onoffswitch"> <span class="testswitch-inner" data-on="Shared"
+												data-off="Unshared"></span> <span class="testswitch-switch"></span>
 											</label>
 										</div>
 									</div>
@@ -259,29 +242,53 @@ $(document).ready(function() {
 							<div id="write_comment" style="display: inline-block; margin-top: 10px;">
 								<img class="user-avatar-img" src="${empty Avatar?'/Souvenirs/res/image/default_avatar.png':Avatar}" alt="avatar"
 									width="32" height="32" style="float: left" />
-								<textarea id="comment" class="form-control" style="width: auto; display: inline; vertical-align: bottom;" rows="1"
-									placeholder="Write your comment."></textarea>
+								<textarea id="comment" class="form-control" style="width: auto; display: inline; vertical-align: bottom;"
+									rows="1" placeholder="Write your comment."></textarea>
 								<button class="btn btn-info" style="width: 57px;">Send</button>
 							</div>
 							<!-- Comment list -->
 							<div class="comments-display">
-								<!-- One comment item -->
-								<div class="comment-item">
-									<div class="user-avatar">
-										<img class="user-avatar-img" src="res/image/prepare.png" alt="avatar" />
-									</div>
-									<div class="comment-content">
-										<div class="meta-data">
-											<div class="comment-username">
-												<strong>123</strong>
+								<c:forEach  var="comment_item" items="${Comment_json_list }" varStatus="idx">
+									<!-- One comment item -->
+									<div class="comment-item">
+										<div class="user-avatar">
+											<img class="user-avatar-img" id="comment_user_avatar_${idx.count }" src="" alt="avatar" />
+										</div>
+										<div class="comment-content">
+											<div class="meta-data">
+												<div class="comment-username">
+													<strong id="comment_username_${idx.count }" style="line-height:200%;">username</strong>
+													
+												</div>
+												<div class="comment-time">
+													<small id="comment_time_${idx.count }">2016-01-01 00:00:00</small>
+												</div>
 											</div>
-											<div class="comment-time">
-												<small>2016-12-15 0:0:0</small>
+											<div class="comment" >
+												<span id="reply_title_${idx.count }" style="display:none;">Reply </span>
+												<span id="reply_username_${idx.count }" style="color:#337ab7;"></span>
+												<span id="reply_end_${idx.count }" style="display:none;">: </span>
+												<span id="comment_content_${idx.count }">This is comment content.</span>
 											</div>
 										</div>
-										<div class="comment">Nice moment!1234567899874563210.311254657898445</div>
 									</div>
-								</div>
+
+									<script>
+										idx = ${idx.count};
+										comment_json = '${comment_item}';
+										comment_obj = JSON.parse(comment_json);
+										document.getElementById("comment_username_"+idx).innerHTML = comment_obj.comment_username;
+										document.getElementById("comment_time_"+idx).innerHTML = comment_obj.comment_time;
+										document.getElementById("comment_user_avatar_"+idx).src = comment_obj.comment_user_avatar;
+										document.getElementById("comment_content_"+idx).innerHTML = comment_obj.comment_content;
+										if (comment_obj.reply_username != "") {
+											document.getElementById("reply_username_"+idx).innerHTML = "@"+comment_obj.reply_username;
+											document.getElementById("reply_title_"+idx).style.display = "inline";
+											document.getElementById("reply_end_"+idx).style.display = "inline";
+										}
+									</script>
+								</c:forEach>
+
 							</div>
 						</div>
 					</div>
