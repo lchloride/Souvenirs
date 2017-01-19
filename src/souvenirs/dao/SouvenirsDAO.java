@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import group.Group;
+import group.dao.GroupImplStore;
 import souvenirs.Comment;
 import souvenirs.PersonalAlbum;
 import souvenirs.Picture;
@@ -26,6 +28,8 @@ public class SouvenirsDAO {
 	final public static int SHARED_ALBUM_COL = 0;
 
 	final public static int LIKE_USERNAME_COL = 0;
+	
+	final public static int SALBUM_NAME_ROW = 0;
 	/**
 	 * 单例模式获取对象的方法
 	 * 
@@ -112,7 +116,7 @@ public class SouvenirsDAO {
 	 * @see souvenirs.SharedAlbum
 	 */
 	public List<SharedAlbum> getAllSAlbumInfo(String user_id, int type) throws Exception {
-		String sql = "SELECT owner_id, album_name, intro, album_cover, create_timestamp FROM souvenirs.query_available_album where user_id=?";
+		String sql = "SELECT owner_id, album_name, album_cover, create_timestamp FROM souvenirs.query_available_album where user_id=?";
 		if (type == PERSONAL_ALBUM)
 			sql += " and isPersonal = 'true'";
 		else if (type == SHARED_ALBUM)
@@ -127,13 +131,13 @@ public class SouvenirsDAO {
 	 * 
 	 * @param user_id
 	 *            用户名
-	 * @param album
-	 *            相册名
+	 * @param album_identifier
+	 *            相册标识符；对于个人相册，它应该是相册名(album_name)；对于共享相册，它应该是小组ID(group_id)
 	 * @return 照片主键组成的二维列表(user_id, album_name, filename)
 	 */
-	public List<List<Object>> getPictureAddrInAlbum(String user_id, String album) {
-		String sql = "SELECT owner_id, owner_album_name, owner_filename FROM souvenirs.query_available_image where user_id=? and  album_name=?  order by album_name asc";
-		List<String> parameter = Arrays.asList(user_id, album);
+	public List<List<Object>> getPictureAddrInAlbum(String user_id, String album_identifier) {
+		String sql = "SELECT owner_id, owner_album_name, owner_filename FROM souvenirs.query_available_image where user_id=? and  album_identifier=?  order by album_identifier asc";
+		List<String> parameter = Arrays.asList(user_id, album_identifier);
 		return DB.execSQLQuery(sql, parameter);
 	}
 
@@ -152,7 +156,7 @@ public class SouvenirsDAO {
 	 */
 	public List<Picture> getAllPictureInfo(String user_id, String album) throws Exception {
 		String sql = "SELECT owner_id, owner_album_name, owner_filename, owner_format, owner_description, owner_upload_timestamp "
-				+ "FROM souvenirs.query_available_image where user_id=? and  album_name=?  order by album_name asc";
+				+ "FROM souvenirs.query_available_image where user_id=? and  album_identifier=?  order by album_identifier asc";
 		List<String> parameter = Arrays.asList(user_id, album);
 		logger.debug("parameter:" + parameter);
 		return DB.execSQLQuery(sql, parameter, new PictureImplStore());
@@ -175,7 +179,7 @@ public class SouvenirsDAO {
 	 */
 	public Picture getPictureInfo(String user_id, String album, String filename) throws Exception {
 		String sql = "SELECT owner_id, owner_album_name, owner_filename, owner_format, owner_description, owner_upload_timestamp "
-				+ "FROM souvenirs.query_available_image where user_id=? and  album_name=?  and owner_filename=?";
+				+ "FROM souvenirs.query_available_image where user_id=? and  album_identifier=?  and owner_filename=?";
 		List<String> parameter = Arrays.asList(user_id, album, filename);
 		List<Picture> result = DB.execSQLQuery(sql, parameter, new PictureImplStore());
 		if (result.size() == 0)
@@ -207,7 +211,7 @@ public class SouvenirsDAO {
 	}
 
 	/**
-	 * 获取一张照片分享到的小组
+	 * 获取指定的照片所分享到的小组
 	 * @param user_id 用户名
 	 * @param album_name 相册名
 	 * @param filename 照片名
@@ -232,7 +236,8 @@ public class SouvenirsDAO {
 	 * @return 一个存储了喜欢该照片用户名的List列表
 	 */
 	public List<String> getLikingPersons(String user_id, String album_name, String filename) {
-		String sql = "SELECT user.username from souvenirs.like_picture, user where user.user_id=souvenirs.like_picture.like_user_id and like_picture.user_id=? and album_name=? and filename=?";
+		String sql = "SELECT user.username from souvenirs.like_picture, user where "+
+							"user.user_id=souvenirs.like_picture.like_user_id and like_picture.user_id=? and album_name=? and filename=?";
 		List<String> parameter = Arrays.asList(user_id, album_name, filename);
 		List<List<Object>> rs = DB.execSQLQuery(sql, parameter);
 		List<String> result = new ArrayList<>();
@@ -240,5 +245,24 @@ public class SouvenirsDAO {
 			result.add((String) list.get(LIKE_USERNAME_COL));
 		}
 		return result;
+	}
+	
+	/**
+	 * 根据小组的ID获取该小组对应的共享相册的信息
+	 * @param group_id 小组ID
+	 * @return 小组ID对应的共享相册信息，存储在SharedAlbum中
+	 * @throws Exception  数据库查询失败或CommentImplStore的format方法执行失败都会抛出异常
+	 * @see souvenirs.SharedAlbum
+	 * @see souvenirs.dao.SAlbumImplStore#format(List)
+	 */
+	public Group getSAlbumInfo(String group_id) throws Exception {
+		String sql = "SELECT group_id, group_name, intro, shared_album_name, album_cover, create_timestamp FROM souvenirs.`group` where group_id=?";
+		List<String> parameter = Arrays.asList(group_id);
+		List<Group> rs = DB.execSQLQuery(sql, parameter, new GroupImplStore());
+		Group result = new Group();
+		if (rs.size() == 0)
+			return result;
+		else
+			return rs.get(SALBUM_NAME_ROW);
 	}
 }

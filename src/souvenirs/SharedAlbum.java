@@ -12,10 +12,10 @@ import java.sql.Timestamp;
 public class SharedAlbum {
 	private String group_id;
 	private String shared_album_name;
-	private String intro;
+	//private String intro;
 	private String album_cover;
 	private Timestamp create_timestamp;
-	final private static int MEMBER_COUNT = 5;
+	final private static int MEMBER_COUNT = 4;
 	
 	public static int getMemberCount() {
 		return MEMBER_COUNT;
@@ -32,12 +32,12 @@ public class SharedAlbum {
 	public void setSharedAlbumName(String shared_album_name) {
 		this.shared_album_name = shared_album_name;
 	}
-	public String getIntro() {
+/*	public String getIntro() {
 		return intro;
 	}
 	public void setIntro(String intro) {
 		this.intro = intro;
-	}
+	}*/
 	public String getAlbumCover() {
 		return album_cover;
 	}

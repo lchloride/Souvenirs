@@ -177,8 +177,8 @@ div.comment {
 				Picutre Management <small>
 					<ol class="breadcrumb"
 						style="background-color: transparent; padding-bottom: 0px; margin-bottom: 0px; display: inline-block;">
-						<li><a href="#">${Username }</a></li>
-						<li><a href="#">${Album_name }</a></li>
+						<li><a href="homepage">${Username }</a></li>
+						<li><a href="album?album_name=${Album_name }">${Album_name }</a></li>
 						<li class="active">${Picture_name }</li>
 					</ol>
 				</small>

@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import group.Group;
 import souvenirs.Comment;
 import souvenirs.PersonalAlbum;
 import souvenirs.Picture;
@@ -173,17 +174,18 @@ public class SouvenirsManager {
 	 *         待转发的页面(key=DispatchURL)
 	 * @throws Exception
 	 */
-	public Map<String, Object> displayAlbumManager(Map<String, String> parameter) throws Exception {
+	public Map<String, Object> displayPAlbumManager(Map<String, String> parameter) throws Exception {
 		checkValidDAO();
 		Map<String, Object> result = new HashMap<>();
 		String user_id = parameter.get("login_user_id");
 		String album_name = parameter.get("album_name");
 		if (user_id == null || album_name == null || user_id.isEmpty() || album_name.isEmpty())
 			throw new BadRequestException("Invalid Parameter user_id OR album_name");
+		result.put("Is_personal", true);
 		result.put("Avatar", ImageLoader.genAddrOfAvatar(user_id));
 
-		result.put("Album_cover", ImageLoader.genAddrOfPAlbumCover(user_id, parameter.get("album_name")));
-		result.put("Album_name", parameter.get("album_name"));
+		result.put("Album_cover", ImageLoader.genAddrOfPAlbumCover(user_id, album_name));
+		result.put("Album_name", album_name);
 		result.put("Owner_name", UserManager.getUsernameByID(user_id));
 		result.put("Description", dao.getPAlbumInfo(user_id, album_name).getIntro());
 		JSONArray jArray = new JSONArray(getImageAddrInAlbum(parameter));
@@ -197,6 +199,24 @@ public class SouvenirsManager {
 		return result;
 	}
 
+	public Map<String, Object> displaySAlbumManager(Map<String, String> parameter) throws BadRequestException,Exception {
+		checkValidDAO();
+		Map<String, Object> result = new HashMap<>();
+		String user_id = parameter.get("login_user_id");
+		String group_id = parameter.get("group_id");
+		if (user_id==null||group_id==null||user_id.isEmpty()||group_id.isEmpty())
+			throw new BadRequestException("Invalid Parameter user_id OR group_id");
+		result.put("Is_personal", false);
+		result.put("Avatar", ImageLoader.genAddrOfAvatar(user_id));
+		
+		Group group = dao.getSAlbumInfo(group_id);
+		result.put("Album_cover", ImageLoader.genAddrOfSAlbumCover(group_id));
+		result.put("Album_name", group.getSharedAlbumName());
+		result.put("Owner_name", group.getGroupName());
+		result.put("Description", group.getIntro());
+		
+		return result;
+	}
 	/**
 	 * Picture管理页面的显示，将图片信息发给页面
 	 * @param parameter 前端传来的参数，用来指定图片。key包括login_user_id(登录用户ID)、album_name(相册名)、picture_name(照片名)

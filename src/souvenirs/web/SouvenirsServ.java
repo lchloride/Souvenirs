@@ -119,10 +119,15 @@ public class SouvenirsServ extends HttpServlet {
 					checkMakingDone(response, session);
 					return;
 				} else if (query_url.contentEquals("album")) {
-					result = sm.displayAlbumManager(para);
-				}else if (query_url.contentEquals("picture")) {
+					
+					result = sm.displayPAlbumManager(para);
+				} else if (query_url.contentEquals("sharedalbum")) {
+					
+					result = sm.displaySAlbumManager(para);
+				} else if (query_url.contentEquals("picture")) {
+					
 					result = sm.displayPictureManager(para);
-				}else {
+				} else {
 					
 					// query_url is wrong
 					response.sendError(HttpServletResponse.SC_NOT_FOUND);

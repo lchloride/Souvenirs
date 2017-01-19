@@ -92,7 +92,7 @@ div.album-cover img {
 		</nav>
 
 		<div class="container">
-			<h3 class="">Manage My Album (Web Designer has gone home.....)</h3>
+			<h3 class="">Manage Personal Album <small>(Web Designer has gone home.....)</small></h3>
 			<div class="row">
 				<div class="col-sm-9" id="album_show">
 					<div class="operations">
@@ -105,10 +105,10 @@ div.album-cover img {
 						<c:forEach var="image_item" items="${image_json_list }" varStatus="idx">
 
 							<div class="img">
-								<a id="image_item_frame_${idx.count }" target="_blank" href="#"> <img id="image_item_img_${idx.count }"
+								<a id="image_item_frame_${idx.count }" target="_self" href="#"> <img id="image_item_img_${idx.count }"
 									src="" alt="" width="120" height="120"></a>
 								<div class="desc">
-									<a id="image_item_text_${idx.count }" target="_blank" href="#"></a>
+									<a id="image_item_text_${idx.count }" target="_self" href="#"></a>
 								</div>
 							</div>
 
@@ -122,8 +122,9 @@ div.album-cover img {
 										.getElementById("image_item_img_" + idx).alt = image_item_obj.Filename;
 								document.getElementById("image_item_text_"
 										+ idx).innerHTML = image_item_obj.Filename;
-								//document.getElementById("image_item_frame_" + idx).href = "/Souvenirs/album?album_name="+image_item_obj.album_name;
-								//document.getElementById("image_item_text_" + idx).href = "/Souvenirs/album?album_name="+image_item_obj.album_name;
+								document.getElementById("image_item_frame_" + idx).href = 
+									"/Souvenirs/picture?album_name=${Album_name}&picture_name="+image_item_obj.Filename;
+								document.getElementById("image_item_text_" + idx).href = document.getElementById("image_item_frame_" + idx).href;
 							</script>
 						</c:forEach>
 

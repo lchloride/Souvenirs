@@ -33,9 +33,9 @@ public class SAlbumImplStore implements Store<SharedAlbum> {
 			else {
 				sAlbum.setGroupId((String)list.get(0));
 				sAlbum.setSharedAlbumName((String)list.get(1));
-				sAlbum.setIntro((String)list.get(2));
-				sAlbum.setAlbumCover((String)list.get(3));
-				sAlbum.setCreateTimestamp((Timestamp)list.get(4));
+				//sAlbum.setIntro((String)list.get(2));
+				sAlbum.setAlbumCover((String)list.get(2));
+				sAlbum.setCreateTimestamp((Timestamp)list.get(3));
 			}
 		} catch (Exception e) {
 			// TODO: handle exception
