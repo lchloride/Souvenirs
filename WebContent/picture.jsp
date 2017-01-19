@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ page import="java.util.*" %> 
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -97,7 +98,12 @@ div.comment {
 }
 </style>
 <script type="text/javascript">
+	var salbum_obj = new Object(<%=((List<String>)request.getAttribute("SAlbum_own_pic_json_list")).size()%>);
+	var liking_person_json = '${Liking_person_json}';
+	
 	$(document).ready(function() {
+		changeShareStatus(0);
+		displayLikingPersons();
 		$("#onoffswitch").on('click', function() {
 			clickSwitch()
 		});
@@ -110,6 +116,28 @@ div.comment {
 			}
 		};
 	});
+	
+	function displayLikingPersons() {
+		liking_person_obj = JSON.parse(liking_person_json);
+		display_str = "";
+		if (liking_person_obj == 0) {
+			document.getElementById("liking_persons").style.display = "none";
+		}else {
+			document.getElementById("liking_persons").style.display = "block";
+			for (i=0; i<liking_person_obj.length-1; i++) {
+				display_str += liking_person_obj[i]+", ";
+			}
+			display_str += liking_person_obj[liking_person_obj.length-1];
+			document.getElementById("liking_persons_name").innerHTML = display_str;
+		}
+	}
+	function changeShareStatus(s) {
+		//alert(s);
+		if (salbum_obj[s+1].is_shared)
+			document.getElementById("onoffswitch").checked = "checked";
+		else
+			document.getElementById("onoffswitch").checked = "";
+	}
 </script>
 </head>
 <body>
@@ -168,8 +196,8 @@ div.comment {
 									Size</button>
 							</div>
 
-							<div>
-								<span class="glyphicon glyphicon-thumbs-up"></span> <span id="liking_persons"></span>
+							<div id="liking_persons">
+								<span class="glyphicon glyphicon-thumbs-up"></span> <span id="liking_persons_name"></span>
 							</div>
 						</div>
 
@@ -209,23 +237,29 @@ div.comment {
 								<div class="form-group">
 									<label for="share" class="col-sm-5 col-md-4 col-lg-3 control-label">Share to</label>
 									<div class="col-sm-7 col-md-8 col-lg-9">
-										<select class="form-control">
-											<option>1</option>
-											<option>2</option>
-											<option>3</option>
-											<option>4</option>
-											<option>5</option>
+										<select class="form-control" onchange="changeShareStatus(this.options.selectedIndex)">
+											<c:forEach var="salbum_name" items="${SAlbum_own_pic_json_list }" varStatus="idx">
+												<option id="salbum_name_${idx.count }" value="${idx.count }"></option>
+												
+												<script>
+													idx=${idx.count};
+													salbum_json = '${salbum_name}';
+													salbum_obj[idx] = JSON.parse(salbum_json);
+													document.getElementById("salbum_name_"+idx).innerHTML = salbum_obj[idx].salbum_name;
+												</script>
+											</c:forEach>
 										</select>
 										<!-- 										<div class="btn-group btn-group-sm" style="margin-top: 10px;">
 											<button type="button" class="btn btn-success" style="width: 70px">Share</button>
 											<button type="button" class="btn btn-danger" style="width: 70px" disabled>Unshare</button>
 										</div> -->
-										<div class="testswitch" style="margin-top: 10px;">
-											<input class="testswitch-checkbox" id="onoffswitch" type="checkbox">
+										<div class="testswitch" id="test_switch"style="margin-top: 10px;">
+											<input class="testswitch-checkbox" id="onoffswitch" type="checkbox" >
 											<label class="testswitch-label" for="onoffswitch"> <span class="testswitch-inner" data-on="Shared"
 												data-off="Unshared"></span> <span class="testswitch-switch"></span>
 											</label>
 										</div>
+											
 									</div>
 								</div>
 								<div class="form-group">

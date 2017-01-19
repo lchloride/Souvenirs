@@ -10,8 +10,6 @@ import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.sun.corba.se.spi.orbutil.fsm.Guard.Result;
-
 import souvenirs.Comment;
 import souvenirs.PersonalAlbum;
 import souvenirs.Picture;
@@ -226,7 +224,8 @@ public class SouvenirsManager {
 		result.put("Format", pic.getFormat());
 		result.put("Description", pic.getDescription());
 		List<Comment> comments = dao.getAllComments(user_id, album_name, picture_name);
-		logger.debug("comment:"+comments);
+		//logger.debug("comment:"+comments);
+		
 		List<String> comment_json_list = new ArrayList<>();
 		JSONObject jsonObject = null;
 		DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -242,6 +241,29 @@ public class SouvenirsManager {
 		}
 		result.put("Comment_json_list", comment_json_list);
 		logger.debug("comment_json_list:"+comment_json_list);
+		
+		List<SharedAlbum> sAlbums = dao.getAllSAlbumInfo(user_id, SouvenirsDAO.SHARED_ALBUM);
+		List<String> picSAlbums = dao.getPictureBelongGroup(user_id, album_name, picture_name);
+		JSONObject own_json_item = null;
+		List<String> salbum_own_pic_json_list = new ArrayList<>();
+		for (SharedAlbum sharedAlbum : sAlbums) {
+			own_json_item = new JSONObject();
+			own_json_item.put("salbum_name", sharedAlbum.getSharedAlbumName());
+			if (picSAlbums.contains(sharedAlbum.getGroupId())) {
+				own_json_item.put("is_shared", true);
+			}else {
+				own_json_item.put("is_shared", false);
+			}
+			salbum_own_pic_json_list.add(own_json_item.toString());
+		}
+		logger.debug("salbum_own_pic_json_list:"+salbum_own_pic_json_list);
+		result.put("SAlbum_own_pic_json_list", salbum_own_pic_json_list);
+		
+		List<String> liking_person_list = dao.getLikingPersons(user_id, album_name, picture_name);
+		JSONArray liking_person_json = new JSONArray(liking_person_list);
+		result.put("Liking_person_json", liking_person_json);
+		logger.debug("liking_person_json:"+liking_person_json);
+		
 		result.put("DispatchURL", "picture.jsp");
 		return result;
 	}

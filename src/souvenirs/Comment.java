@@ -127,7 +127,9 @@ public class Comment {
 	/**
 	 * Form JSON string in object format that is used to display on the page 
 	 * @return the formatted JSON object string
+	 * @deprecated
 	 */
+	@SuppressWarnings("unused")
 	private String formatJSONObjectForDisplay() {
 		JSONObject jsonObject = new JSONObject();
 		jsonObject.put("comment_user_id", comment_user_id);
@@ -137,7 +139,7 @@ public class Comment {
 		jsonObject.put("reply_content", reply_content);
 		return jsonObject.toString();
 	}
-	/* (non-Javadoc)
+	/* Format a string to show its content
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
