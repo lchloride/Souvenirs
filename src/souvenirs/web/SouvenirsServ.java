@@ -103,7 +103,7 @@ public class SouvenirsServ extends HttpServlet {
 				} else if (query_url.contentEquals("making")) {
 					
 					// Display making page when firstly open making page
-					result = sm.makingSouvenirs(para);
+					result = sm.displayMakingSouvenirs(para);
 				} else if (query_url.contains("AlbumAjax")) {
 					
 					// Send json string of album info when front side open an Ajax query
@@ -121,7 +121,7 @@ public class SouvenirsServ extends HttpServlet {
 				} else if (query_url.contentEquals("album")) {
 					
 					result = sm.displayPAlbumManager(para);
-				} else if (query_url.contentEquals("sharedalbum")) {
+				} else if (query_url.contentEquals("sharedAlbum")) {
 					
 					result = sm.displaySAlbumManager(para);
 				} else if (query_url.contentEquals("picture")) {
@@ -224,13 +224,14 @@ public class SouvenirsServ extends HttpServlet {
 	 * </p>
 	 * @param response Servlet的response
 	 * @param sm SouvenirsManager操作对象
-	 * @param para 发给SouvenirsManager的参数表
+	 * @param para 发给SouvenirsManager的参数表，key包括login_user_id(登录用户名)、album_identifier(相册标识符：
+	 * 				personal album指的是album name；shared album指的是group_id)
 	 * @throws Exception 如果发送失败则抛出异常
 	 * @see souvenirs.web.SouvenirsManager#getImageAddrInAlbum(Map)
 	 */
 	private void queryAlbumAjax(HttpServletResponse response, SouvenirsManager sm, Map<String, String> para) throws Exception {
 		logger.info("User(id=<" + para.get("login_user_id") + ">) query image address in album <"
-				+ para.get("album_name") + ">.");
+				+ para.get("album_identifier") + ">.");
 		String rs = sm.getImageAddrInAlbum(para);
 		response.setContentType("text/xml; charset=UTF-8");
 		// Let browser not to store cache
@@ -241,7 +242,7 @@ public class SouvenirsServ extends HttpServlet {
 			out.write(rs);
 			out.close();
 			logger.info("User(id=<" + para.get("login_user_id")
-					+ ">) obtained json string of image address in album <" + para.get("album_name") + ">");
+					+ ">) obtained json string of image address in album <" + para.get("album_identifier") + ">");
 		} catch (Exception e) {
 			// TODO: handle exception
 			throw e;

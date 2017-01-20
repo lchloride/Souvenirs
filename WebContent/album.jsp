@@ -19,6 +19,7 @@
 <script type="text/javascript">
 	var original_album_name = '${Album_name}';
 	var original_description = '${Description}';
+	var mouse_over_idx = 0;
 	window.onload = function() {
 		if ($("#album_show").innerHeight() < $("#album_info").innerHeight()){
 			document.getElementById("album_show").className = "col-sm-9";
@@ -27,6 +28,21 @@
 			document.getElementById("album_show").className = "col-sm-9 border-right";
 			document.getElementById("album_info").className = "col-sm-3";			
 		}
+	}
+	
+	function activate(idx) {
+		if (mouse_over_idx>0){
+		document.getElementById("img_edit_btn_"+mouse_over_idx).style.display = "none";
+		document.getElementById("img_delete_btn_"+mouse_over_idx).style.display = "none";
+		}
+		mouse_over_idx = idx;
+		document.getElementById("img_edit_btn_"+idx).style.display = "inline";
+		document.getElementById("img_delete_btn_"+idx).style.display = "inline";
+	}
+	
+	function normalize() {
+		document.getElementById("img_edit_btn_"+mouse_over_idx).style.display = "none";
+		document.getElementById("img_delete_btn_"+mouse_over_idx).style.display = "none";
 	}
 </script>
 <style type="text/css">
@@ -60,9 +76,9 @@ div.album-cover img {
 </style>
 </head>
 <body>
-	<div class="mainbody">
+	<div class="mainbody"  >
 		<!-- Nav bar on the top of the screen -->
-		<nav class="navbar navbar-default" role="navigation">
+		<nav class="navbar navbar-default" role="navigation" >
 		<div class="container-fluid">
 			<div class="navbar-header">
 				<a class="navbar-brand" href="index.jsp">Souvenirs</a>
@@ -104,11 +120,18 @@ div.album-cover img {
 					<div class="images">
 						<c:forEach var="image_item" items="${image_json_list }" varStatus="idx">
 
-							<div class="img">
+							<div class="img" onmouseover="activate(${idx.count})" onmouseout="normalize(${idx.count})">
 								<a id="image_item_frame_${idx.count }" target="_self" href="#"> <img id="image_item_img_${idx.count }"
 									src="" alt="" width="120" height="120"></a>
 								<div class="desc">
-									<a id="image_item_text_${idx.count }" target="_self" href="#"></a>
+									<a id="image_item_text_${idx.count }" target="_self" href="#"></a><br>
+									<button type="button" class="btn btn-default btn-xs" style="display:none" id="img_edit_btn_${idx.count }"
+										onclick="window.location.href='baidu.com'">
+										<span class="glyphicon glyphicon-pencil"></span> Edit
+									</button>
+									<button type="button" class="btn btn-default btn-xs" style="display:none"id="img_delete_btn_${idx.count }">
+										<span class="glyphicon glyphicon-trash"></span> Delete
+									</button>
 								</div>
 							</div>
 
@@ -125,6 +148,7 @@ div.album-cover img {
 								document.getElementById("image_item_frame_" + idx).href = 
 									"/Souvenirs/picture?album_name=${Album_name}&picture_name="+image_item_obj.Filename;
 								document.getElementById("image_item_text_" + idx).href = document.getElementById("image_item_frame_" + idx).href;
+								document.getElementById("img_edit_btn_" + idx).setAttribute("onclick","window.location.href='"+document.getElementById("image_item_frame_" + idx).href+"'");
 							</script>
 						</c:forEach>
 

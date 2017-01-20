@@ -228,10 +228,10 @@ div.album-manage-title {
 									<c:forEach var="sAlbum_item" items="${SAlbum_json_list }" varStatus="idx">
 
 										<div class="img">
-											<a id="sAlbum_item_frame_${idx.count }" target="_blank" href="#"> <img id="sAlbum_item_img_${idx.count }" src=""
+											<a id="sAlbum_item_frame_${idx.count }" target="_self" href="#"> <img id="sAlbum_item_img_${idx.count }" src=""
 												alt="" width="120" height="120"></a>
 											<div class="desc">
-												<a id="sAlbum_item_text_${idx.count }" target="_blank" href="#" style="width:120px;"></a>
+												<a id="sAlbum_item_text_${idx.count }" target="_self" href="#" style="width:120px;"></a>
 											</div>
 										</div>
 
@@ -242,6 +242,8 @@ div.album-manage-title {
 											document.getElementById("sAlbum_item_img_" + idx).src = sAlbum_item_obj.cover_addr;
 											document.getElementById("sAlbum_item_img_" + idx).alt = sAlbum_item_obj.album_name;
 											document.getElementById("sAlbum_item_text_" + idx).innerHTML = sAlbum_item_obj.album_name;
+											document.getElementById("sAlbum_item_frame_" + idx).href = "/Souvenirs/sharedalbum?group_id="+sAlbum_item_obj.group_id;
+											document.getElementById("sAlbum_item_text_" + idx).href = document.getElementById("sAlbum_item_frame_" + idx).href;
 										</script>
 									</c:forEach>
 								

@@ -60,7 +60,7 @@
   </servlet>
   <servlet-mapping>
     <servlet-name>ErrorHandler</servlet-name>
-    <url-pattern>/ErrorHandler</url-pattern>
+    <url-pattern>/errorHandler</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>UserServ</servlet-name>
@@ -109,6 +109,10 @@
   <servlet-mapping>
 	<servlet-name>SouvenirsServ</servlet-name>
 	<url-pattern>/picture</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+	<servlet-name>SouvenirsServ</servlet-name>
+	<url-pattern>/sharedAlbum</url-pattern>
   </servlet-mapping>
   
   <error-page>

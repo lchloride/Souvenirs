@@ -28,7 +28,7 @@
 <link href="/Souvenirs/res/css/website.css" rel="stylesheet" type="text/css">
 <script>
 	/*Declarion of useful global variants  */
-	//display_width is the width(px) of active and available for showing contnet window 
+	//display_width is the width(unit: px) of active and available for showing contnet window 
 	var display_width = window.innerWidth
 			|| document.documentElement.clientWidth
 			|| document.body.clientWidth;
@@ -36,7 +36,7 @@
 	var display_height = window.innerHeight
 			|| document.documentElement.clientHeight
 			|| document.body.clientHeight;
-	//155 stands for the verticle space(px) of  header and footer together with margin and padding 
+	//155 stands for the verticle space(unit: px) of  header and footer together with margin and padding 
 	display_height = display_height - 155;
 	//selected_image is the index number of selected image that user clicks
 	var selected_image = 0;
@@ -57,14 +57,17 @@
 	var onshowContentId = "hint";
 	//This indicates the position where user clicked (in other words, the index of active part in templete)
 	var proc_position = 0;
-	//index of processing templete part when drawing
-	//var idx = 1;
+	//Flags
 	var isError = false;
 	var isDrawing = true;
 	var isFinished = false;
 	//Use to set interval
 	var intervalid;
 	var making_time;
+	//Store album identifiers which match album_name in ${Album_name_list}. Album identifier is the only way to find an album.
+	//For personal album, it stands for group id while for shared album, it stands for album_name.
+	var album_json = '${Album_identifier_json}';
+	var album_obj = JSON.parse(album_json);
 
 	//在页面加载完成后执行的脚本
 	window.onload = function() {
@@ -322,7 +325,7 @@
 						+ '" style="left:'
 						+ (margin_left + R(souvenir_obj[i].startX)) + 'px;top:'
 						+ (margin_top + R(souvenir_obj[i].startY))
-						+ 'px;width:' + (R(souvenir_obj[i].drawW) + 2)
+						+ 'px;width:' + (R(souvenir_obj[i].drawW) + 1)
 						+ 'px;height:' + (R(souvenir_obj[i].drawH) + 2)
 						+ 'px" onclick="changeOperContent(\'choose_album\', '
 						+ i + ')"></div></a>';
@@ -335,7 +338,7 @@
 						+ (margin_top + R(souvenir_obj[i].startY))
 						+ 'px;width:'
 						+ (R(souvenir_obj[i].maxW + souvenir_obj[i].paddingL
-								+ souvenir_obj[i].paddingR) + 2)
+								+ souvenir_obj[i].paddingR) + 1)
 						+ 'px;height:'
 						+ (R(souvenir_obj[i].maxH + souvenir_obj[i].paddingT
 								+ souvenir_obj[i].paddingB) + 2)
@@ -361,20 +364,20 @@
 		return (isDrawing ? ratio : download_ratio) * val;
 	}
 
-	//本函数通过Ajax从服务器获取选定的album中的照片
-	function queryImageInAlbum(str) {
+	//本函数通过Ajax从服务器获取选定的album中的照片，idx指的是选中的option的序号
+	function queryImageInAlbum(idx) {
 		var xmlhttp;
-		var album = document.getElementById("select_album_name").value;
+
 		selected_image = 0;//set selected image index to 0 when changine another album 
-		if (str == "") {
+/* 		if (str == "") {
 			image_json = "[]";
 			return;
-		}
+		} */
 		if (window.XMLHttpRequest) {
-			// IE7+, Firefox, Chrome, Opera, Safari 浏览器执行代码
+			// For IE7+, Firefox, Chrome, Opera, Safari 
 			xmlhttp = new XMLHttpRequest();
 		} else {
-			// IE6, IE5 浏览器执行代码
+			// For IE6, IE5 
 			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
 		}
 		//Having a response
@@ -387,7 +390,7 @@
 			assignImage();
 		}
 		//From URL and create connection
-		xmlhttp.open("GET", "AlbumAjax?album_name=" + album, true);
+		xmlhttp.open("GET", "AlbumAjax?album_identifier=" + album_obj[idx], true);
 		xmlhttp.send();
 	}
 
@@ -881,8 +884,8 @@ div.border-rect-active {
 
 					<div class="form-group">
 						<label for="name">Album</label> <select class="form-control" name="Select_album_name"
-							onchange="queryImageInAlbum()" id="select_album_name">
-							<c:forEach var="album_name" items="${Album_List}">
+							onchange="queryImageInAlbum(this.options.selectedIndex)" id="select_album_name">
+							<c:forEach var="album_name" items="${Album_name_list}">
 								<option>${album_name }</option>
 							</c:forEach>
 						</select>

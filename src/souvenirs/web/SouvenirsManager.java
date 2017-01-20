@@ -92,6 +92,7 @@ public class SouvenirsManager {
 		for (SharedAlbum sharedAlbum : rSAlbums) {
 			shared_album_map.put("album_name", sharedAlbum.getSharedAlbumName());
 			shared_album_map.put("cover_addr", ImageLoader.genAddrOfSAlbumCover(sharedAlbum.getGroupId()));
+			shared_album_map.put("group_id", sharedAlbum.getGroupId());
 			shared_album_json = new JSONObject(shared_album_map);
 			shared_album_json_list.add(shared_album_json.toString().replaceAll("'", "&apos;"));
 		}
@@ -107,15 +108,31 @@ public class SouvenirsManager {
 	 * @param parameter
 	 *            前端传来的参数，key包括login_user_id(登录用户user_id)，template(用户选择的模板名称)
 	 * @return 操作完成发送给前端的参数，包括album名称列表、默认显示的album内全部图片地址的json字符串
+	 * @throws Exception 
 	 */
-	public Map<String, Object> makingSouvenirs(Map<String, String> parameter) {
+	public Map<String, Object> displayMakingSouvenirs(Map<String, String> parameter) throws Exception {
 		checkValidDAO();
 		Map<String, Object> result = new HashMap<>();
 		result.put("Avatar", ImageLoader.genAddrOfAvatar(parameter.get("login_user_id")));
 		if (!parameter.containsKey("query_type")) {
-			List<Object> album_name_list = dao.getAlbumName(parameter.get("login_user_id"));
-			result.put("Album_List", album_name_list);
-			parameter.put("album_name", (String) album_name_list.get(0));
+			List<SharedAlbum> salbum_list = dao.getAllSAlbumInfo(parameter.get("login_user_id"), SouvenirsDAO.SHARED_ALBUM); //dao.getAlbumName(parameter.get("login_user_id"));
+			List<PersonalAlbum> palbum_list = dao.getAllPAlbumInfo(parameter.get("login_user_id"), SouvenirsDAO.PERSONAL_ALBUM);
+			logger.debug("palbum_list:"+palbum_list);
+			List<String> album_name_list = new ArrayList<>();
+			JSONArray album_identifier_json = new JSONArray();
+			for (PersonalAlbum personalAlbum : palbum_list) {
+				album_name_list.add(personalAlbum.getAlbumName());
+				album_identifier_json.put(personalAlbum.getAlbumName());
+			}
+			for (SharedAlbum sharedAlbum : salbum_list) {
+				album_name_list.add(sharedAlbum.getSharedAlbumName());
+				album_identifier_json.put(sharedAlbum.getGroupId());
+			}
+
+			result.put("Album_name_list", album_name_list);
+			result.put("Album_identifier_json", album_identifier_json.toString());
+			
+			parameter.put("album_identifier", album_identifier_json.getString(0));
 			result.put("Image_JSON", getImageAddrInAlbum(parameter));
 			String template = PropertyOper.GetValueByKey("template.properties", parameter.get("template"));
 			if (template == null || template.isEmpty())
@@ -143,11 +160,11 @@ public class SouvenirsManager {
 		// form json string
 		List<Picture> image_list = null;
 		try {
-			image_list = dao.getAllPictureInfo(parameter.get("login_user_id"), parameter.get("album_name"));
+			image_list = dao.getAllPictureInfo(parameter.get("login_user_id"), parameter.get("album_identifier"));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			logger.warn("There are something wrong when getting image address in album <"
-					+ parameter.get("login_user_id") + ">, (User ID:<" + parameter.get("album_name") + ">)", e);
+					+ parameter.get("login_user_id") + ">, (User ID:<" + parameter.get("album_identifier") + ">)", e);
 		}
 		logger.debug("image_list: " + image_list);
 		JSONArray json_array = new JSONArray();
@@ -179,6 +196,7 @@ public class SouvenirsManager {
 		Map<String, Object> result = new HashMap<>();
 		String user_id = parameter.get("login_user_id");
 		String album_name = parameter.get("album_name");
+		parameter.put("album_identifier", album_name);
 		if (user_id == null || album_name == null || user_id.isEmpty() || album_name.isEmpty())
 			throw new BadRequestException("Invalid Parameter user_id OR album_name");
 		result.put("Is_personal", true);
@@ -204,6 +222,7 @@ public class SouvenirsManager {
 		Map<String, Object> result = new HashMap<>();
 		String user_id = parameter.get("login_user_id");
 		String group_id = parameter.get("group_id");
+		parameter.put("album_identifier", group_id);
 		if (user_id==null||group_id==null||user_id.isEmpty()||group_id.isEmpty())
 			throw new BadRequestException("Invalid Parameter user_id OR group_id");
 		result.put("Is_personal", false);
@@ -215,8 +234,17 @@ public class SouvenirsManager {
 		result.put("Owner_name", group.getGroupName());
 		result.put("Description", group.getIntro());
 		
+		JSONArray jArray = new JSONArray(getImageAddrInAlbum(parameter));
+		List<String> image_list = new ArrayList<>();
+		for (int i = 0; i < jArray.length(); i++) {
+			image_list.add(jArray.getJSONObject(i).toString());
+		}
+		logger.debug("image_json_list: " + image_list);
+		result.put("image_json_list", image_list);
+		result.put("DispatchURL", "album.jsp");
 		return result;
 	}
+	
 	/**
 	 * Picture管理页面的显示，将图片信息发给页面
 	 * @param parameter 前端传来的参数，用来指定图片。key包括login_user_id(登录用户ID)、album_name(相册名)、picture_name(照片名)
