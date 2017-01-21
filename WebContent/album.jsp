@@ -108,13 +108,20 @@ div.album-cover img {
 		</nav>
 
 		<div class="container">
-			<h3 class="">Manage Personal Album <small>(Web Designer has gone home.....)</small></h3>
+			<h3 class="">
+				<c:if test="${Is_personal }">
+					Personal Album Management
+				</c:if>
+				<c:if test="${not Is_personal }">
+					Shared Album Management
+				</c:if><small>(Web Designer has gone home.....)</small>
+			</h3>
 			<div class="row">
 				<div class="col-sm-9" id="album_show">
 					<div class="operations">
-						<button type="button" class="btn btn-default">Upload Image</button>
-						<button type="button" class="btn btn-default">Manage Information</button>
-						<button type="button" class="btn btn-default">Delete Image</button>
+<!-- 							<button type="button" class="btn btn-default">Upload Image</button>
+					<button type="button" class="btn btn-default">Manage Information</button>
+						<button type="button" class="btn btn-default">Delete Image</button> -->
 					</div>
 
 					<div class="images">
@@ -184,7 +191,8 @@ div.album-cover img {
   							  <button type="button" class="btn btn-default" onclick="document.getElementById('description').value=original_description">Reset</button>
 						</div></label>
 						<textarea id="description" class="form-control" rows="3" >${Description }</textarea>
-					</div>					
+					</div>		
+					<button type="button" class="btn btn-default">Upload Image</button>			
 				</div>
 			</div>
 			<div class="row">...</div>

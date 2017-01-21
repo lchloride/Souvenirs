@@ -242,7 +242,7 @@ div.album-manage-title {
 											document.getElementById("sAlbum_item_img_" + idx).src = sAlbum_item_obj.cover_addr;
 											document.getElementById("sAlbum_item_img_" + idx).alt = sAlbum_item_obj.album_name;
 											document.getElementById("sAlbum_item_text_" + idx).innerHTML = sAlbum_item_obj.album_name;
-											document.getElementById("sAlbum_item_frame_" + idx).href = "/Souvenirs/sharedalbum?group_id="+sAlbum_item_obj.group_id;
+											document.getElementById("sAlbum_item_frame_" + idx).href = "/Souvenirs/sharedAlbum?group_id="+sAlbum_item_obj.group_id;
 											document.getElementById("sAlbum_item_text_" + idx).href = document.getElementById("sAlbum_item_frame_" + idx).href;
 										</script>
 									</c:forEach>
