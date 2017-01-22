@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@ page import="java.util.*" %> 
+<%@ page import="java.util.*"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -99,9 +99,11 @@ div.comment {
 }
 </style>
 <script type="text/javascript">
-	var salbum_obj = new Object(<%=((List<String>)request.getAttribute("SAlbum_own_pic_json_list")).size()%>);
+	var salbum_obj = new Object(
+<%=((List<String>) request.getAttribute("SAlbum_own_pic_json_list")).size()%>
+	);
 	var liking_person_json = '${Liking_person_json}';
-	
+
 	$(document).ready(function() {
 		displayLikingPersons();
 		<c:if test="${Is_personal}">
@@ -119,24 +121,24 @@ div.comment {
 		};
 		</c:if>
 	});
-	
+
 	function displayLikingPersons() {
 		liking_person_obj = JSON.parse(liking_person_json);
 		display_str = "";
 		if (liking_person_obj == 0) {
 			document.getElementById("liking_persons").style.display = "none";
-		}else {
+		} else {
 			document.getElementById("liking_persons").style.display = "block";
-			for (i=0; i<liking_person_obj.length-1; i++) {
-				display_str += liking_person_obj[i]+", ";
+			for (i = 0; i < liking_person_obj.length - 1; i++) {
+				display_str += liking_person_obj[i] + ", ";
 			}
-			display_str += liking_person_obj[liking_person_obj.length-1];
+			display_str += liking_person_obj[liking_person_obj.length - 1];
 			document.getElementById("liking_persons_name").innerHTML = display_str;
 		}
 	}
 	function changeShareStatus(s) {
 		//alert(s);
-		if (salbum_obj[s+1].is_shared)
+		if (salbum_obj[s + 1].is_shared)
 			document.getElementById("onoffswitch").checked = "checked";
 		else
 			document.getElementById("onoffswitch").checked = "";
@@ -153,23 +155,38 @@ div.comment {
 			</div>
 			<div>
 				<ul class="nav navbar-nav">
-					<li class="active"><a href="homepage">HomePage</a></li>
-					<li><a href="#">Group</a></li>
-					<li><a href="upload">Upload</a></li>
-					<li><a href="making">Making</a></li>
+					<li class="active">
+						<a href="homepage">HomePage</a>
+					</li>
+					<li>
+						<a href="#">Group</a>
+					</li>
+					<li>
+						<a href="upload">Upload</a>
+					</li>
+					<li>
+						<a href="making">Making</a>
+					</li>
 				</ul>
 
 				<ul class="nav navbar-nav navbar-right" style="padding-right: 5%">
-					<li><img class="navbar-form" src="${empty Avatar?'/Souvenirs/res/image/default_avatar.png':Avatar}"
-						alt="avatar" width="32" height="32"></li>
-					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">${sessionScope.username} <b
-							class="caret"></b>
-					</a>
+					<li>
+						<img class="navbar-form" src="${empty Avatar?'/Souvenirs/res/image/default_avatar.png':Avatar}" alt="avatar" width="32"
+							height="32">
+					</li>
+					<li class="dropdown">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown">${sessionScope.username} <b class="caret"></b>
+						</a>
 						<ul class="dropdown-menu">
-							<li><a href="account.jsp">Account</a></li>
+							<li>
+								<a href="account.jsp">Account</a>
+							</li>
 							<li class="divider"></li>
-							<li><a href="logout">Logout</a></li>
-						</ul></li>
+							<li>
+								<a href="logout">Logout</a>
+							</li>
+						</ul>
+					</li>
 				</ul>
 			</div>
 		</div>
@@ -181,8 +198,12 @@ div.comment {
 					Picture Management <small>
 						<ol class="breadcrumb"
 							style="background-color: transparent; padding-bottom: 0px; margin-bottom: 0px; display: inline-block;">
-							<li><a href="homepage">${Username }</a></li>
-							<li><a href="album?album_name=${Album_name }">${Album_name }</a></li>
+							<li>
+								<a href="homepage">${Username }</a>
+							</li>
+							<li>
+								<a href="album?album_name=${Album_name }">${Album_name }</a>
+							</li>
 							<li class="active">${Picture_name }</li>
 						</ol>
 					</small>
@@ -191,11 +212,13 @@ div.comment {
 					Picture Details <small>
 						<ol class="breadcrumb"
 							style="background-color: transparent; padding-bottom: 0px; margin-bottom: 0px; display: inline-block;">
-							<li class="active" style="color:#337ab7">${Username }</li>
-							<li><a href="sharedAlbum?group_id=${Group_id }">${Group_name }</a></li>
+							<li class="active" style="color: #337ab7">${Username }</li>
+							<li>
+								<a href="sharedAlbum?group_id=${Group_id }">${Group_name }</a>
+							</li>
 							<li class="active">${Picture_name }</li>
 						</ol>
-					</small>					
+					</small>
 				</c:if>
 			</h3>
 
@@ -207,12 +230,18 @@ div.comment {
 							<div class="picture-preview">
 								<h4>Image Preview</h4>
 								<div class="gallery">
-									<div><a href="res/image/laugh.gif">
-										<img id="picture_preview" src="${Picture }" alt="${Picture_name }" style="width: 100%">
-									</a></div>
+									<div>
+										<a href="res/image/laugh.gif"> <img id="picture_preview" src="${Picture }" alt="${Picture_name }"
+												style="width: 100%">
+										</a>
+									</div>
 								</div>
-								<a href="/Souvenirs/showPicture?addr=${Picture }"><button type="button" class="btn btn-default btn-sm" style="margin: 5px auto; width: 120px">Original
-									Size</button></a>
+								<a href="/Souvenirs/showPicture?addr=${Picture }">
+									<button type="button" class="btn btn-default btn-sm"
+										style="margin: 5px auto; width: 120px">Original Size</button></a>
+								<a href="${Picture }"><button type="button" class="btn btn-default btn-sm"
+										style="margin: 5px auto; width: 120px">Download</button>
+								</a>
 							</div>
 
 							<div id="liking_persons">
@@ -260,12 +289,18 @@ div.comment {
 											<select class="form-control" onchange="changeShareStatus(this.options.selectedIndex)">
 												<c:forEach var="salbum_name" items="${SAlbum_own_pic_json_list }" varStatus="idx">
 													<option id="salbum_name_${idx.count }" value="${idx.count }"></option>
-													
+
 													<script>
-														idx=${idx.count};
+														idx = $
+														{
+															idx.count
+														};
 														salbum_json = '${salbum_name}';
-														salbum_obj[idx] = JSON.parse(salbum_json);
-														document.getElementById("salbum_name_"+idx).innerHTML = salbum_obj[idx].salbum_name;
+														salbum_obj[idx] = JSON
+																.parse(salbum_json);
+														document
+																.getElementById("salbum_name_"
+																		+ idx).innerHTML = salbum_obj[idx].salbum_name;
 													</script>
 												</c:forEach>
 											</select>
@@ -273,13 +308,13 @@ div.comment {
 												<button type="button" class="btn btn-success" style="width: 70px">Share</button>
 												<button type="button" class="btn btn-danger" style="width: 70px" disabled>Unshare</button>
 											</div> -->
-											<div class="testswitch" id="test_switch"style="margin-top: 10px;">
-												<input class="testswitch-checkbox" id="onoffswitch" type="checkbox" >
-												<label class="testswitch-label" for="onoffswitch"> <span class="testswitch-inner" data-on="Shared"
-													data-off="Unshared"></span> <span class="testswitch-switch"></span>
+											<div class="testswitch" id="test_switch" style="margin-top: 10px;">
+												<input class="testswitch-checkbox" id="onoffswitch" type="checkbox">
+												<label class="testswitch-label" for="onoffswitch">
+													<span class="testswitch-inner" data-on="Shared" data-off="Unshared"></span> <span class="testswitch-switch"></span>
 												</label>
 											</div>
-												
+
 										</div>
 									</div>
 
@@ -298,13 +333,13 @@ div.comment {
 							<div id="write_comment" style="display: inline-block; margin-top: 10px;">
 								<img class="user-avatar-img" src="${empty Avatar?'/Souvenirs/res/image/default_avatar.png':Avatar}" alt="avatar"
 									width="32" height="32" style="float: left" />
-								<textarea id="comment" class="form-control" style="width: auto; display: inline; vertical-align: bottom;"
-									rows="1" placeholder="Write your comment."></textarea>
+								<textarea id="comment" class="form-control" style="width: auto; display: inline; vertical-align: bottom;" rows="1"
+									placeholder="Write your comment."></textarea>
 								<button class="btn btn-info" style="width: 57px;">Send</button>
 							</div>
 							<!-- Comment list -->
 							<div class="comments-display">
-								<c:forEach  var="comment_item" items="${Comment_json_list }" varStatus="idx">
+								<c:forEach var="comment_item" items="${Comment_json_list }" varStatus="idx">
 									<!-- One comment item -->
 									<div class="comment-item">
 										<div class="user-avatar">
@@ -313,34 +348,50 @@ div.comment {
 										<div class="comment-content">
 											<div class="meta-data">
 												<div class="comment-username">
-													<strong id="comment_username_${idx.count }" style="line-height:200%;">username</strong>
-													
+													<strong id="comment_username_${idx.count }" style="line-height: 200%;">username</strong>
+
 												</div>
 												<div class="comment-time">
 													<small id="comment_time_${idx.count }">2016-01-01 00:00:00</small>
 												</div>
 											</div>
-											<div class="comment" >
-												<span id="reply_title_${idx.count }" style="display:none;">Reply </span>
-												<span id="reply_username_${idx.count }" style="color:#337ab7;"></span>
-												<span id="reply_end_${idx.count }" style="display:none;">: </span>
-												<span id="comment_content_${idx.count }">This is comment content.</span>
+											<div class="comment">
+												<span id="reply_title_${idx.count }" style="display: none;">Reply </span> <span id="reply_username_${idx.count }"
+													style="color: #337ab7;"></span> <span id="reply_end_${idx.count }" style="display: none;">: </span> <span
+													id="comment_content_${idx.count }">This is comment content.</span>
 											</div>
 										</div>
 									</div>
 
 									<script>
-										idx = ${idx.count};
+										idx = $
+										{
+											idx.count
+										};
 										comment_json = '${comment_item}';
 										comment_obj = JSON.parse(comment_json);
-										document.getElementById("comment_username_"+idx).innerHTML = comment_obj.comment_username;
-										document.getElementById("comment_time_"+idx).innerHTML = comment_obj.comment_time;
-										document.getElementById("comment_user_avatar_"+idx).src = comment_obj.comment_user_avatar;
-										document.getElementById("comment_content_"+idx).innerHTML = comment_obj.comment_content;
+										document
+												.getElementById("comment_username_"
+														+ idx).innerHTML = comment_obj.comment_username;
+										document.getElementById("comment_time_"
+												+ idx).innerHTML = comment_obj.comment_time;
+										document
+												.getElementById("comment_user_avatar_"
+														+ idx).src = comment_obj.comment_user_avatar;
+										document
+												.getElementById("comment_content_"
+														+ idx).innerHTML = comment_obj.comment_content;
 										if (comment_obj.reply_username != "") {
-											document.getElementById("reply_username_"+idx).innerHTML = "@"+comment_obj.reply_username;
-											document.getElementById("reply_title_"+idx).style.display = "inline";
-											document.getElementById("reply_end_"+idx).style.display = "inline";
+											document
+													.getElementById("reply_username_"
+															+ idx).innerHTML = "@"
+													+ comment_obj.reply_username;
+											document
+													.getElementById("reply_title_"
+															+ idx).style.display = "inline";
+											document
+													.getElementById("reply_end_"
+															+ idx).style.display = "inline";
 										}
 									</script>
 								</c:forEach>
