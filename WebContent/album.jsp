@@ -32,12 +32,22 @@
 	
 	function activate(idx) {
 		if (mouse_over_idx>0){
-		document.getElementById("img_edit_btn_"+mouse_over_idx).style.display = "none";
-		document.getElementById("img_delete_btn_"+mouse_over_idx).style.display = "none";
+			<c:if test="${Is_personal}">
+				document.getElementById("img_edit_btn_"+mouse_over_idx).style.display = "none";
+				document.getElementById("img_delete_btn_"+mouse_over_idx).style.display = "none";
+			</c:if>
+			<c:if test="${not Is_personal}">
+				document.getElementById("img_details_btn_"+mouse_over_idx).style.display = "none";
+			</c:if>
 		}
 		mouse_over_idx = idx;
-		document.getElementById("img_edit_btn_"+idx).style.display = "inline";
-		document.getElementById("img_delete_btn_"+idx).style.display = "inline";
+		<c:if test="${Is_personal}">
+			document.getElementById("img_edit_btn_"+idx).style.display = "inline";
+			document.getElementById("img_delete_btn_"+idx).style.display = "inline";
+		</c:if>
+		<c:if test="${not Is_personal}">
+			document.getElementById("img_details_btn_"+mouse_over_idx).style.display = "inline";
+		</c:if>
 	}
 	
 	function normalize() {
@@ -72,6 +82,12 @@ div.album-cover img {
 	border-width: 1px;
 	border-color: rgba(96, 96, 96, 0.8);
 	border-radius: 5px;
+}
+
+.operation-btn {
+	display: none;
+	margin-top:2px;
+	margin-bottom:2px;
 }
 </style>
 </head>
@@ -132,13 +148,21 @@ div.album-cover img {
 									src="" alt="" width="120" height="120"></a>
 								<div class="desc">
 									<a id="image_item_text_${idx.count }" target="_self" href="#"></a><br>
-									<button type="button" class="btn btn-default btn-xs" style="display:none" id="img_edit_btn_${idx.count }"
-										onclick="window.location.href='baidu.com'">
-										<span class="glyphicon glyphicon-pencil"></span> Edit
-									</button>
-									<button type="button" class="btn btn-default btn-xs" style="display:none"id="img_delete_btn_${idx.count }">
-										<span class="glyphicon glyphicon-trash"></span> Delete
-									</button>
+									<c:if test="${Is_personal }">
+										<button type="button" class="btn btn-default btn-xs operation-btn"  id="img_edit_btn_${idx.count }"
+											onclick="window.location.href=''">
+											<span class="glyphicon glyphicon-pencil"></span> Edit
+										</button>
+										<button type="button" class="btn btn-default btn-xs operation-btn" id="img_delete_btn_${idx.count }">
+											<span class="glyphicon glyphicon-trash"></span> Delete
+										</button>
+									</c:if>
+									<c:if test="${not Is_personal }">
+										<button type="button" class="btn btn-default btn-xs operation-btn"  id="img_details_btn_${idx.count }"
+											onclick="window.location.href=''" disabled>
+											<span class="	glyphicon glyphicon-eye-open"></span> Details
+										</button>
+									</c:if>
 								</div>
 							</div>
 
@@ -152,10 +176,22 @@ div.album-cover img {
 										.getElementById("image_item_img_" + idx).alt = image_item_obj.Filename;
 								document.getElementById("image_item_text_"
 										+ idx).innerHTML = image_item_obj.Filename;
+								//Basic query picture address, which is for ipictures in personal album 
 								document.getElementById("image_item_frame_" + idx).href = 
-									"/Souvenirs/picture?album_name=${Album_name}&picture_name="+image_item_obj.Filename;
+									"/Souvenirs/picture?album_name="+encodeURIComponent(image_item_obj.AlbumName)+"&picture_name="+encodeURIComponent(image_item_obj.Filename);
+								//Extended attribute user_id for pictures in shared album
+								<c:if test="${not Is_personal}">
+									document.getElementById("image_item_frame_" + idx).href += "&user_id="+encodeURIComponent(image_item_obj.UserID)+"&group_id="+encodeURIComponent("${Group_id}");
+								</c:if>
+								//Set URL to related element
 								document.getElementById("image_item_text_" + idx).href = document.getElementById("image_item_frame_" + idx).href;
-								document.getElementById("img_edit_btn_" + idx).setAttribute("onclick","window.location.href='"+document.getElementById("image_item_frame_" + idx).href+"'");
+								<c:if test="${Is_personal}">
+									document.getElementById("img_edit_btn_" + idx).setAttribute("onclick","window.location.href='"+document.getElementById("image_item_frame_" + idx).href+"'");
+								</c:if>
+								<c:if test="${not Is_personal}">
+									document.getElementById("img_details_btn_" + idx).setAttribute("onclick","window.location.href='"+document.getElementById("image_item_frame_" + idx).href+"'");
+								</c:if>
+								
 							</script>
 						</c:forEach>
 
@@ -192,7 +228,12 @@ div.album-cover img {
 						</div></label>
 						<textarea id="description" class="form-control" rows="3" >${Description }</textarea>
 					</div>		
-					<button type="button" class="btn btn-default">Upload Image</button>			
+					<c:if test="${Is_personal }">
+						<a href="/Souvenirs/upload?album_name=${Album_name }"><button type="button" class="btn btn-default">Upload Image</button></a>
+					</c:if>	
+					<c:if test="${not Is_personal }">
+						<button type="button" class="btn btn-default">Share My Picture</button>		
+					</c:if>	
 				</div>
 			</div>
 			<div class="row">...</div>

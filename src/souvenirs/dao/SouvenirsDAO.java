@@ -252,7 +252,7 @@ public class SouvenirsDAO {
 	 * @param group_id 小组ID
 	 * @return 小组ID对应的共享相册信息，存储在SharedAlbum中
 	 * @throws Exception  数据库查询失败或CommentImplStore的format方法执行失败都会抛出异常
-	 * @see souvenirs.SharedAlbum
+	 * @see group.Group
 	 * @see souvenirs.dao.SAlbumImplStore#format(List)
 	 */
 	public Group getSAlbumInfo(String group_id) throws Exception {
@@ -265,4 +265,5 @@ public class SouvenirsDAO {
 		else
 			return rs.get(SALBUM_NAME_ROW);
 	}
+	
 }

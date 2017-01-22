@@ -16,6 +16,7 @@
 <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
 <script src="/Souvenirs/res/bootstrap/js/bootstrap.min.js"></script>
 <link href="/Souvenirs/res/css/website.css" rel="stylesheet" type="text/css">
+
 <title>Picture Information</title>
 <style type="text/css">
 .picture-management {
@@ -102,8 +103,9 @@ div.comment {
 	var liking_person_json = '${Liking_person_json}';
 	
 	$(document).ready(function() {
-		changeShareStatus(0);
 		displayLikingPersons();
+		<c:if test="${Is_personal}">
+		changeShareStatus(0);
 		$("#onoffswitch").on('click', function() {
 			clickSwitch()
 		});
@@ -115,6 +117,7 @@ div.comment {
 				;//console.log("在OFF的状态下");  
 			}
 		};
+		</c:if>
 	});
 	
 	function displayLikingPersons() {
@@ -174,14 +177,26 @@ div.comment {
 
 		<div class="picture-management">
 			<h3 style="padding-left: 15px;">
-				Picutre Management <small>
-					<ol class="breadcrumb"
-						style="background-color: transparent; padding-bottom: 0px; margin-bottom: 0px; display: inline-block;">
-						<li><a href="homepage">${Username }</a></li>
-						<li><a href="album?album_name=${Album_name }">${Album_name }</a></li>
-						<li class="active">${Picture_name }</li>
-					</ol>
-				</small>
+				<c:if test="${Is_personal }">
+					Picture Management <small>
+						<ol class="breadcrumb"
+							style="background-color: transparent; padding-bottom: 0px; margin-bottom: 0px; display: inline-block;">
+							<li><a href="homepage">${Username }</a></li>
+							<li><a href="album?album_name=${Album_name }">${Album_name }</a></li>
+							<li class="active">${Picture_name }</li>
+						</ol>
+					</small>
+				</c:if>
+				<c:if test="${not Is_personal }">
+					Picture Details <small>
+						<ol class="breadcrumb"
+							style="background-color: transparent; padding-bottom: 0px; margin-bottom: 0px; display: inline-block;">
+							<li class="active" style="color:#337ab7">${Username }</li>
+							<li><a href="sharedAlbum?group_id=${Group_id }">${Group_name }</a></li>
+							<li class="active">${Picture_name }</li>
+						</ol>
+					</small>					
+				</c:if>
 			</h3>
 
 			<div class="info-content">
@@ -191,9 +206,13 @@ div.comment {
 
 							<div class="picture-preview">
 								<h4>Image Preview</h4>
-								<img id="picture_preview" src="${Picture }" alt="${Picture_name }" style="width: 100%">
-								<button type="button" class="btn btn-default btn-sm" style="margin: 5px auto; width: 120px">Original
-									Size</button>
+								<div class="gallery">
+									<div><a href="res/image/laugh.gif">
+										<img id="picture_preview" src="${Picture }" alt="${Picture_name }" style="width: 100%">
+									</a></div>
+								</div>
+								<a href="/Souvenirs/showPicture?addr=${Picture }"><button type="button" class="btn btn-default btn-sm" style="margin: 5px auto; width: 120px">Original
+									Size</button></a>
 							</div>
 
 							<div id="liking_persons">
@@ -207,7 +226,7 @@ div.comment {
 								<div class="form-group">
 									<label for="picture_name" class="col-sm-5 col-md-4 col-lg-3 control-label">Name</label>
 									<div class="col-sm-7 col-md-8 col-lg-9">
-										<input type="text" class="form-control" id="picture_name" value="${Picture_name}">
+										<input type="text" class="form-control" id="picture_name" value="${Picture_name}" ${not Is_personal?"disabled":"" }>
 									</div>
 								</div>
 								<div class="form-group">
@@ -219,7 +238,7 @@ div.comment {
 								<div class="form-group">
 									<label for="owner" class="col-sm-5 col-md-4 col-lg-3 control-label">Owner</label>
 									<div class="col-sm-7 col-md-8 col-lg-9">
-										<input type="text" class="form-control" id="owner" value="${Username }" disabled>
+										<input type="text" class="form-control" id="owner" value="${Owner }" disabled>
 									</div>
 								</div>
 								<div class="form-group">
@@ -231,43 +250,46 @@ div.comment {
 								<div class="form-group">
 									<label for="description" class="col-sm-5 col-md-4 col-lg-3 control-label" style="letter-spacing: -1px;">Description</label>
 									<div class="col-sm-7 col-md-8 col-lg-9">
-										<textarea id="description" class="form-control" rows="3">${Description }</textarea>
+										<textarea id="description" class="form-control" rows="3" ${not Is_personal?"disabled":"" }>${Description }</textarea>
 									</div>
 								</div>
-								<div class="form-group">
-									<label for="share" class="col-sm-5 col-md-4 col-lg-3 control-label">Share to</label>
-									<div class="col-sm-7 col-md-8 col-lg-9">
-										<select class="form-control" onchange="changeShareStatus(this.options.selectedIndex)">
-											<c:forEach var="salbum_name" items="${SAlbum_own_pic_json_list }" varStatus="idx">
-												<option id="salbum_name_${idx.count }" value="${idx.count }"></option>
+								<c:if test="${Is_personal }">
+									<div class="form-group">
+										<label for="share" class="col-sm-5 col-md-4 col-lg-3 control-label">Share to</label>
+										<div class="col-sm-7 col-md-8 col-lg-9">
+											<select class="form-control" onchange="changeShareStatus(this.options.selectedIndex)">
+												<c:forEach var="salbum_name" items="${SAlbum_own_pic_json_list }" varStatus="idx">
+													<option id="salbum_name_${idx.count }" value="${idx.count }"></option>
+													
+													<script>
+														idx=${idx.count};
+														salbum_json = '${salbum_name}';
+														salbum_obj[idx] = JSON.parse(salbum_json);
+														document.getElementById("salbum_name_"+idx).innerHTML = salbum_obj[idx].salbum_name;
+													</script>
+												</c:forEach>
+											</select>
+											<!-- 										<div class="btn-group btn-group-sm" style="margin-top: 10px;">
+												<button type="button" class="btn btn-success" style="width: 70px">Share</button>
+												<button type="button" class="btn btn-danger" style="width: 70px" disabled>Unshare</button>
+											</div> -->
+											<div class="testswitch" id="test_switch"style="margin-top: 10px;">
+												<input class="testswitch-checkbox" id="onoffswitch" type="checkbox" >
+												<label class="testswitch-label" for="onoffswitch"> <span class="testswitch-inner" data-on="Shared"
+													data-off="Unshared"></span> <span class="testswitch-switch"></span>
+												</label>
+											</div>
 												
-												<script>
-													idx=${idx.count};
-													salbum_json = '${salbum_name}';
-													salbum_obj[idx] = JSON.parse(salbum_json);
-													document.getElementById("salbum_name_"+idx).innerHTML = salbum_obj[idx].salbum_name;
-												</script>
-											</c:forEach>
-										</select>
-										<!-- 										<div class="btn-group btn-group-sm" style="margin-top: 10px;">
-											<button type="button" class="btn btn-success" style="width: 70px">Share</button>
-											<button type="button" class="btn btn-danger" style="width: 70px" disabled>Unshare</button>
-										</div> -->
-										<div class="testswitch" id="test_switch"style="margin-top: 10px;">
-											<input class="testswitch-checkbox" id="onoffswitch" type="checkbox" >
-											<label class="testswitch-label" for="onoffswitch"> <span class="testswitch-inner" data-on="Shared"
-												data-off="Unshared"></span> <span class="testswitch-switch"></span>
-											</label>
 										</div>
-											
 									</div>
-								</div>
-								<div class="form-group">
-									<div class="col-sm-offset-5 col-md-offset-4 col-lg-offset-3 col-sm-7 col-md-8 col-lg-9">
-										<button type="submit" class="btn btn-primary">Save Changes</button>
-										<button type="submit" class="btn btn-default">Discard Changes</button>
+
+									<div class="form-group">
+										<div class="col-sm-offset-5 col-md-offset-4 col-lg-offset-3 col-sm-7 col-md-8 col-lg-9">
+											<button type="submit" class="btn btn-primary">Save Changes</button>
+											<button type="submit" class="btn btn-default">Discard Changes</button>
+										</div>
 									</div>
-								</div>
+								</c:if>
 							</form>
 						</div>
 

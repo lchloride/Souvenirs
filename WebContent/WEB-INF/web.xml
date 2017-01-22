@@ -114,6 +114,10 @@
 	<servlet-name>SouvenirsServ</servlet-name>
 	<url-pattern>/sharedAlbum</url-pattern>
   </servlet-mapping>
+  <servlet-mapping>
+	<servlet-name>SouvenirsServ</servlet-name>
+	<url-pattern>/showPicture</url-pattern>
+  </servlet-mapping>
   
   <error-page>
     <error-code>400</error-code>

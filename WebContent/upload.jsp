@@ -138,14 +138,19 @@
 					</div>
 				</div>
 
-				<div class="form-group">
-					<label for="lastname" class="col-sm-2 control-label">Album</label>
+				<div class="form-group ${Is_specified and Album_name=='Invalid Album Name'?'has-error':'' }">
+					<label for="select_album_name" class="col-sm-2 control-label">Album</label>
 					<div class="col-sm-10">
 						<select class="form-control" name="select_album_name"
-							id="select_album_name">
-							<c:forEach var="Album_item" items="${Album_list}">
-								<option>${Album_item }</option>
-							</c:forEach>
+							id="select_album_name" ${Is_specified?"disabled":"" }>
+							<c:if test="${not Is_specified }">
+								<c:forEach var="Album_item" items="${Album_list}">
+									<option>${Album_item }</option>
+								</c:forEach>
+							</c:if>
+							<c:if test="${Is_specified }">
+								<option>${Album_name }</option>
+							</c:if>
 						</select>
 					</div>
 				</div>
@@ -163,7 +168,7 @@
 
 				<div class="form-group">
 					<div class="col-sm-offset-2 col-sm-4">
-						<input type="submit" class="btn btn-primary" value="Upload & Save">
+						<input type="submit" class="btn btn-primary" value="Upload & Save" ${Is_specified and Album_name=='Invalid Album Name'?"disabled":"" }>
 						<input type="button" class="btn btn-default" value="Cancel"
 							onclick="confirmCancel()">
 					</div>
