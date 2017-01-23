@@ -1,8 +1,11 @@
+group
+group.dao
 org.json
 souvenirs
 souvenirs.dao
 souvenirs.web
 tool
+tool.exception
 upload.dao
 upload.web
 user

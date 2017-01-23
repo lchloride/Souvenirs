@@ -133,16 +133,28 @@ public class UploadManager {
 	
 	/**
 	 * 在首次打开upload页面的时候，返回该用户的相册名列表
-	 * @param parameter 前端传来的参数，key包含login_user_id(登录的用户ID)
-	 * @return 发送给前端的参数表，包含该用户拥有的相册列表(key=Album_list)
+	 * @param parameter 前端传来的参数，key包含login_user_id(登录的用户ID)、album_name(要上传到的相册名，从相册管理页面点进来情况会存在)
+	 * @return 发送给前端的参数表，包含是否指定相册名的标志(key=Is_specified)、该用户拥有的相册列表(key=Album_list，未指定album_name的情况存在)、
+	 * 				指定的相册名(key=Album_name，指定相册名的情况下存在；如果该用户没有这个指定的相册，它的值为Invalid Album Name)
 	 */
 	public Map<String, Object> displayContent(Map<String, String> parameter) {
 		if (dao == null)
 			dao = UploadDAO.getInstance();
 		Map<String, Object> result = new HashMap<>();
-		// Obtain album list
+		String album_name = parameter.get("album_name");
 		List<Object> album_name_list = dao.getAlbumName(parameter.get("login_user_id"));
-		result.put("Album_list", album_name_list);
+		if (album_name == null || album_name.isEmpty()) {
+			// Obtain album list
+			result.put("Is_specified", false);
+			result.put("Album_list", album_name_list);
+		} else {
+			//Check invalidation of specified album name
+			result.put("Is_specified", true);
+			if (album_name_list.contains(album_name))
+				result.put("Album_name", album_name);
+			else
+				result.put("Album_name", "Invalid Album Name");
+		}
 		return result;
 	}
 

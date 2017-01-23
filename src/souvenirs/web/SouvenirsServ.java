@@ -19,6 +19,7 @@ import javax.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
 
 import tool.Base64;
+import tool.exception.BadRequestException;
 import user.web.UserManager;
 
 /**
@@ -86,6 +87,7 @@ public class SouvenirsServ extends HttpServlet {
 			String query_url = request.getServletPath();
 			query_url = query_url.substring(query_url.lastIndexOf('/') + 1);
 
+			logger.debug("query_url:<"+query_url+">");
 			try {
 				// Select and call specific function according query_url
 				if (query_url.contentEquals("homepage")) {
@@ -101,7 +103,7 @@ public class SouvenirsServ extends HttpServlet {
 				} else if (query_url.contentEquals("making")) {
 					
 					// Display making page when firstly open making page
-					result = sm.makingSouvenirs(para);
+					result = sm.displayMakingSouvenirs(para);
 				} else if (query_url.contains("AlbumAjax")) {
 					
 					// Send json string of album info when front side open an Ajax query
@@ -116,15 +118,40 @@ public class SouvenirsServ extends HttpServlet {
 					// To obtain making flag in time, browser should asks for it in a specific period.
 					checkMakingDone(response, session);
 					return;
+				} else if (query_url.contentEquals("album")) {
+					
+					//Display personal album management content
+					result = sm.displayPAlbumManager(para);
+				} else if (query_url.contentEquals("sharedAlbum")) {
+					
+					//Display shared album management content
+					result = sm.displaySAlbumManager(para);
+				} else if (query_url.contentEquals("picture") && request.getParameter("user_id")==null) {
+					
+					//Display picture management content in personal album
+					result = sm.displayPictureManager(para);
+				} else if (query_url.contentEquals("picture") && request.getParameter("user_id")!=null) {
+					
+					//Display picture management content in shared album
+					result = sm.displaySPictureManager(para);
+				} else if (query_url.contentEquals("showPicture")) {
+					
+					//Show picture in original size 
+					result = sm.showPicture(para);
 				} else {
 					
 					// query_url is wrong
 					response.sendError(HttpServletResponse.SC_NOT_FOUND);
 					return;
 				}
-			} catch (Exception e) {
+			} catch(BadRequestException bre) {
+				logger.error("Souvenirs servlet throws an exception", bre);
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+				return;
+			}catch (Exception e) {
 				logger.error("Souvenirs servlet throws an exception", e);
-				// response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+				return;
 			}
 
 			for (Entry<String, Object> entry : result.entrySet()) {
@@ -208,13 +235,14 @@ public class SouvenirsServ extends HttpServlet {
 	 * </p>
 	 * @param response Servlet的response
 	 * @param sm SouvenirsManager操作对象
-	 * @param para 发给SouvenirsManager的参数表
+	 * @param para 发给SouvenirsManager的参数表，key包括login_user_id(登录用户名)、album_identifier(相册标识符：
+	 * 				personal album指的是album name；shared album指的是group_id)
 	 * @throws Exception 如果发送失败则抛出异常
 	 * @see souvenirs.web.SouvenirsManager#getImageAddrInAlbum(Map)
 	 */
 	private void queryAlbumAjax(HttpServletResponse response, SouvenirsManager sm, Map<String, String> para) throws Exception {
 		logger.info("User(id=<" + para.get("login_user_id") + ">) query image address in album <"
-				+ para.get("album_name") + ">.");
+				+ para.get("album_identifier") + ">.");
 		String rs = sm.getImageAddrInAlbum(para);
 		response.setContentType("text/xml; charset=UTF-8");
 		// Let browser not to store cache
@@ -225,7 +253,7 @@ public class SouvenirsServ extends HttpServlet {
 			out.write(rs);
 			out.close();
 			logger.info("User(id=<" + para.get("login_user_id")
-					+ ">) obtained json string of image address in album <" + para.get("album_name") + ">");
+					+ ">) obtained json string of image address in album <" + para.get("album_identifier") + ">");
 		} catch (Exception e) {
 			// TODO: handle exception
 			throw e;

@@ -5,13 +5,14 @@ import org.apache.log4j.Logger;
 /**
  * 验证码相关操作(获取、验证)的工具类<br>
  * 验证码图片存在服务器的res目录中，对应的答案存储在配置文件中。验证码及其图片文件的名字形如verifycode_XXX，其中XXX是该验证码的编号。
- * 通过验证码的名称就可以找到验证码图片，也可以在配置文件中找到其答案
+ * 通过验证码的名称就可以找到验证码图片，在配置文件中找到其答案。
+ * <strong>注意：验证码在服务器中都是png格式</strong>
  */
 public class VerifyCode {
 	private static Logger logger = Logger.getLogger(VerifyCode.class);
 	
 	/**
-	 * 随机获取一个验证码名称
+	 * 随机获取一个验证码名称，格式为verifycode_XXX，其中XXX是该验证码的编号。
 	 * @return 获取的验证码名称
 	 */
 	public static String getVerifyCode() {
@@ -22,7 +23,8 @@ public class VerifyCode {
 			// TODO: handle exception
 			logger.error("verifycode_number in souvernir.properties is invalid.");
 		}
-		int idx = (int)Math.random()*(verifycode_num-1)+1;
+		int idx = (int)(Math.random()*verifycode_num)+1;
+		logger.debug(idx+", "+verifycode_num);
 		return new String("verifycode"+idx);
 	}
 	
