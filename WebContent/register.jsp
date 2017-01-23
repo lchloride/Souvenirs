@@ -232,7 +232,7 @@
 
 	</div>
 
-	<div class="footer">Copyright &copy; 2016 Souvenirs, All Rights
+	<div class="footer">Copyright &copy; 2016-2017 Souvenirs, All Rights
 		Reserved.</div>
 </body>
 </html>

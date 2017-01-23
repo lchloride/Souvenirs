@@ -7,10 +7,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
+
 /**
  * 读取/写入properties文件的工具类
  */
 public class PropertyOper {
+	private static Logger logger = Logger.getLogger(PropertyOper.class);
 	/**
 	 *  根据Key在制定的properties文件中读取Value
 	 *  @param filePath properties文件路径
@@ -19,18 +22,22 @@ public class PropertyOper {
 	 */
 	public static String GetValueByKey(String filePath, String key) {
 		Properties pps = new Properties();
+		String value = null;
 		try {
 			//InputStream in = new BufferedInputStream(new FileInputStream(filePath));
 			InputStream in = PropertyOper.class.getClassLoader().getResourceAsStream(filePath );
 			pps.load(in);
-			String value = pps.getProperty(key);
+			value = pps.getProperty(key);
 			//System.out.println(key + " = " + value);
-			return value;
-
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.warn("Cannot open property file <"+filePath+">", e);
+			return null;
+		} catch (Exception e) {
+			// TODO: handle exception
+			logger.warn("Finding property value of key <"+key+">in file <"+filePath+"> failed.", e);
 			return null;
 		}
+		return value;
 	}
 
 	/**

@@ -73,8 +73,10 @@ public class UploadServ extends HttpServlet {
 			// Send user_id as primary key of user to manager object
 			para.put("login_user_id",
 					session.getAttribute("user_id") == null ? "" : (String) session.getAttribute("user_id"));
+			// Send album_name if specified
+			para.put("album_name",
+					request.getParameter("album_name") == null ||  request.getParameter("album_name").isEmpty()? "" :  request.getParameter("album_name"));
 
-			// um.setParameter(para);
 			result = um.displayContent(para);
 
 			// Put every parameters back to front side

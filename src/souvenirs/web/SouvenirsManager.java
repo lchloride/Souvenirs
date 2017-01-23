@@ -1,15 +1,26 @@
 package souvenirs.web;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
+import org.json.JSONObject;
 
+import group.Group;
+import souvenirs.Comment;
+import souvenirs.PersonalAlbum;
+import souvenirs.Picture;
+import souvenirs.SharedAlbum;
 import souvenirs.dao.SouvenirsDAO;
+import tool.Base64;
 import tool.ImageLoader;
+import tool.PropertyOper;
+import tool.exception.BadRequestException;
+import user.web.UserManager;
 
 /**
  * Souvenir制作和相册、照片管理的业务类
@@ -21,19 +32,20 @@ public class SouvenirsManager {
 	final int OWNER_ID = 0;
 	final int OWNER_ALBUM_NAME = 1;
 	final int OWNER_FILENAME = 2;
-	
+
 	public SouvenirsManager() {
-		checkValidDAO();
+		// checkValidDAO();
 	}
-	
+
 	/**
 	 * 单例模式获取对象的方法
+	 * 
 	 * @return SouvenirManager类的对象
 	 */
 	public static SouvenirsManager getInstance() {
 		return souvenirs_manager;
 	}
-	
+
 	/**
 	 * 维护DAO对象的可用性
 	 */
@@ -41,74 +53,360 @@ public class SouvenirsManager {
 		if (dao == null)
 			dao = SouvenirsDAO.getInstance();
 	}
-	
+
 	/**
-	 * 显示用户主页，获取相册的信息。<strong>注意：本方法未完成</strong>
-	 * @param parameter 前端传来的参数
-	 * @return 发回前端的显示参数
+	 * 获取相册的信息，显示在用户主页上。
+	 * 
+	 * @param parameter
+	 *            前端传来的参数，key包括login_user_id(用户ID)
+	 * @return 发回前端的显示参数，包括用户头像(key=Avatar)、个人相册json字符串列表(key=PAlbum_json_list)、
+	 *         共享相册json字符串列表(key=SAlbum_json_list)、待转向的页面(key=DispatchURL)
+	 * @throws Exception
+	 *             获取Album信息失败会抛出异常
+	 * @see souvenirs.dao.SouvenirsDAO#getAllPAlbumInfo(String, int)
+	 * @see souvenirs.dao.SouvenirsDAO#getAllSAlbumInfo(String, int)
 	 */
-	public Map<String, Object> displayContent(Map<String, String> parameter) {
+	public Map<String, Object> displayContent(Map<String, String> parameter) throws Exception {
 		checkValidDAO();
 		Map<String, Object> result = new HashMap<>();
-		List<String> para = new ArrayList<>();
-		para.add("user");
-		para.add(parameter.get("login_user_id"));
-		logger.debug("Image Query Parameter: "+para);
-		result.put("Avatar" ,ImageLoader.genImageQuery(false, para));
+		result.put("Avatar", ImageLoader.genAddrOfAvatar(parameter.get("login_user_id")));
+
+		List<PersonalAlbum> rPAlbums = dao.getAllPAlbumInfo(parameter.get("login_user_id"),
+				SouvenirsDAO.PERSONAL_ALBUM);
+		JSONObject personal_album_json = null;
+		Map<String, String> personal_album_map = new HashMap<>();
+		List<String> person_album_json_list = new ArrayList<>();
+		for (PersonalAlbum personalAlbum : rPAlbums) {
+			personal_album_map.put("album_name", personalAlbum.getAlbumName());
+			personal_album_map.put("cover_addr",
+					ImageLoader.genAddrOfPAlbumCover(parameter.get("login_user_id"), personalAlbum.getAlbumName()));
+			personal_album_json = new JSONObject(personal_album_map);
+			person_album_json_list.add(personal_album_json.toString().replaceAll("'", "&apos;"));
+		}
+		result.put("PAlbum_json_list", person_album_json_list);
+		// logger.debug("personal_album_json=<"+person_album_json_list+">");
+
+		List<SharedAlbum> rSAlbums = dao.getAllSAlbumInfo(parameter.get("login_user_id"), SouvenirsDAO.SHARED_ALBUM);
+		JSONObject shared_album_json = null;
+		Map<String, String> shared_album_map = new HashMap<>();
+		List<String> shared_album_json_list = new ArrayList<>();
+		for (SharedAlbum sharedAlbum : rSAlbums) {
+			shared_album_map.put("album_name", sharedAlbum.getSharedAlbumName());
+			shared_album_map.put("cover_addr", ImageLoader.genAddrOfSAlbumCover(sharedAlbum.getGroupId()));
+			shared_album_map.put("group_id", sharedAlbum.getGroupId());
+			shared_album_json = new JSONObject(shared_album_map);
+			shared_album_json_list.add(shared_album_json.toString().replaceAll("'", "&apos;"));
+		}
+		result.put("SAlbum_json_list", shared_album_json_list);
+		// logger.debug("personal_album_json=<"+person_album_json_list+">");
 		result.put("DispatchURL", "homepage.jsp");
 		return result;
 	}
 
 	/**
-	 * 首次打开making页面，完成初始化部分内容(第一个选中的album_list所包含图片的地址json串)的显示
-	 * @param parameter 前端传来的参数，key包括login_user_id(登录用户user_id)
+	 * 首次打开making页面，完成初始化部分内容(第一个选中的album_list所包含图片的地址json串)的显示以及制作模板的下载
+	 * 
+	 * @param parameter
+	 *            前端传来的参数，key包括login_user_id(登录用户user_id)，template(用户选择的模板名称)
 	 * @return 操作完成发送给前端的参数，包括album名称列表、默认显示的album内全部图片地址的json字符串
+	 * @throws Exception 获取数据库信息失败或store接口执行失败会抛出异常
 	 */
-	public Map<String, Object> makingSouvenirs(Map<String, String> parameter) {
+	public Map<String, Object> displayMakingSouvenirs(Map<String, String> parameter) throws Exception {
 		checkValidDAO();
 		Map<String, Object> result = new HashMap<>();
-		if (!parameter.containsKey("query_type")){
-			List<Object> album_name_list = dao.getAlbumName(parameter.get("login_user_id"));
-			result.put("Album_List", album_name_list);
-			parameter.put("album_name", (String)album_name_list.get(0));
+		result.put("Avatar", ImageLoader.genAddrOfAvatar(parameter.get("login_user_id")));
+		if (!parameter.containsKey("query_type")) {
+			List<SharedAlbum> salbum_list = dao.getAllSAlbumInfo(parameter.get("login_user_id"), SouvenirsDAO.SHARED_ALBUM); //dao.getAlbumName(parameter.get("login_user_id"));
+			List<PersonalAlbum> palbum_list = dao.getAllPAlbumInfo(parameter.get("login_user_id"), SouvenirsDAO.PERSONAL_ALBUM);
+			logger.debug("palbum_list:"+palbum_list);
+			List<String> album_name_list = new ArrayList<>();
+			JSONArray album_identifier_json = new JSONArray();
+			for (PersonalAlbum personalAlbum : palbum_list) {
+				album_name_list.add(personalAlbum.getAlbumName());
+				album_identifier_json.put(personalAlbum.getAlbumName());
+			}
+			for (SharedAlbum sharedAlbum : salbum_list) {
+				album_name_list.add(sharedAlbum.getSharedAlbumName());
+				album_identifier_json.put(sharedAlbum.getGroupId());
+			}
+
+			result.put("Album_name_list", album_name_list);
+			result.put("Album_identifier_json", album_identifier_json.toString());
+			
+			parameter.put("album_identifier", album_identifier_json.getString(0));
 			result.put("Image_JSON", getImageAddrInAlbum(parameter));
+			String template = PropertyOper.GetValueByKey("template.properties", parameter.get("template"));
+			if (template == null || template.isEmpty())
+				template = "[]";
+			result.put("Template_json", template);
 			result.put("DispatchURL", "canvas.jsp");
-		}else {
+		} else {
 			result.put("DispatchURL", "canvas.jsp");
 		}
 		return result;
 	}
-	
+
 	/**
 	 * 获取特定相册中的所有图片地址，并组成json字符串，构造json的方法
-	 *  @see org.json 
-	 * @param parameter 前端传来的参数，key包括login_user_id(登录的用户ID), album_name(相册名)
-	 * @return 相册中所有图片名字和地址所组成的json字符串(形如：[{filename: "A", addr:"B"}, {filename: "C", addr:"D"}, ...])
+	 * 
+	 * @see org.json
+	 * @param parameter
+	 *            前端传来的参数，key包括login_user_id(登录的用户ID), album_name(相册名)
+	 * @return 相册中所有图片名字和地址所组成的json字符串(形如：[{Filename: "A", Addr:"B"}, {UserID: "C", AlbumName: "D", Filename: "E", Addr:"F"}, ...])
 	 */
 	public String getImageAddrInAlbum(Map<String, String> parameter) {
 		checkValidDAO();
-		//Obtain image address list in specific album
-		//image_list is unrefined result set from DB and image_addr_list is refined result set which can be used to form json string
-		List<List<Object>> image_list = dao.getPictureAddrInAlbum(parameter.get("login_user_id"), parameter.get("album_name"));
-		List<Map<String, String>> image_addr_list = new ArrayList<>();
-		for (List<Object> list : image_list) {
-			//Form parameters for generating image address
-			List<String> para = new ArrayList<>();
-			para.add((String)list.get(OWNER_ID));
-			para.add((String)list.get(OWNER_ALBUM_NAME));
-			para.add((String)list.get(OWNER_FILENAME));
-			//Form json object of filename and address
-			Map<String, String> image_content = new HashMap<>();
-			image_content.put("Filename", (String)list.get(OWNER_FILENAME));
-			image_content.put("Addr", ImageLoader.genImageQuery(true, para));
-			image_addr_list.add(image_content);
+		// Obtain image address list in specific album
+		// image_list is unrefined result set from DB and image_addr_list is refined result set which can be used to
+		// form json string
+		List<Picture> image_list = null;
+		try {
+			image_list = dao.getAllPictureInfo(parameter.get("login_user_id"), parameter.get("album_identifier"));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			logger.warn("There are something wrong when getting image address in album <"
+					+ parameter.get("login_user_id") + ">, (User ID:<" + parameter.get("album_identifier") + ">)", e);
 		}
-		//From json string from image_addr_list which stores json object of each image
+		logger.debug("image_list: " + image_list);
 		JSONArray json_array = new JSONArray();
-		for (Map<String,String> map : image_addr_list) {
-			json_array.put(map);
+		Map<String, String> image_content = null;
+		for (Picture image_item : image_list) {
+			// Form json object of filename and address
+			image_content = new HashMap<>();
+			image_content.put("UserID", image_item.getUserId());
+			image_content.put("AlbumName", image_item.getAlbumName());
+			image_content.put("Filename", image_item.getFilename());
+			image_content.put("Addr", ImageLoader.genAddrOfPicture(image_item.getUserId(), image_item.getAlbumName(),
+					image_item.getFilename()));
+			json_array.put(image_content);
 		}
-		logger.debug("json:"+json_array);
+		//logger.debug("json:" + json_array);
 		return json_array.toString();
+	}
+
+	/**
+	 * 获取相关参数显示在Personal Album管理页面(album.jsp)
+	 * 
+	 * @param parameter
+	 *            前端传来的参数列表，key包括login_user_id(登录用户的ID)、album_name(要获取相册的名称)
+	 * @return 返回前端的参数列表，包括是否为个人相册的标志位(key=Is_personal，为true)、用户头像地址(key=Avatar)、该相册封面的地址(key=Album_cover)、该相册的名称(key=Album_name)、
+	 *         拥有者的名称(key=Owner_name)、相册介绍(key=Description)、相册所含的图片JSON字符串组成的List列表(key=image_json_list)、
+	 *         待转发的页面(key=DispatchURL)<br>
+	 *         image_json_list格式参考getImageAddrInAlbum方法
+	 * @throws Exception 获取数据库信息失败或store接口执行失败会抛出异常
+	 * @see souvenirs.web.SouvenirsManager#getImageAddrInAlbum(Map)
+	 */
+	public Map<String, Object> displayPAlbumManager(Map<String, String> parameter) throws Exception {
+		checkValidDAO();
+		Map<String, Object> result = new HashMap<>();
+		String user_id = parameter.get("login_user_id");
+		String album_name = parameter.get("album_name");
+		parameter.put("album_identifier", album_name);
+		if (user_id == null || album_name == null || user_id.isEmpty() || album_name.isEmpty())
+			throw new BadRequestException("Invalid Parameter user_id OR album_name");
+		result.put("Is_personal", true);
+		result.put("Avatar", ImageLoader.genAddrOfAvatar(user_id));
+
+		result.put("Album_cover", ImageLoader.genAddrOfPAlbumCover(user_id, album_name));
+		result.put("Album_name", album_name);
+		result.put("Owner_name", UserManager.getUsernameByID(user_id));
+		result.put("Description", dao.getPAlbumInfo(user_id, album_name).getIntro());
+		JSONArray jArray = new JSONArray(getImageAddrInAlbum(parameter));
+		List<String> image_list = new ArrayList<>();
+		for (int i = 0; i < jArray.length(); i++) {
+			image_list.add(jArray.getJSONObject(i).toString());
+		}
+		//logger.debug("image_json_list: " + image_list);
+		result.put("image_json_list", image_list);
+		result.put("DispatchURL", "album.jsp");
+		return result;
+	}
+
+	/**
+	 * 获取相关参数显示在Shared Album管理页面(album.jsp)
+	 * @param parameter 前端传来的参数列表，key包括login_user_id(登录用户的ID)、group_id(要获取共享相册所属的小组ID)
+	 * @return 返回前端的参数列表，包括是否为个人相册的标志位(key=Is_personal，为false)、用户头像地址(key=Avatar)、该相册封面的地址(key=Album_cover)、
+	 * 				该相册的名称(key=Album_name)、拥有者的名称(key=Owner_name)、相册介绍(key=Description)、相册所含的图片JSON字符串组成的List列表(key=image_json_list)、
+	 *     	    	待转发的页面(key=DispatchURL)<br>
+	 *         		image_json_list格式参考getImageAddrInAlbum方法
+	 * @throws BadRequestException store接口执行失败会抛出异常
+	 * @throws Exception 获取数据库信息失败时会抛出异常
+	 */
+	public Map<String, Object> displaySAlbumManager(Map<String, String> parameter) throws BadRequestException,Exception {
+		checkValidDAO();
+		Map<String, Object> result = new HashMap<>();
+		String user_id = parameter.get("login_user_id");
+		String group_id = parameter.get("group_id");
+		parameter.put("album_identifier", group_id);
+		if (user_id==null||group_id==null||user_id.isEmpty()||group_id.isEmpty())
+			throw new BadRequestException("Invalid Parameter user_id OR group_id");
+		result.put("Is_personal", false);
+		result.put("Avatar", ImageLoader.genAddrOfAvatar(user_id));
+		result.put("Group_id", group_id);
+		
+		Group group = dao.getSAlbumInfo(group_id);
+		result.put("Album_cover", ImageLoader.genAddrOfSAlbumCover(group_id));
+		result.put("Album_name", group.getSharedAlbumName());
+		result.put("Owner_name", group.getGroupName());
+		result.put("Description", group.getIntro());
+		
+		JSONArray jArray = new JSONArray(getImageAddrInAlbum(parameter));
+		List<String> image_list = new ArrayList<>();
+		for (int i = 0; i < jArray.length(); i++) {
+			image_list.add(jArray.getJSONObject(i).toString());
+		}
+		//logger.debug("image_json_list: " + image_list);
+		result.put("image_json_list", image_list);
+		result.put("DispatchURL", "album.jsp");
+		return result;
+	}
+	
+	/**
+	 * Personal Picture管理页面的显示，将图片信息发给页面(picture.jsp)
+	 * @param parameter 前端传来的参数，用来指定图片。key包括login_user_id(登录用户ID)、album_name(相册名)、picture_name(照片名)、
+	 * 				user_id(页面显示照片的用户名，在查看共享相册照片的情况下存在)
+	 * @return 发回前端的Map，包括用户名(key=Username)、相册名(key=Album_name)、照片名(key=Picture_name)、照片地址(key=Picture)、
+	 * 				格式(key=Format)、简介(key=Description)、评论的json字符串组成的列表(key=Comment_json_list)、共享小组是否拥有本张照片的json字符串列表(key=SAlbum_own_pic_json_list)、
+	 * 				点赞用户列表(key=Liking_person_json)、跳转页面(key=DispatchURL)、拥有者的用户名(key=Owner)、是否为个人相册照片的标志(key=Is_personal)、
+	 * 				<p>
+	 * 				Comment_json_list的每个成员都是一个JSON对象，域包括：评论者的用户名(key=comment_username)、评论者的头像(key=comment_user_avatar)、
+	 * 				评论内容(key=comment_content)、评论时间(key=comment_time)、该评论所回复的评论的评论者用户名(key=reply_username)<br>
+	 * 				SAlbum_own_pic_json_list的每个成员都是一个JSON对象，域包括：共享相册的名称(key=salbum_name)、是否拥有本张照片的标志(key=is_shared)
+	 * 				</p>
+	 * @throws BadRequestException 前端发来的参数无效时抛出异常
+	 * @throws Exception 获取数据库信息失败或store接口执行失败会抛出异常
+	 */
+	public Map<String, Object> displayPictureManager(Map<String, String> parameter)
+			throws BadRequestException, Exception {
+		checkValidDAO();
+		Map<String, Object> result = new HashMap<>();
+		String album_name = parameter.get("album_name");
+		String picture_name = parameter.get("picture_name");
+		String user_id = parameter.get("user_id")==null?parameter.get("login_user_id"):parameter.get("user_id");
+		if (album_name == null || picture_name == null || album_name.isEmpty() || picture_name.isEmpty())
+			throw new BadRequestException("Invalid Parameter album_name OR picture_name");
+		
+		//Basic parameters without SQL query
+		result.put("Is_personal", true);
+		result.put("Username", UserManager.getUsernameByID(user_id));
+		result.put("Owner", UserManager.getUsernameByID(user_id));
+		result.put("Album_name", album_name);
+		result.put("Picture_name", picture_name.substring(0, picture_name.lastIndexOf('.')));
+		result.put("Picture", ImageLoader.genAddrOfPicture(user_id, album_name, picture_name));
+		
+		//Advanced parameters with SQL query
+		Picture pic = dao.getPictureInfo(user_id, album_name, picture_name);
+		if (pic == null)
+			throw new BadRequestException("Cannot find picture with user_id(<" + user_id + ">) album_name(<"
+					+ album_name + ">) OR picture_name(<" + picture_name + ">)");
+		result.put("Format", pic.getFormat());
+		result.put("Description", pic.getDescription());
+		
+		//Query comment of picture and format json string
+		List<Comment> comments = dao.getAllComments(user_id, album_name, picture_name);
+		List<String> comment_json_list = new ArrayList<>();
+		JSONObject jsonObject = null;
+		DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		for (Comment comment : comments) {
+			jsonObject = new JSONObject();
+			//logger.debug("comment_user_id:"+comment.getCommentUserId());
+			jsonObject.put("comment_username", UserManager.getUsernameByID(comment.getCommentUserId()));
+			jsonObject.put("comment_user_avatar", ImageLoader.genAddrOfAvatar(comment.getCommentUserId()));
+			jsonObject.put("comment_content", comment.getCommentContent());
+			jsonObject.put("comment_time", sdf.format(comment.getTime()));
+			jsonObject.put("reply_username", UserManager.getUsernameByID(comment.getReplyUserId()));
+			comment_json_list.add(jsonObject.toString());
+		}
+		result.put("Comment_json_list", comment_json_list);
+		//logger.debug("comment_json_list:"+comment_json_list);
+		
+		//Query share status of album and format json string 
+		List<SharedAlbum> sAlbums = dao.getAllSAlbumInfo(user_id, SouvenirsDAO.SHARED_ALBUM);
+		List<String> picSAlbums = dao.getPictureBelongGroup(user_id, album_name, picture_name);
+		JSONObject own_json_item = null;
+		List<String> salbum_own_pic_json_list = new ArrayList<>();
+		for (SharedAlbum sharedAlbum : sAlbums) {
+			own_json_item = new JSONObject();
+			own_json_item.put("salbum_name", sharedAlbum.getSharedAlbumName());
+			if (picSAlbums.contains(sharedAlbum.getGroupId())) {
+				own_json_item.put("is_shared", true);
+			}else {
+				own_json_item.put("is_shared", false);
+			}
+			salbum_own_pic_json_list.add(own_json_item.toString());
+		}
+		//logger.debug("salbum_own_pic_json_list:"+salbum_own_pic_json_list);
+		result.put("SAlbum_own_pic_json_list", salbum_own_pic_json_list);
+		
+		//Query liking status and format json string 
+		List<String> liking_person_list = dao.getLikingPersons(user_id, album_name, picture_name);
+		JSONArray liking_person_json = new JSONArray(liking_person_list);
+		result.put("Liking_person_json", liking_person_json);
+		//logger.debug("liking_person_json:"+liking_person_json);
+		
+		result.put("DispatchURL", "picture.jsp");
+		return result;
+	}
+
+	/**
+	 * 显示共享相册中照片的详情
+	 * @param parameter 前端传来的参数，用来指定图片。key包括login_user_id(登录用户ID)、album_name(相册名)、picture_name(照片名)、
+	 * 				user_id(页面显示照片的用户名)
+	 * @return 发回前端的Map，包括用户名(key=Username)、相册名(key=Album_name)、照片名(key=Picture_name)、照片地址(key=Picture)、
+	 * 				格式(key=Format)、简介(key=Description)、评论的json字符串组成的列表(key=Comment_json_list)、共享小组是否拥有本张照片的json字符串列表(key=SAlbum_own_pic_json_list)、
+	 * 				点赞用户列表(key=Liking_person_json)、跳转页面(key=DispatchURL)、拥有者的用户名(key=Owner)、是否为个人相册照片的标志(key=Is_personal)、
+	 * 				登录用户的用户名(key=Username)、小组ID(key=Group_id)、小组名称(key=Group_name)
+	 * 				<p>
+	 * 				Comment_json_list的每个成员都是一个JSON对象，域包括：评论者的用户名(key=comment_username)、评论者的头像(key=comment_user_avatar)、
+	 * 				评论内容(key=comment_content)、评论时间(key=comment_time)、该评论所回复的评论的评论者用户名(key=reply_username)<br>
+	 * 				SAlbum_own_pic_json_list的每个成员都是一个JSON对象，域包括：共享相册的名称(key=salbum_name)、是否拥有本张照片的标志(key=is_shared)
+	 * 				</p>
+	 * @throws BadRequestException 前端发来的参数无效时抛出异常
+	 * @throws Exception 获取数据库信息失败或store接口执行失败会抛出异常
+	 */
+	public Map<String, Object> displaySPictureManager(Map<String, String>parameter) throws BadRequestException, Exception {
+		//Picture manager of shared album is similar to one of personal album, therefore query picture details should reuse the method of personal picture
+		//and then modify some parameters of displaying such as album name and share album list
+		Map<String, Object> result = displayPictureManager(parameter);
+		result.put("Is_personal", false);
+		result.put("Username", UserManager.getUsernameByID(parameter.get("login_user_id")));
+		String group_id = parameter.get("group_id");
+		if (group_id == null || group_id.isEmpty())
+			throw new BadRequestException("Invalid Parameter album_name OR picture_name");
+		result.put("Group_id", parameter.get("group_id"));
+		Group group = dao.getSAlbumInfo(group_id);
+		result.put("Group_name", group.getSharedAlbumName());
+		result.put("SAlbum_own_pic_json_list", new ArrayList<>());
+		return result;
+	}
+	
+	/**
+	 * 显示原始大小照片的处理方法,只有相册中的照片才可以被获取并显示大图
+	 * @param para 参数表，key包括addr(照片的下载地址的method部分)、content(Image地址中的content)
+	 * @return 发给前端的参数表，包括原始大小照片的地址(key=Picture)、跳转的页面(key=DispatchURL)、照片名(key=Picture_name)、页面标题(key=Title)
+	 * @see tool.ImageLoader
+	 */
+	public Map<String, Object> showPicture(Map<String, String> para) {
+		// TODO Auto-generated method stub
+		//The reason for using picture address instead of primary keys is to avoid SQL query with low efficiency  
+		Map<String, Object> result = new HashMap<>();
+		String addr = para.get("addr");
+		String[] addr_split = addr.split("&|\\?");
+		String method = addr_split[1].substring(addr_split[1].indexOf('=')+1);
+		//logger.debug(addr+para.get("content"));
+		String content = para.get("content");
+		//Only pictures in albums can be displayed with origin size
+		if (method.contentEquals("direct")) {
+			//Picture original address
+			result.put("Picture", addr+"&content="+content);
+			result.put("DispatchURL", "showPicture.jsp");
+			//Decode original address to obtain its filename
+			String[] img_url_para = Base64.decode(content).split("/");
+			result.put("Picture_name", img_url_para[OWNER_FILENAME]);
+			result.put("Title", img_url_para[OWNER_FILENAME]);
+		}else{
+			result.put("DispatchURL", "showPicture.jsp");
+		}
+		return result;
 	}
 }

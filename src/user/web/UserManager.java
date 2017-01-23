@@ -21,7 +21,7 @@ public class UserManager {
 
 	public UserManager() {
 		// TODO Auto-generated constructor stub
-		checkValidDAO();
+		//checkValidDAO();
 	}
 
 	/**
@@ -200,8 +200,10 @@ public class UserManager {
 		List<Object> query_result = null;
 		try {
 			query_result = dao.getLogin(para);
+			logger.debug("query_result:"+query_result);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
+			logger.error("", e);
 			return false;
 		}
 		if ((long) query_result.get(0) == 1)
@@ -349,6 +351,23 @@ public class UserManager {
 		try {
 			List<Object> query_result = dao.getUserIDByName(username);
 			return (String) query_result.get(0);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			// e.printStackTrace();
+			return "";
+		}
+	}
+	
+	/**
+	 * 根据user_id获取username
+	 * @param user_id 用户ID
+	 * @return user_id对应的用户名
+	 */
+	public static String getUsernameByID(String user_id) {
+		checkValidDAO();
+		try {
+			String query_result = dao.getUsernameByID(user_id);
+			return query_result;
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();

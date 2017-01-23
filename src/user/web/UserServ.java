@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.servlet.RequestDispatcher;
+import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -36,7 +37,7 @@ public class UserServ extends HttpServlet {
 	}
 
 	/**
-	 * @see Servlet#init(ServletConfig)
+	 * {@link Servlet#init(ServletConfig)}
 	 */
 	public void init(ServletConfig config) throws ServletException {
 		// TODO Auto-generated method stub
