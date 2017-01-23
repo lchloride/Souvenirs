@@ -99,9 +99,9 @@ div.comment {
 }
 </style>
 <script type="text/javascript">
-	var salbum_obj = new Object(
-<%=((List<String>) request.getAttribute("SAlbum_own_pic_json_list")).size()%>
-	);
+	<c:if test="${Is_personal}">
+	var salbum_obj = new Object(<%=((List<String>) request.getAttribute("SAlbum_own_pic_json_list")).size()%>);
+	</c:if>
 	var liking_person_json = '${Liking_person_json}';
 
 	$(document).ready(function() {
@@ -291,10 +291,7 @@ div.comment {
 													<option id="salbum_name_${idx.count }" value="${idx.count }"></option>
 
 													<script>
-														idx = $
-														{
-															idx.count
-														};
+														idx = ${idx.count};
 														salbum_json = '${salbum_name}';
 														salbum_obj[idx] = JSON
 																.parse(salbum_json);
@@ -364,10 +361,7 @@ div.comment {
 									</div>
 
 									<script>
-										idx = $
-										{
-											idx.count
-										};
+										idx = ${	idx.count};
 										comment_json = '${comment_item}';
 										comment_obj = JSON.parse(comment_json);
 										document

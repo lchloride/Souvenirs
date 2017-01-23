@@ -240,5 +240,6 @@ div.album-cover img {
 		</div>
 
 	</div>
+	<div class="footer">Copyright &copy; 2016-2017 Souvenirs, All Rights Reserved.</div>
 </body>
 </html>

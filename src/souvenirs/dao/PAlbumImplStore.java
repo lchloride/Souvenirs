@@ -10,8 +10,8 @@ import souvenirs.PersonalAlbum;
 import tool.Store;
 
 /**
- * @author Chenghong Li
  * 实现Store接口对PersonalAlbum对象进行赋值的类
+ * @author Chenghong Li
  */
 public class PAlbumImplStore implements Store<PersonalAlbum> {
 

@@ -10,6 +10,7 @@ import souvenirs.Picture;
 import tool.Store;
 
 /**
+ * Picture类实现Store接口进行数据库操作的实现类
  * @author Chenghong Li
  *
  */

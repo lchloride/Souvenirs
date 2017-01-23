@@ -120,18 +120,23 @@ public class SouvenirsServ extends HttpServlet {
 					return;
 				} else if (query_url.contentEquals("album")) {
 					
+					//Display personal album management content
 					result = sm.displayPAlbumManager(para);
 				} else if (query_url.contentEquals("sharedAlbum")) {
 					
+					//Display shared album management content
 					result = sm.displaySAlbumManager(para);
 				} else if (query_url.contentEquals("picture") && request.getParameter("user_id")==null) {
 					
+					//Display picture management content in personal album
 					result = sm.displayPictureManager(para);
 				} else if (query_url.contentEquals("picture") && request.getParameter("user_id")!=null) {
 					
+					//Display picture management content in shared album
 					result = sm.displaySPictureManager(para);
 				} else if (query_url.contentEquals("showPicture")) {
 					
+					//Show picture in original size 
 					result = sm.showPicture(para);
 				} else {
 					

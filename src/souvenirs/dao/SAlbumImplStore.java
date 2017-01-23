@@ -11,8 +11,8 @@ import souvenirs.SharedAlbum;
 import tool.Store;
 
 /**
- * @author Chenghong Li
  * 实现Store接口对SharedAlbum对象进行赋值的类
+ * @author Chenghong Li
  */
 public class SAlbumImplStore implements Store<SharedAlbum> {
 

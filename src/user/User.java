@@ -2,6 +2,7 @@ package user;
 
 /**
  * Œ¥∆Ù”√
+ * @deprecated
  */
 public class User {
 

@@ -20,15 +20,29 @@ import tool.DB;
 public class SouvenirsDAO {
 	private Logger logger = Logger.getLogger(SouvenirsDAO.class);
 	private static SouvenirsDAO souvernirs_dao = new SouvenirsDAO();
-
+	/**
+	 * 查询相册信息时，指定查询范围是个人相册。
+	 */
 	final public static int PERSONAL_ALBUM = 1;
+	/**
+	 * 查询相册信息时，指定查询范围是共享相册。
+	 */
 	final public static int SHARED_ALBUM = 0;
+	/**
+	 * 查询相册信息时，指定查询范围是全部相册。<strong>注意：查询全部相册的返回值也只能是个人相册或共享相册，其中可能有信息的丢失。</strong>
+	 */
 	final public static int ALL_ALBUM = 2;
-	
-	final public static int SHARED_ALBUM_COL = 0;
-
+	/**
+	 * 查询相册信息时，指定需要获取的列号
+	 */
+	final private static int SHARED_ALBUM_COL = 0;
+	/**
+	 * 查询照片点赞册信息时，指定需要获取的列号
+	 */
 	final public static int LIKE_USERNAME_COL = 0;
-	
+	/**
+	 * 查询共享相册名称时，指定需要获取的列号
+	 */
 	final public static int SALBUM_NAME_ROW = 0;
 	/**
 	 * 单例模式获取对象的方法

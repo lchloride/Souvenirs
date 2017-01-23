@@ -63,8 +63,8 @@ public class SouvenirsManager {
 	 *         共享相册json字符串列表(key=SAlbum_json_list)、待转向的页面(key=DispatchURL)
 	 * @throws Exception
 	 *             获取Album信息失败会抛出异常
-	 * @see souvenirs.dao.SouvenirsDAO#getPAlbumInfo(String, int)
-	 * @see souvenirs.dao.SouvenirsDAO#getSAlbumInfo(String, int)
+	 * @see souvenirs.dao.SouvenirsDAO#getAllPAlbumInfo(String, int)
+	 * @see souvenirs.dao.SouvenirsDAO#getAllSAlbumInfo(String, int)
 	 */
 	public Map<String, Object> displayContent(Map<String, String> parameter) throws Exception {
 		checkValidDAO();
@@ -189,10 +189,12 @@ public class SouvenirsManager {
 	 * 
 	 * @param parameter
 	 *            前端传来的参数列表，key包括login_user_id(登录用户的ID)、album_name(要获取相册的名称)
-	 * @return 返回前端的参数列表，包括用户头像地址(key=Avatar)、该相册封面的地址(key=Album_cover)、该相册的名称(key=Album_name)、
+	 * @return 返回前端的参数列表，包括是否为个人相册的标志位(key=Is_personal，为true)、用户头像地址(key=Avatar)、该相册封面的地址(key=Album_cover)、该相册的名称(key=Album_name)、
 	 *         拥有者的名称(key=Owner_name)、相册介绍(key=Description)、相册所含的图片JSON字符串组成的List列表(key=image_json_list)、
-	 *         待转发的页面(key=DispatchURL)
+	 *         待转发的页面(key=DispatchURL)<br>
+	 *         image_json_list格式参考getImageAddrInAlbum方法
 	 * @throws Exception 获取数据库信息失败或store接口执行失败会抛出异常
+	 * @see souvenirs.web.SouvenirsManager#getImageAddrInAlbum(Map)
 	 */
 	public Map<String, Object> displayPAlbumManager(Map<String, String> parameter) throws Exception {
 		checkValidDAO();
@@ -221,11 +223,14 @@ public class SouvenirsManager {
 	}
 
 	/**
-	 * 
-	 * @param parameter
-	 * @return
-	 * @throws BadRequestException
-	 * @throws Exception 获取数据库信息失败或store接口执行失败会抛出异常
+	 * 获取相关参数显示在Shared Album管理页面(album.jsp)
+	 * @param parameter 前端传来的参数列表，key包括login_user_id(登录用户的ID)、group_id(要获取共享相册所属的小组ID)
+	 * @return 返回前端的参数列表，包括是否为个人相册的标志位(key=Is_personal，为false)、用户头像地址(key=Avatar)、该相册封面的地址(key=Album_cover)、
+	 * 				该相册的名称(key=Album_name)、拥有者的名称(key=Owner_name)、相册介绍(key=Description)、相册所含的图片JSON字符串组成的List列表(key=image_json_list)、
+	 *     	    	待转发的页面(key=DispatchURL)<br>
+	 *         		image_json_list格式参考getImageAddrInAlbum方法
+	 * @throws BadRequestException store接口执行失败会抛出异常
+	 * @throws Exception 获取数据库信息失败时会抛出异常
 	 */
 	public Map<String, Object> displaySAlbumManager(Map<String, String> parameter) throws BadRequestException,Exception {
 		checkValidDAO();
@@ -258,10 +263,16 @@ public class SouvenirsManager {
 	
 	/**
 	 * Personal Picture管理页面的显示，将图片信息发给页面(picture.jsp)
-	 * @param parameter 前端传来的参数，用来指定图片。key包括login_user_id(登录用户ID)、album_name(相册名)、picture_name(照片名)
+	 * @param parameter 前端传来的参数，用来指定图片。key包括login_user_id(登录用户ID)、album_name(相册名)、picture_name(照片名)、
+	 * 				user_id(页面显示照片的用户名，在查看共享相册照片的情况下存在)
 	 * @return 发回前端的Map，包括用户名(key=Username)、相册名(key=Album_name)、照片名(key=Picture_name)、照片地址(key=Picture)、
-	 * 				格式(key=Format)、简介(key=Description)、评论的json字符串组成的列表(key=Comment_json_list)、分享小组列表(key=SAlbum_own_pic_json_list)、
-	 * 				点赞用户列表(key=Liking_person_json)、跳转页面(key=DispatchURL)
+	 * 				格式(key=Format)、简介(key=Description)、评论的json字符串组成的列表(key=Comment_json_list)、共享小组是否拥有本张照片的json字符串列表(key=SAlbum_own_pic_json_list)、
+	 * 				点赞用户列表(key=Liking_person_json)、跳转页面(key=DispatchURL)、拥有者的用户名(key=Owner)、是否为个人相册照片的标志(key=Is_personal)、
+	 * 				<p>
+	 * 				Comment_json_list的每个成员都是一个JSON对象，域包括：评论者的用户名(key=comment_username)、评论者的头像(key=comment_user_avatar)、
+	 * 				评论内容(key=comment_content)、评论时间(key=comment_time)、该评论所回复的评论的评论者用户名(key=reply_username)<br>
+	 * 				SAlbum_own_pic_json_list的每个成员都是一个JSON对象，域包括：共享相册的名称(key=salbum_name)、是否拥有本张照片的标志(key=is_shared)
+	 * 				</p>
 	 * @throws BadRequestException 前端发来的参数无效时抛出异常
 	 * @throws Exception 获取数据库信息失败或store接口执行失败会抛出异常
 	 */
@@ -272,30 +283,33 @@ public class SouvenirsManager {
 		String album_name = parameter.get("album_name");
 		String picture_name = parameter.get("picture_name");
 		String user_id = parameter.get("user_id")==null?parameter.get("login_user_id"):parameter.get("user_id");
-		logger.debug(parameter);
 		if (album_name == null || picture_name == null || album_name.isEmpty() || picture_name.isEmpty())
 			throw new BadRequestException("Invalid Parameter album_name OR picture_name");
+		
+		//Basic parameters without SQL query
 		result.put("Is_personal", true);
 		result.put("Username", UserManager.getUsernameByID(user_id));
 		result.put("Owner", UserManager.getUsernameByID(user_id));
 		result.put("Album_name", album_name);
 		result.put("Picture_name", picture_name.substring(0, picture_name.lastIndexOf('.')));
 		result.put("Picture", ImageLoader.genAddrOfPicture(user_id, album_name, picture_name));
+		
+		//Advanced parameters with SQL query
 		Picture pic = dao.getPictureInfo(user_id, album_name, picture_name);
 		if (pic == null)
 			throw new BadRequestException("Cannot find picture with user_id(<" + user_id + ">) album_name(<"
 					+ album_name + ">) OR picture_name(<" + picture_name + ">)");
 		result.put("Format", pic.getFormat());
 		result.put("Description", pic.getDescription());
-		List<Comment> comments = dao.getAllComments(user_id, album_name, picture_name);
-		//logger.debug("comment:"+comments);
 		
+		//Query comment of picture and format json string
+		List<Comment> comments = dao.getAllComments(user_id, album_name, picture_name);
 		List<String> comment_json_list = new ArrayList<>();
 		JSONObject jsonObject = null;
 		DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		for (Comment comment : comments) {
 			jsonObject = new JSONObject();
-			logger.debug("comment_user_id:"+comment.getCommentUserId());
+			//logger.debug("comment_user_id:"+comment.getCommentUserId());
 			jsonObject.put("comment_username", UserManager.getUsernameByID(comment.getCommentUserId()));
 			jsonObject.put("comment_user_avatar", ImageLoader.genAddrOfAvatar(comment.getCommentUserId()));
 			jsonObject.put("comment_content", comment.getCommentContent());
@@ -306,6 +320,7 @@ public class SouvenirsManager {
 		result.put("Comment_json_list", comment_json_list);
 		//logger.debug("comment_json_list:"+comment_json_list);
 		
+		//Query share status of album and format json string 
 		List<SharedAlbum> sAlbums = dao.getAllSAlbumInfo(user_id, SouvenirsDAO.SHARED_ALBUM);
 		List<String> picSAlbums = dao.getPictureBelongGroup(user_id, album_name, picture_name);
 		JSONObject own_json_item = null;
@@ -323,6 +338,7 @@ public class SouvenirsManager {
 		//logger.debug("salbum_own_pic_json_list:"+salbum_own_pic_json_list);
 		result.put("SAlbum_own_pic_json_list", salbum_own_pic_json_list);
 		
+		//Query liking status and format json string 
 		List<String> liking_person_list = dao.getLikingPersons(user_id, album_name, picture_name);
 		JSONArray liking_person_json = new JSONArray(liking_person_list);
 		result.put("Liking_person_json", liking_person_json);
@@ -332,7 +348,25 @@ public class SouvenirsManager {
 		return result;
 	}
 
+	/**
+	 * 显示共享相册中照片的详情
+	 * @param parameter 前端传来的参数，用来指定图片。key包括login_user_id(登录用户ID)、album_name(相册名)、picture_name(照片名)、
+	 * 				user_id(页面显示照片的用户名)
+	 * @return 发回前端的Map，包括用户名(key=Username)、相册名(key=Album_name)、照片名(key=Picture_name)、照片地址(key=Picture)、
+	 * 				格式(key=Format)、简介(key=Description)、评论的json字符串组成的列表(key=Comment_json_list)、共享小组是否拥有本张照片的json字符串列表(key=SAlbum_own_pic_json_list)、
+	 * 				点赞用户列表(key=Liking_person_json)、跳转页面(key=DispatchURL)、拥有者的用户名(key=Owner)、是否为个人相册照片的标志(key=Is_personal)、
+	 * 				登录用户的用户名(key=Username)、小组ID(key=Group_id)、小组名称(key=Group_name)
+	 * 				<p>
+	 * 				Comment_json_list的每个成员都是一个JSON对象，域包括：评论者的用户名(key=comment_username)、评论者的头像(key=comment_user_avatar)、
+	 * 				评论内容(key=comment_content)、评论时间(key=comment_time)、该评论所回复的评论的评论者用户名(key=reply_username)<br>
+	 * 				SAlbum_own_pic_json_list的每个成员都是一个JSON对象，域包括：共享相册的名称(key=salbum_name)、是否拥有本张照片的标志(key=is_shared)
+	 * 				</p>
+	 * @throws BadRequestException 前端发来的参数无效时抛出异常
+	 * @throws Exception 获取数据库信息失败或store接口执行失败会抛出异常
+	 */
 	public Map<String, Object> displaySPictureManager(Map<String, String>parameter) throws BadRequestException, Exception {
+		//Picture manager of shared album is similar to one of personal album, therefore query picture details should reuse the method of personal picture
+		//and then modify some parameters of displaying such as album name and share album list
 		Map<String, Object> result = displayPictureManager(parameter);
 		result.put("Is_personal", false);
 		result.put("Username", UserManager.getUsernameByID(parameter.get("login_user_id")));
@@ -342,9 +376,10 @@ public class SouvenirsManager {
 		result.put("Group_id", parameter.get("group_id"));
 		Group group = dao.getSAlbumInfo(group_id);
 		result.put("Group_name", group.getSharedAlbumName());
-		
+		result.put("SAlbum_own_pic_json_list", new ArrayList<>());
 		return result;
 	}
+	
 	/**
 	 * 显示原始大小照片的处理方法,只有相册中的照片才可以被获取并显示大图
 	 * @param para 参数表，key包括addr(照片的下载地址的method部分)、content(Image地址中的content)

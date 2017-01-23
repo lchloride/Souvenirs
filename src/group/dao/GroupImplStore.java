@@ -10,8 +10,7 @@ import group.Group;
 import tool.Store;
 
 /**
- * @author Chenghong Li
- *
+ * 实现Group类对应的Store接口的实现类
  */
 public class GroupImplStore implements Store<Group> {
 	final public static int GROUP_ID_IDX = 0;
@@ -21,6 +20,12 @@ public class GroupImplStore implements Store<Group> {
 	final public static int ALBUM_COVER_IDX = 4;
 	final public static int CREATE_TIMESTAMP_IDX = 5;
 	
+	/**
+	 * Store接口的format方法的实现
+	 * @param list 数据库查询结果中的一行数据
+	 * @return 根据数据生成的Group对象
+	 * @see tool.Store#format(List)
+	 */
 	@Override
 	public Group format(List<Object> list) throws Exception {
 		// TODO Auto-generated method stub
