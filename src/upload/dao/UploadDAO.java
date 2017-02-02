@@ -42,10 +42,11 @@ public class UploadDAO {
 	/**
 	 * 删除user_id用户的album_name相册的名为filename的一张照片
 	 * @param para key包含user_id(用户名), album_name(相册名), filename(文件名)
-	 * @return 操作执行结果。参数含义参考tool.DB 
+	 * @return 执行操作所影响的行数
+	 * @throws Exception 数据库执行失败时抛出异常
 	 * @see tool.DB#execSQLUpdate(String, List)
 	 */
-	public Map<String, Object> delPicture(Map<String, String>para) {
+	public int delPicture(Map<String, String>para) throws Exception {
 		String sql = "DELETE FROM picture WHERE user_id = ? and album_name = ? and filename = ?";
 		List<String> parameter = new ArrayList<>();
 		parameter.add(para.get("user_id"));
@@ -57,10 +58,11 @@ public class UploadDAO {
 	/**
 	 * 添加user_id的album_name下的一张名为filename的照片
 	 * @param para key包含user_id(用户名), album_name(相册名), filename(文件名), format(格式), img_description(照片描述)
-	 * @return 操作执行结果。参数含义参考tool.DB 
+	 * @return 执行操作所影响的行数
+	 * @throws Exception 数据库语句执行失败时抛出异常
 	 * @see tool.DB#execSQLUpdate(String, List)
 	 */
-	public Map<String, Object> addPicture(Map<String, String>para) {
+	public int addPicture(Map<String, String>para) throws Exception {
 		String sql = "INSERT INTO picture(user_id, album_name, filename, format, description) VALUES(?, ?, ?, ?, ?)";
 		List<String> parameter = new ArrayList<>();
 		parameter.add(para.get("user_id"));

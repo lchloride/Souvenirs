@@ -211,6 +211,9 @@ public class SouvenirsManager {
 		result.put("Album_name", album_name);
 		result.put("Owner_name", UserManager.getUsernameByID(user_id));
 		result.put("Description", dao.getPAlbumInfo(user_id, album_name).getIntro());
+		logger.debug(parameter.get("update"));
+		if (parameter.containsKey("update")&&parameter.get("update").contentEquals("true"))
+			result.put("Update", true);
 		JSONArray jArray = new JSONArray(getImageAddrInAlbum(parameter));
 		List<String> image_list = new ArrayList<>();
 		for (int i = 0; i < jArray.length(); i++) {

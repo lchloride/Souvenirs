@@ -58,6 +58,11 @@
     <servlet-name>UploadServ</servlet-name>
     <servlet-class>upload.web.UploadServ</servlet-class>
   </servlet>
+  <servlet>
+    <servlet-name>SouvenirsAjax</servlet-name>
+    <servlet-class>souvenirs.web.SouvenirsAjaxServ</servlet-class>
+  </servlet>
+  
   <servlet-mapping>
     <servlet-name>ErrorHandler</servlet-name>
     <url-pattern>/errorHandler</url-pattern>
@@ -103,26 +108,51 @@
     <url-pattern>/checkMakingDone</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
-	<servlet-name>SouvenirsServ</servlet-name>
-	<url-pattern>/album</url-pattern>
+    <servlet-name>SouvenirsServ</servlet-name>
+    <url-pattern>/album</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
-	<servlet-name>SouvenirsServ</servlet-name>
-	<url-pattern>/picture</url-pattern>
+    <servlet-name>SouvenirsServ</servlet-name>
+    <url-pattern>/picture</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
-	<servlet-name>SouvenirsServ</servlet-name>
-	<url-pattern>/sharedAlbum</url-pattern>
+    <servlet-name>SouvenirsServ</servlet-name>
+    <url-pattern>/sharedAlbum</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
-	<servlet-name>SouvenirsServ</servlet-name>
-	<url-pattern>/showPicture</url-pattern>
+    <servlet-name>SouvenirsServ</servlet-name>
+    <url-pattern>/showPicture</url-pattern>
+  </servlet-mapping>
+  
+  <servlet-mapping>
+    <servlet-name>SouvenirsAjax</servlet-name>
+    <url-pattern>/updateAlbumName</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>SouvenirsAjax</servlet-name>
+    <url-pattern>/updateDescription</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>SouvenirsAjax</servlet-name>
+    <url-pattern>/deletePicture</url-pattern>
+  </servlet-mapping>  
+  <servlet-mapping>
+    <servlet-name>SouvenirsAjax</servlet-name>
+    <url-pattern>/sendComment</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>SouvenirsAjax</servlet-name>
+    <url-pattern>/updateAlbumCover</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>SouvenirsAjax</servlet-name>
+    <url-pattern>/queryAlbumCover</url-pattern>
   </servlet-mapping>
   
   <error-page>
     <error-code>400</error-code>
     <location>/ErrorHandler</location>
-  </error-page>  
+  </error-page>
   <error-page>
     <error-code>403</error-code>
     <location>/ErrorHandler</location>

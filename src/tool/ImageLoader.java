@@ -69,7 +69,7 @@ public class ImageLoader extends HttpServlet {
 		//Check validation of session
 		if (session.isNew()) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN);
-			logger.debug("Invalid Login Session");
+			//logger.debug("Invalid Login Session");
 			return;
 		} else {
 			try {
@@ -82,10 +82,10 @@ public class ImageLoader extends HttpServlet {
 				//base_path is the folder storing all users' pictures
 				String base_path = PropertyOper.GetValueByKey("souvenirs.properties", "data_path");
 				//file_path is the true path that is formed from url based on parameters method and content 
-				logger.debug("base_path: "+base_path);
+				//logger.debug("base_path: "+base_path);
 				String file_path = getPathFromPara(request.getParameter("method"), request.getParameter("content"),
 						user_id);
-				logger.debug("file_path: "+file_path);
+				//logger.debug("file_path: "+file_path);
 				if (file_path.isEmpty()) {
 					throw new Exception("Invalid file path");
 				}
@@ -101,7 +101,7 @@ public class ImageLoader extends HttpServlet {
 				response.reset();
 				response.setCharacterEncoding("UTF-8");
 				// Set MIME of image
-				response.setContentType("image/*");
+				//response.setContentType("image/*");
 				response.setContentLength(bis.available());
 
 				os = response.getOutputStream();
@@ -115,7 +115,7 @@ public class ImageLoader extends HttpServlet {
 			} catch (Exception e) {
 				// e.printStackTrace();
 				//There are something wrong with reading and sending image
-				logger.info(e.getMessage() + ", request: <" + request.getQueryString() + ">, request user id = <"
+				logger.warn(e.getMessage() + ", request: <" + request.getQueryString() + ">, request user id = <"
 						+ user_id + ">");
 				response.sendError(HttpServletResponse.SC_FORBIDDEN);
 				return;
@@ -190,7 +190,7 @@ public class ImageLoader extends HttpServlet {
 		String content = Base64.decode(content_base64);
 		String[] para_str = content.split("/");
 		List<String> para = null;
-		logger.debug("getPathFromPara paras:"+method+", "+content_base64+", "+user_id+", "+para_str);
+		//logger.debug("getPathFromPara paras:"+method+", "+content_base64+", "+user_id+", "+para_str);
 		if (method.contentEquals("direct")) {
 			para = Arrays.asList(user_id, para_str[0], para_str[1], para_str[2]);
 			// Two situations: one is request user's own image, just check
