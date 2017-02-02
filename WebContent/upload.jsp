@@ -142,7 +142,7 @@
 					<label for="select_album_name" class="col-sm-2 control-label">Album</label>
 					<div class="col-sm-10">
 						<select class="form-control" name="select_album_name"
-							id="select_album_name" ${Is_specified?"disabled":"" }>
+							id="select_album_name" >
 							<c:if test="${not Is_specified }">
 								<c:forEach var="Album_item" items="${Album_list}">
 									<option>${Album_item }</option>

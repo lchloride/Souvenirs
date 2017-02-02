@@ -65,18 +65,10 @@ public class UploadManager {
 		List<Object> album_name_list = dao.getAlbumName(parameter.get("login_user_id"));
 		result.put("Album_list", album_name_list);
 		
-		//Add a row of image into DB 
-		Map<String, Object> sql_exec_result = dao.addPicture(para);
-		logger.debug(sql_exec_result.get("process_state")+", "+sql_exec_result.get("affect_row_count"));
-		
-		//Check result of adding operation
-		if (!(boolean) sql_exec_result.get("process_state")) {
-			//Adding failed
-			result.put("Upload_result", false);
-			result.put("Error_msg", sql_exec_result.get("error_msg"));
-			logger.info("User failed to upload picture, error:<" + sql_exec_result.get("error_msg")
-					+ "> with parameters:<" + parameter + ">");
-		} else {
+		try {
+			//Add a row of image into DB 
+			int sql_exec_result = dao.addPicture(para);
+			
 			// Adding succeeded
 			// Form absolute file path 
 			String uploadPath = PropertyOper.GetValueByKey("souvenirs.properties", "data_path") + File.separator
@@ -127,6 +119,13 @@ public class UploadManager {
 			result.put("Filename", para.get("filename"));
 			result.put("Upload_result", true);
 			logger.info("User(id="+parameter.get("login_user_id")+") uploaded a picture. Parameters:<"+parameter+">");
+		} catch (Exception e) {
+			// TODO: handle exception
+			//Adding failed
+			result.put("Upload_result", false);
+			result.put("Error_msg", e.getMessage());
+			logger.info("User failed to upload picture, error:<" + e.getMessage()
+					+ "> with parameters:<" + parameter + ">");
 		}
 		return result;
 	}
@@ -172,15 +171,18 @@ public class UploadManager {
 		para.put("user_id", parameter.get("login_user_id"));
 		para.put("album_name", parameter.get("select_album_name"));
 		para.put("filename", parameter.get("filename"));
-		Map<String, Object> sql_exec_result = dao.delPicture(para);
-		if ((boolean) sql_exec_result.get("process_state")) {
+		try {
+			int sql_exec_result = dao.delPicture(para);
+			if (sql_exec_result == 0)
+				throw new Exception("Delete failed item with ZERO affected rows.");
 			result.put("Delete_result", true);
 			logger.info("User(id=<" + parameter.get("login_user_id") + ">) deleted picture<" + para + "> ");
-		} else {
+		} catch (Exception e) {
+			// TODO: handle exception
 			result.put("Delete_result", false);
-			result.put("Error_msg", sql_exec_result.get("error_msg"));
+			result.put("Error_msg", e.getMessage());
 			logger.info("User(id=<" + parameter.get("login_user_id") + ">) failed to delete picture, error:<"
-					+ sql_exec_result.get("error_msg") + "> with parameters:<" + parameter + ">");
+					+ e.getMessage()+ "> with parameters:<" + parameter + ">");
 		}
 		return result;
 	}

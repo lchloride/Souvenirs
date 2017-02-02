@@ -14,12 +14,15 @@
 
 <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
 <script src="/Souvenirs/res/bootstrap/js/bootstrap.min.js"></script>
+
+<script src="/Souvenirs/res/js/jquery.bootstrap-growl.min.js"></script>
 <link href="/Souvenirs/res/css/website.css" rel="stylesheet" type="text/css">
 <title>Manage Album</title>
 <script type="text/javascript">
 	var original_album_name = '${Album_name}';
 	var original_description = '${Description}';
 	var mouse_over_idx = 0;
+	var MSG_OFFSET = 50;
 	window.onload = function() {
 		if ($("#album_show").innerHeight() < $("#album_info").innerHeight()){
 			document.getElementById("album_show").className = "col-sm-9";
@@ -28,6 +31,9 @@
 			document.getElementById("album_show").className = "col-sm-9 border-right";
 			document.getElementById("album_info").className = "col-sm-3";			
 		}
+		<c:if test="${not empty Update and Update==true}">
+			$.bootstrapGrowl("Success.", { type: 'success' , offset: {from: 'top', amount: 50}});
+		</c:if>
 	}
 	
 	function activate(idx) {
@@ -53,6 +59,83 @@
 	function normalize() {
 		document.getElementById("img_edit_btn_"+mouse_over_idx).style.display = "none";
 		document.getElementById("img_delete_btn_"+mouse_over_idx).style.display = "none";
+	}
+	
+	function ajaxProcess(callback, URL)
+	{
+	  var xmlhttp;    
+	  if (window.XMLHttpRequest)
+	  {
+	    // IE7+, Firefox, Chrome, Opera, Safari 浏览器执行代码
+	    xmlhttp=new XMLHttpRequest();
+	  }
+	  else
+	  {
+	    // IE6, IE5 浏览器执行代码
+	    xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+	  }
+	  xmlhttp.onreadystatechange=function()
+	  {
+	    if (xmlhttp.readyState==4 && xmlhttp.status==200)
+	    {
+	      callback(xmlhttp.responseText);
+	    }
+	  }
+	  xmlhttp.open("GET",URL, true);
+	  xmlhttp.send();
+	}
+	
+	function saveAlbumName() {
+		var new_album_name = document.getElementById("album_name").value;
+		ajaxProcess(saveAlbumNameCallback, "/Souvenirs/updateAlbumName?old_name="+encodeURIComponent(original_album_name)+
+				"&new_name="+encodeURIComponent(new_album_name));
+	}
+	
+	function saveAlbumNameCallback(result){
+		//alert(result);
+		if (result.indexOf('true')>-1) {
+//			$.bootstrapGrowl("Success.", { type: 'success' , offset: {from: 'top', amount: 50}});
+			location.href="/Souvenirs/album?album_name="+encodeURIComponent(document.getElementById("album_name").value)+"&update=true";
+		}
+		else
+			$.bootstrapGrowl("Failed. Error:"+result, { type: 'danger' , offset: {from: 'top', amount: MSG_OFFSET}});
+	}
+	
+	function saveDescription() {
+		var new_description =  document.getElementById("description").value;
+		ajaxProcess(saveDescriptionCallback, "/Souvenirs/updateDescription?album_name="+encodeURIComponent(original_album_name)+
+				"&new_description="+encodeURIComponent(new_description));
+	}
+	
+	function saveDescriptionCallback(result){
+		//alert(result);
+		if (result.indexOf('true')>-1) {
+			$.bootstrapGrowl("Success.", { type: 'success' , offset: {from: 'top', amount: MSG_OFFSET}});
+		}
+		else
+			$.bootstrapGrowl("Failed. Error:"+result, { type: 'danger' , offset: {from: 'top', amount: MSG_OFFSET}});
+	}
+	
+	function deletePicture(idx) {
+		var filename =  document.getElementById("image_item_text_"+idx).innerHTML;
+		var msg = "Do you really want to delete this picture? Deleted one cannot be recovered!\n\nPlease comfirm!"; 
+		if (confirm(msg)==true){ 
+			ajaxProcess(deletePictureCallback, "/Souvenirs/deletePicture?album_name="+encodeURIComponent(original_album_name)+
+					"&filename="+encodeURIComponent(filename));
+		}else{ 
+			$.bootstrapGrowl("Deletion is aborted.", { type: 'info' , offset: {from: 'top', amount: MSG_OFFSET}});
+		} 
+		
+	}
+	
+	function deletePictureCallback(result) {
+		if (result.indexOf('true')>-1) {
+//			$.bootstrapGrowl("Success.", { type: 'success' , offset: {from: 'top', amount: 50}});
+			location.href="/Souvenirs/album?album_name="+encodeURIComponent(document.getElementById("album_name").value)+"&update=true";
+		}
+		else {
+			$.bootstrapGrowl("Failed. Error:"+result, { type: 'danger' , offset: {from: 'top', amount: MSG_OFFSET}});
+		}
 	}
 </script>
 <style type="text/css">
@@ -86,38 +169,53 @@ div.album-cover img {
 
 .operation-btn {
 	display: none;
-	margin-top:2px;
-	margin-bottom:2px;
+	margin-top: 2px;
+	margin-bottom: 2px;
 }
 </style>
 </head>
 <body>
-	<div class="mainbody"  >
+	<div class="mainbody" id="mainbody">
 		<!-- Nav bar on the top of the screen -->
-		<nav class="navbar navbar-default" role="navigation" >
+		<nav class="navbar navbar-default" role="navigation">
 		<div class="container-fluid">
 			<div class="navbar-header">
 				<a class="navbar-brand" href="index.jsp">Souvenirs</a>
 			</div>
 			<div>
 				<ul class="nav navbar-nav">
-					<li class="active"><a href="homepage">HomePage</a></li>
-					<li><a href="#">Group</a></li>
-					<li><a href="upload">Upload</a></li>
-					<li><a href="making">Making</a></li>
+					<li class="active">
+						<a href="homepage">HomePage</a>
+					</li>
+					<li>
+						<a href="#">Group</a>
+					</li>
+					<li>
+						<a href="upload">Upload</a>
+					</li>
+					<li>
+						<a href="making">Making</a>
+					</li>
 				</ul>
 
 				<ul class="nav navbar-nav navbar-right" style="padding-right: 5%">
-					<li><img class="navbar-form" src="${empty Avatar?'/Souvenirs/res/image/default_avatar.png':Avatar}"
-						alt="avatar" width="32" height="32"></li>
-					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">${sessionScope.username} <b
-							class="caret"></b>
-					</a>
+					<li>
+						<img class="navbar-form" src="${empty Avatar?'/Souvenirs/res/image/default_avatar.png':Avatar}" alt="avatar" width="32"
+							height="32">
+					</li>
+					<li class="dropdown">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown">${sessionScope.username} <b class="caret"></b>
+						</a>
 						<ul class="dropdown-menu">
-							<li><a href="account.jsp">Account</a></li>
+							<li>
+								<a href="account.jsp">Account</a>
+							</li>
 							<li class="divider"></li>
-							<li><a href="logout">Logout</a></li>
-						</ul></li>
+							<li>
+								<a href="logout">Logout</a>
+							</li>
+						</ul>
+					</li>
 				</ul>
 			</div>
 		</div>
@@ -130,12 +228,13 @@ div.album-cover img {
 				</c:if>
 				<c:if test="${not Is_personal }">
 					Shared Album Management
-				</c:if><small>(Web Designer has gone home.....)</small>
+				</c:if>
+				<small>(Web Designer has gone home.....)</small>
 			</h3>
 			<div class="row">
 				<div class="col-sm-9" id="album_show">
 					<div class="operations">
-<!-- 							<button type="button" class="btn btn-default">Upload Image</button>
+						<!-- 							<button type="button" class="btn btn-default">Upload Image</button>
 					<button type="button" class="btn btn-default">Manage Information</button>
 						<button type="button" class="btn btn-default">Delete Image</button> -->
 					</div>
@@ -144,21 +243,21 @@ div.album-cover img {
 						<c:forEach var="image_item" items="${image_json_list }" varStatus="idx">
 
 							<div class="img" onmouseover="activate(${idx.count})" onmouseout="normalize(${idx.count})">
-								<a id="image_item_frame_${idx.count }" target="_self" href="#"> <img id="image_item_img_${idx.count }"
-									src="" alt="" width="120" height="120"></a>
+								<a id="image_item_frame_${idx.count }" target="_self" href="#"> <img id="image_item_img_${idx.count }" src="" alt=""
+										width="120" height="120"></a>
 								<div class="desc">
 									<a id="image_item_text_${idx.count }" target="_self" href="#"></a><br>
 									<c:if test="${Is_personal }">
-										<button type="button" class="btn btn-default btn-xs operation-btn"  id="img_edit_btn_${idx.count }"
+										<button type="button" class="btn btn-default btn-xs operation-btn" id="img_edit_btn_${idx.count }"
 											onclick="window.location.href=''">
 											<span class="glyphicon glyphicon-pencil"></span> Edit
 										</button>
-										<button type="button" class="btn btn-default btn-xs operation-btn" id="img_delete_btn_${idx.count }">
+										<button type="button" class="btn btn-default btn-xs operation-btn" id="img_delete_btn_${idx.count }" onclick="deletePicture(${idx.count})">
 											<span class="glyphicon glyphicon-trash"></span> Delete
 										</button>
 									</c:if>
 									<c:if test="${not Is_personal }">
-										<button type="button" class="btn btn-default btn-xs operation-btn"  id="img_details_btn_${idx.count }"
+										<button type="button" class="btn btn-default btn-xs operation-btn" id="img_details_btn_${idx.count }"
 											onclick="window.location.href=''" disabled>
 											<span class="	glyphicon glyphicon-eye-open"></span> Details
 										</button>
@@ -199,41 +298,48 @@ div.album-cover img {
 				</div>
 				<div class="col-sm-3" id="album_info">
 					<div class="album-cover">
-						<img id="image_item_img_${idx.count }" src="${Album_cover }" alt="" width="120" height="120">
-						<button type="button" class="btn btn-default btn-sm" style="margin: 5px auto; width: 120px">Change Cover</button>
+						<img id="album_cover_image" src="${Album_cover }" alt="" width="120" height="120">
+						<button type="button" class="btn btn-default btn-sm" style="margin: 5px auto; width: 120px" 
+							data-toggle="modal" data-target="#myModal">Change Cover</button>
 					</div>
-	
+
 					<!-- Display album name -->
 					<div class="form-group">
-						<label for="name" style="display:block">Album Name
-						<div class="btn-group btn-group-xs" style="float:right">
-   							 <button type="button" class="btn btn-default" disabled>Save</button>
-  							  <button type="button" class="btn btn-default" onclick="document.getElementById('album_name').value=original_album_name">Reset</button>
-						</div></label>
+						<label for="name" style="display: block">
+							Album Name
+							<div class="btn-group btn-group-xs" style="float: right">
+								<button type="button" class="btn btn-default" onclick="saveAlbumName()">Save</button>
+								<button type="button" class="btn btn-default" onclick="document.getElementById('album_name').value=original_album_name">Reset</button>
+							</div>
+						</label>
 						<input type="text" class="form-control" id="album_name" placeholder="" value="${Album_name }">
 					</div>
-	
+
 					<!-- Display owner -->
 					<div class="form-group">
 						<label for="name">Owner</label>
 						<input type="text" class="form-control" id="owner" placeholder="" value="${Owner_name }" disabled>
 					</div>
-					
+
 					<!-- Display description(field name "intro" in DB) -->
 					<div class="form-group">
-						<label for="name" style="display:block">Description
-						<div class="btn-group btn-group-xs" style="float:right">
-   							 <button type="button" class="btn btn-default" disabled>Save</button>
-  							  <button type="button" class="btn btn-default" onclick="document.getElementById('description').value=original_description">Reset</button>
-						</div></label>
-						<textarea id="description" class="form-control" rows="3" >${Description }</textarea>
-					</div>		
+						<label for="name" style="display: block">
+							Description
+							<div class="btn-group btn-group-xs" style="float: right">
+								<button type="button" class="btn btn-default"  onclick="saveDescription()">Save</button>
+								<button type="button" class="btn btn-default"
+									onclick="document.getElementById('description').value=original_description">Reset</button>
+							</div>
+						</label>
+						<textarea id="description" class="form-control" rows="3">${Description }</textarea>
+					</div>
 					<c:if test="${Is_personal }">
-						<a href="/Souvenirs/upload?album_name=${Album_name }"><button type="button" class="btn btn-default">Upload Image</button></a>
-					</c:if>	
+						<a href="/Souvenirs/upload?album_name=${Album_name }"><button type="button" class="btn btn-default">Upload
+								Image</button></a>
+					</c:if>
 					<c:if test="${not Is_personal }">
-						<button type="button" class="btn btn-default">Share My Picture</button>		
-					</c:if>	
+						<button type="button" class="btn btn-default">Share My Picture</button>
+					</c:if>
 				</div>
 			</div>
 			<div class="row">...</div>
@@ -241,5 +347,87 @@ div.album-cover img {
 
 	</div>
 	<div class="footer">Copyright &copy; 2016-2017 Souvenirs, All Rights Reserved.</div>
+	
+	<!-- 模态框（Modal） -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">Choose Album Cover</h4>
+            </div>
+            <div class="modal-body" id="modal_body" style="height:250px">
+				Choose a picture in the album <strong>${Album_name }</strong>
+				<div class="images" style="overflow-y:scroll; height:180px;">
+					<c:forEach var="image_item" items="${image_json_list }" varStatus="idx">
+
+						<div class="img" onclick="chooseAlbumCover(${idx.count})">
+							<a id="Mimage_item_frame_${idx.count }" target="_self" href="#" > 
+								<img id="Mimage_item_img_${idx.count }" src="" alt=""	width="120" height="120">
+							</a>
+							<div class="desc">
+								<a id="Mimage_item_text_${idx.count }" target="_self" href="#" ></a><br>
+
+							</div>
+						</div>
+
+						<script>
+							image_item_json = '${image_item}';
+							idx = ${idx.count};
+							image_item_obj = JSON.parse(image_item_json);
+							document
+									.getElementById("Mimage_item_img_" + idx).src = image_item_obj.Addr;
+							document
+									.getElementById("Mimage_item_img_" + idx).alt = image_item_obj.Filename;
+							document.getElementById("Mimage_item_text_"
+									+ idx).innerHTML = image_item_obj.Filename;
+							
+							function chooseAlbumCover(idx) {
+								document.getElementById("chosen_image").innerHTML = document.getElementById("Mimage_item_img_" + idx).alt;
+								document.getElementById("errror_msg").style.display = "none";
+								document.getElementById("modal_body").style.height = "250px";
+							}
+							
+							function saveAlbumCover() {
+								var new_album_cover = document.getElementById("chosen_image").innerHTML;
+								if (new_album_cover.length == 0) {
+									document.getElementById("errror_msg").innerHTML = "Must assign an image as cover.";
+									document.getElementById("errror_msg").style.display = "block";
+									document.getElementById("modal_body").style.height = "300px";
+									return;
+								} else {
+									$('#myModal').modal('toggle');
+									ajaxProcess(saveAlbumCoverCallback, '/Souvenirs/updateAlbumCover?album_name='+encodeURIComponent(original_album_name)+
+										'&new_cover='+encodeURIComponent(new_album_cover));
+								}
+							}
+							function saveAlbumCoverCallback(result) {
+								if (result.trim()=="true") {
+									$.bootstrapGrowl("Setting album cover succeeded.", { ele: '#mainbody', type: 'success' , offset: {from: 'top', amount: MSG_OFFSET}});
+									ajaxProcess(queryAlbumCoverCallback, '/Souvenirs/queryAlbumCover?album_name='+encodeURIComponent(original_album_name));
+								} else
+									$.bootstrapGrowl("Setting album cover failed. Error:"+result, { ele: '#mainbody', type: 'danger' , offset: {from: 'top', amount: MSG_OFFSET}});
+							}
+							function queryAlbumCoverCallback(result) {
+								if (result.substring(0, 4)=="false") 
+									$.bootstrapGrowl("Loading new album cover failed. Error:"+result.sunstring(6), { type: 'danger' , offset: {from: 'top', amount: MSG_OFFSET}});
+								else {
+									document.getElementById('album_cover_image').src = result+"&random="+Math.random();
+									$.bootstrapGrowl("Loading new album cover succeeded.", { ele: '#mainbody', type: 'success' , offset: {from: 'top', amount: MSG_OFFSET}});
+								}
+							}
+						</script>
+					</c:forEach>
+				</div>
+				Chosen Image: <span id="chosen_image"></span>
+				<div class="alert alert-danger" id="errror_msg" style="display:none"></div>
+			</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveAlbumCover()">Set</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
 </body>
 </html>

@@ -280,4 +280,58 @@ public class SouvenirsDAO {
 			return rs.get(SALBUM_NAME_ROW);
 	}
 	
+	/**
+	 * 
+	 * @param user_id
+	 * @param original_album_name
+	 * @param new_album_name
+	 * @return
+	 * @throws Exception
+	 */
+	public int updateAlbumName(String user_id, String original_album_name, String new_album_name) throws Exception {
+		String sql = "call UpdateAlbumName(?, ?, ?)";
+		List<String> para = Arrays.asList(user_id, original_album_name, new_album_name);
+		List<List<Object>> rs = DB.execSQLQuery(sql, para);
+		if (rs.size() > 0 && rs.get(0).size() > 0)
+			return (int) rs.get(0).get(0);
+		else
+			throw  new Exception("Invalid SQL Result with sql:<"+sql+">, parameters:<"+para+">");
+	}
+	
+	/**
+	 * 
+	 * @param user_id
+	 * @param album_name
+	 * @param new_descritpion
+	 * @return
+	 * @throws Exception
+	 */
+	public int updateAlbumDescription(String user_id, String album_name, String new_description) throws Exception {
+		String sql = "update album set intro=? where user_id=? and album_name = ?";
+		List<String> para = Arrays.asList(new_description, user_id, album_name);
+		int rs = DB.execSQLUpdate(sql, para);
+		return rs;
+	}
+	
+	/**
+	 * 
+	 * @param user_id
+	 * @param album_name
+	 * @param filename
+	 * @return
+	 * @throws Exception
+	 */
+	public int deletePicture(String user_id, String album_name, String filename) throws Exception {
+		String sql = "delete from picture where user_id=? and album_name=? and filename=?";
+		List<String> para = Arrays.asList(user_id, album_name, filename);
+		int rs = DB.execSQLUpdate(sql, para);
+		return rs;
+	}
+	
+	public int updateAlbumCover(String user_id, String album_name, String album_cover) throws Exception {
+		String sql = "update album set album_cover = ? where user_id=? and album_name=?";
+		List<String> para = Arrays.asList(album_cover, user_id, album_name);
+		int rs = DB.execSQLUpdate(sql, para);
+		return rs;
+	}
 }

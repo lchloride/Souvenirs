@@ -2,10 +2,7 @@ package tool;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -177,11 +174,11 @@ public class DB {
 	 * 
 	 * @param para 按照模板中出现的顺序，存储参数的一个List，类型是String
 	 * 
-	 * @return Map 返回执行结果(成功/失败，key=process_state)，操作影响的行数(key=affect_row_count)，
-	 * 错误信息(sql语句执行失败时存在，key=error_msg)
+	 * @return 一个整数，操作影响的行数
+	 * 
+	 * @throws Exception 数据库执行失败时抛出异常
 	 */
-	public static Map<String, Object> execSQLUpdate(String sql, List<String> para) {
-		Map<String, Object> rs = new HashMap<>();
+	public static int execSQLUpdate(String sql, List<String> para) throws Exception {
 		Connection conn = null;
 		PreparedStatement ps = null;
 		int affect_row_count = 0;
@@ -191,12 +188,10 @@ public class DB {
 			for (int i = 1; para != null && i <= para.size(); i++)
 				ps.setString(i, para.get(i - 1));
 			affect_row_count = ps.executeUpdate();
-			rs.put("process_state", true);
-			rs.put("affect_row_count", affect_row_count);
+			logger.debug(affect_row_count);
 		} catch (Exception e) {
 			logger.warn("exec SQL failed! SQL:<" + sql + "> Msg:<" + e.getMessage() + ">", e);
-			rs.put("process_state", false);
-			rs.put("error_msg", e.getMessage());
+			throw e;
 		} finally {
 			try {
 				conn.close();
@@ -205,7 +200,7 @@ public class DB {
 				logger.warn("Cannot close connection of sql", e);
 			}
 		}
-		return rs;
+		return affect_row_count;
 	}
 
 }
