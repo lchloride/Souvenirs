@@ -88,14 +88,19 @@
 	function saveAlbumName() {
 		var new_album_name = document.getElementById("album_name").value;
 		ajaxProcess(saveAlbumNameCallback, "/Souvenirs/updateAlbumName?old_name="+encodeURIComponent(original_album_name)+
-				"&new_name="+encodeURIComponent(new_album_name));
+				"&new_name="+encodeURIComponent(new_album_name)+"&is_personal=${Is_personal?'true':'false'}&group_id="+'${Group_id}');
 	}
 	
 	function saveAlbumNameCallback(result){
 		//alert(result);
 		if (result.indexOf('true')>-1) {
 //			$.bootstrapGrowl("Success.", { type: 'success' , offset: {from: 'top', amount: 50}});
-			location.href="/Souvenirs/album?album_name="+encodeURIComponent(document.getElementById("album_name").value)+"&update=true";
+			<c:if test="${Is_personal}">
+				location.href="/Souvenirs/album?album_name="+encodeURIComponent(document.getElementById("album_name").value)+"&update=true";
+			</c:if>
+			<c:if test="${not Is_personal}">
+				location.href="/Souvenirs/sharedAlbum?group_id=${Group_id}&update=true";
+			</c:if>
 		}
 		else
 			$.bootstrapGrowl("Failed. Error:"+result, { type: 'danger' , offset: {from: 'top', amount: MSG_OFFSET}});
@@ -104,7 +109,7 @@
 	function saveDescription() {
 		var new_description =  document.getElementById("description").value;
 		ajaxProcess(saveDescriptionCallback, "/Souvenirs/updateDescription?album_name="+encodeURIComponent(original_album_name)+
-				"&new_description="+encodeURIComponent(new_description));
+				"&new_description="+encodeURIComponent(new_description)+"&is_personal=${Is_personal?'true':'false'}&group_id="+'${Group_id}');
 	}
 	
 	function saveDescriptionCallback(result){
@@ -121,7 +126,7 @@
 		var msg = "Do you really want to delete this picture? Deleted one cannot be recovered!\n\nPlease comfirm!"; 
 		if (confirm(msg)==true){ 
 			ajaxProcess(deletePictureCallback, "/Souvenirs/deletePicture?album_name="+encodeURIComponent(original_album_name)+
-					"&filename="+encodeURIComponent(filename));
+					"&filename="+encodeURIComponent(filename))+"&is_personal=${Is_personal}";
 		}else{ 
 			$.bootstrapGrowl("Deletion is aborted.", { type: 'info' , offset: {from: 'top', amount: MSG_OFFSET}});
 		} 
@@ -200,7 +205,7 @@ div.album-cover img {
 
 				<ul class="nav navbar-nav navbar-right" style="padding-right: 5%">
 					<li>
-						<img class="navbar-form" src="${empty Avatar?'/Souvenirs/res/image/default_avatar.png':Avatar}" alt="avatar" width="32"
+						<img class="navbar-form" src="${empty Avatar?'':Avatar}" alt="avatar" width="32"
 							height="32">
 					</li>
 					<li class="dropdown">
@@ -385,7 +390,7 @@ div.album-cover img {
 							function chooseAlbumCover(idx) {
 								document.getElementById("chosen_image").innerHTML = document.getElementById("Mimage_item_img_" + idx).alt;
 								document.getElementById("errror_msg").style.display = "none";
-								document.getElementById("modal_body").style.height = "250px";
+								document.getElementById("modal_body").style.height = "270px";
 							}
 							
 							function saveAlbumCover() {
@@ -393,12 +398,12 @@ div.album-cover img {
 								if (new_album_cover.length == 0) {
 									document.getElementById("errror_msg").innerHTML = "Must assign an image as cover.";
 									document.getElementById("errror_msg").style.display = "block";
-									document.getElementById("modal_body").style.height = "300px";
+									document.getElementById("modal_body").style.height = "320px";
 									return;
 								} else {
 									$('#myModal').modal('toggle');
 									ajaxProcess(saveAlbumCoverCallback, '/Souvenirs/updateAlbumCover?album_name='+encodeURIComponent(original_album_name)+
-										'&new_cover='+encodeURIComponent(new_album_cover));
+										'&new_cover='+encodeURIComponent(new_album_cover)+"&is_personal=${Is_personal?'true':'false'}&group_id="+'${Group_id}');
 								}
 							}
 							function saveAlbumCoverCallback(result) {
@@ -419,7 +424,8 @@ div.album-cover img {
 						</script>
 					</c:forEach>
 				</div>
-				Chosen Image: <span id="chosen_image"></span>
+				<div>Chosen Image: <span id="chosen_image"></span></div>
+				<div><strong>Hint:</strong>Cover is recommended to be square with minimum resolution of 120px *120px. </div>
 				<div class="alert alert-danger" id="errror_msg" style="display:none"></div>
 			</div>
             <div class="modal-footer">
