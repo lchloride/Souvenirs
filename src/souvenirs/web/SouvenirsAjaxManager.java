@@ -4,12 +4,16 @@
 package souvenirs.web;
 
 import java.io.File;
+import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Map;
 
+import org.apache.jasper.tagplugins.jstl.core.If;
 import org.apache.log4j.Logger;
 
+import group.Group;
 import souvenirs.PersonalAlbum;
+import souvenirs.SharedAlbum;
 import souvenirs.dao.SouvenirsDAO;
 import tool.FileOper;
 import tool.ImageLoader;
@@ -130,7 +134,8 @@ public class SouvenirsAjaxManager {
 				logger.info("Updating shared album description succeeded.  Parameters:<"
 						+ Arrays.asList(user_id, album_name, new_description, group_id) + ">");
 			} else {
-				
+				throw new BadRequestException("Cannot update album description with error of invalid parameter is_personal. Parameters: User_id<" + 
+									user_id + ">, is_personal=<"+is_personal+">");
 			}
 		} catch (Exception e) {
 			throw e;
@@ -191,8 +196,8 @@ public class SouvenirsAjaxManager {
 				PersonalAlbum pAlbum = dao.getPAlbumInfo(user_id, album_name);
 				int rs = dao.updatePAlbumCover(user_id, album_name, new_album_cover_addr);
 				if (rs != DEFAULT_AFFECTED_ROW)
-					throw new Exception("Updating address of  album cover failed. parameters: user_id=<" + user_id
-							+ ">, album_name=<" + album_name + ">, " + "to be updated description=<" + new_album_cover
+					throw new Exception("Updating address of personal album(<"+album_name+">) cover failed. parameters: user_id=<" + user_id
+							+ ">, album_name=<" + album_name + ">, " + "to be updated cover=<" + new_album_cover
 							+ ">, sql affecting rows=<" + rs + ">");
 				else
 					logger.info("Updating address of  album cover succeeded. parameters: user_id=<" + user_id
@@ -200,8 +205,27 @@ public class SouvenirsAjaxManager {
 							+ ">, current album cover=<" + new_album_cover_addr + ">");
 			} else if (is_personal.contentEquals("false")) {
 				String group_id = parameter.get("group_id");
+				String new_user_id =URLDecoder.decode(parameter.get("user_id"), "UTF-8");
+				String cover_source = BASE_PATH+File.separator+new_user_id+File.separator+album_name+File.separator+new_album_cover;
+				String cover_rela_dst = File.separator+"group"+File.separator+group_id+"_cover"+
+													new_album_cover.substring(new_album_cover.lastIndexOf('.'));
+				Group sAlbum = dao.getSAlbumInfo(group_id);
+				if (!FileOper.copyFile(cover_source, BASE_PATH+cover_rela_dst)) {
+					throw new Exception("Copying shared album(<"+album_name+">) cover image failed. parameters: user_id=<" + user_id
+							+ ">, group_id=<" + group_id + ">, " + "to be updated cover=<" + new_album_cover + "> from user id=<"+new_user_id+">");
+				} else {
+					int rs = dao.updateSAlbumCover(user_id, group_id, cover_rela_dst.replaceAll("\\\\", "\\\\\\\\"));
+					if (rs != DEFAULT_AFFECTED_ROW)
+						throw new Exception("Updating address of shared album(<"+album_name+">) cover in database failed. parameters: user_id=<" + user_id
+							+ ">, group_id=<" + group_id + ">, " + "to be updated cover=<" + new_album_cover + "> from user id=<"+new_user_id+">");
+					else
+						logger.info("Updating address of shared album cover succeeded. parameters: user_id=<" + user_id
+									+ ">, group_id=<" + group_id + ">, " + "previous album cover=<" + sAlbum.getAlbumCover()
+									+ ">, current album cover=<" + cover_rela_dst + ">, currrent cover is from <"+cover_source+">");
+				}
 			} else {
-				
+				throw new BadRequestException("Cannot update album name with error of invalid parameter is_personal. Parameters: User_id<" + 
+						user_id + ">, is_personal=<"+is_personal+">");
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -210,11 +234,21 @@ public class SouvenirsAjaxManager {
 		return result;
 	}
 
-	public String queryAlbumCover(Map<String, String> parameter) {
+	public String queryAlbumCover(Map<String, String> parameter) throws BadRequestException {
 		checkValidDAO();
 		String user_id = parameter.get("login_user_id");
 		String album_name = parameter.get("album_name");
-		String result = ImageLoader.genAddrOfPAlbumCover(user_id, album_name);
+		String is_personal = parameter.get("is_personal");
+		String group_id = parameter.get("group_id");
+		String result = null;
+		if (is_personal.contentEquals("true"))
+			result = ImageLoader.genAddrOfPAlbumCover(user_id, album_name);
+		else if (is_personal.contentEquals("false"))
+			result = ImageLoader.genAddrOfSAlbumCover(group_id);
+		else
+			throw new BadRequestException("Cannot update album name with error of invalid parameter is_personal. Parameters: User_id<" + 
+					user_id + ">, is_personal=<"+is_personal+">");
+			
 		return result;
 	}
 }

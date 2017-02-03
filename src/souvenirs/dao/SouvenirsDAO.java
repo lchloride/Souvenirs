@@ -348,4 +348,11 @@ public class SouvenirsDAO {
 		List<String> para = Arrays.asList(new_description, group_id, user_id);
 		return DB.execSQLUpdate(sql, para);
 	}
+	
+	public int updateSAlbumCover(String user_id, String group_id, String new_cover) throws Exception {
+		String sql = "update `group`, user_belong_group set album_cover = ? "
+				+ "where `group`.group_id = ? and `group`.group_id = user_belong_group.group_id and user_id=?";
+		List<String> para = Arrays.asList(new_cover, group_id, user_id);
+		return DB.execSQLUpdate(sql, para);
+	}
 }
