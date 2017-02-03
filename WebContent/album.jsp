@@ -88,14 +88,19 @@
 	function saveAlbumName() {
 		var new_album_name = document.getElementById("album_name").value;
 		ajaxProcess(saveAlbumNameCallback, "/Souvenirs/updateAlbumName?old_name="+encodeURIComponent(original_album_name)+
-				"&new_name="+encodeURIComponent(new_album_name));
+				"&new_name="+encodeURIComponent(new_album_name)+"&is_personal=${Is_personal?'true':'false'}&group_id="+'${Group_id}');
 	}
 	
 	function saveAlbumNameCallback(result){
 		//alert(result);
 		if (result.indexOf('true')>-1) {
 //			$.bootstrapGrowl("Success.", { type: 'success' , offset: {from: 'top', amount: 50}});
-			location.href="/Souvenirs/album?album_name="+encodeURIComponent(document.getElementById("album_name").value)+"&update=true";
+			<c:if test="${Is_personal}">
+				location.href="/Souvenirs/album?album_name="+encodeURIComponent(document.getElementById("album_name").value)+"&update=true";
+			</c:if>
+			<c:if test="${not Is_personal}">
+				location.href="/Souvenirs/sharedAlbum?group_id=${Group_id}&update=true";
+			</c:if>
 		}
 		else
 			$.bootstrapGrowl("Failed. Error:"+result, { type: 'danger' , offset: {from: 'top', amount: MSG_OFFSET}});
@@ -104,7 +109,7 @@
 	function saveDescription() {
 		var new_description =  document.getElementById("description").value;
 		ajaxProcess(saveDescriptionCallback, "/Souvenirs/updateDescription?album_name="+encodeURIComponent(original_album_name)+
-				"&new_description="+encodeURIComponent(new_description));
+				"&new_description="+encodeURIComponent(new_description)+"&is_personal=${Is_personal?'true':'false'}&group_id="+'${Group_id}');
 	}
 	
 	function saveDescriptionCallback(result){
@@ -121,7 +126,7 @@
 		var msg = "Do you really want to delete this picture? Deleted one cannot be recovered!\n\nPlease comfirm!"; 
 		if (confirm(msg)==true){ 
 			ajaxProcess(deletePictureCallback, "/Souvenirs/deletePicture?album_name="+encodeURIComponent(original_album_name)+
-					"&filename="+encodeURIComponent(filename));
+					"&filename="+encodeURIComponent(filename))+"&is_personal=${Is_personal}";
 		}else{ 
 			$.bootstrapGrowl("Deletion is aborted.", { type: 'info' , offset: {from: 'top', amount: MSG_OFFSET}});
 		} 
@@ -172,6 +177,13 @@ div.album-cover img {
 	margin-top: 2px;
 	margin-bottom: 2px;
 }
+
+.cover_selection {
+	border-top:solid;
+	border-bottom:solid;
+	border-width:1px;
+	border-color: #dbdbdb;
+}
 </style>
 </head>
 <body>
@@ -200,7 +212,7 @@ div.album-cover img {
 
 				<ul class="nav navbar-nav navbar-right" style="padding-right: 5%">
 					<li>
-						<img class="navbar-form" src="${empty Avatar?'/Souvenirs/res/image/default_avatar.png':Avatar}" alt="avatar" width="32"
+						<img class="navbar-form" src="${empty Avatar?'':Avatar}" alt="avatar" width="32"
 							height="32">
 					</li>
 					<li class="dropdown">
@@ -258,7 +270,7 @@ div.album-cover img {
 									</c:if>
 									<c:if test="${not Is_personal }">
 										<button type="button" class="btn btn-default btn-xs operation-btn" id="img_details_btn_${idx.count }"
-											onclick="window.location.href=''" disabled>
+											onclick="window.location.href=''" >
 											<span class="	glyphicon glyphicon-eye-open"></span> Details
 										</button>
 									</c:if>
@@ -356,9 +368,9 @@ div.album-cover img {
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                 <h4 class="modal-title" id="myModalLabel">Choose Album Cover</h4>
             </div>
-            <div class="modal-body" id="modal_body" style="height:250px">
+            <div class="modal-body" id="modal_body" style="height:280px">
 				Choose a picture in the album <strong>${Album_name }</strong>
-				<div class="images" style="overflow-y:scroll; height:180px;">
+				<div class="images cover_selection" style="overflow-y:scroll; height:200px;">
 					<c:forEach var="image_item" items="${image_json_list }" varStatus="idx">
 
 						<div class="img" onclick="chooseAlbumCover(${idx.count})">
@@ -366,8 +378,12 @@ div.album-cover img {
 								<img id="Mimage_item_img_${idx.count }" src="" alt=""	width="120" height="120">
 							</a>
 							<div class="desc">
-								<a id="Mimage_item_text_${idx.count }" target="_self" href="#" ></a><br>
-
+								<a id="Mimage_item_filename_${idx.count }" target="_self" href="#" ></a><br>
+								<span class="glyphicon glyphicon-user"></span><span id="Mimage_item_username_${idx.count }"></span><br>
+								<div style="display:none;">
+									<span class="	glyphicon glyphicon-book"></span><span id="Mimage_item_album_${idx.count }"></span><br>
+									<span class="glyphicon glyphicon-user"></span><span id="Mimage_item_userid_${idx.count }"></span><br>
+								</div>
 							</div>
 						</div>
 
@@ -379,47 +395,15 @@ div.album-cover img {
 									.getElementById("Mimage_item_img_" + idx).src = image_item_obj.Addr;
 							document
 									.getElementById("Mimage_item_img_" + idx).alt = image_item_obj.Filename;
-							document.getElementById("Mimage_item_text_"
-									+ idx).innerHTML = image_item_obj.Filename;
-							
-							function chooseAlbumCover(idx) {
-								document.getElementById("chosen_image").innerHTML = document.getElementById("Mimage_item_img_" + idx).alt;
-								document.getElementById("errror_msg").style.display = "none";
-								document.getElementById("modal_body").style.height = "250px";
-							}
-							
-							function saveAlbumCover() {
-								var new_album_cover = document.getElementById("chosen_image").innerHTML;
-								if (new_album_cover.length == 0) {
-									document.getElementById("errror_msg").innerHTML = "Must assign an image as cover.";
-									document.getElementById("errror_msg").style.display = "block";
-									document.getElementById("modal_body").style.height = "300px";
-									return;
-								} else {
-									$('#myModal').modal('toggle');
-									ajaxProcess(saveAlbumCoverCallback, '/Souvenirs/updateAlbumCover?album_name='+encodeURIComponent(original_album_name)+
-										'&new_cover='+encodeURIComponent(new_album_cover));
-								}
-							}
-							function saveAlbumCoverCallback(result) {
-								if (result.trim()=="true") {
-									$.bootstrapGrowl("Setting album cover succeeded.", { ele: '#mainbody', type: 'success' , offset: {from: 'top', amount: MSG_OFFSET}});
-									ajaxProcess(queryAlbumCoverCallback, '/Souvenirs/queryAlbumCover?album_name='+encodeURIComponent(original_album_name));
-								} else
-									$.bootstrapGrowl("Setting album cover failed. Error:"+result, { ele: '#mainbody', type: 'danger' , offset: {from: 'top', amount: MSG_OFFSET}});
-							}
-							function queryAlbumCoverCallback(result) {
-								if (result.substring(0, 4)=="false") 
-									$.bootstrapGrowl("Loading new album cover failed. Error:"+result.sunstring(6), { type: 'danger' , offset: {from: 'top', amount: MSG_OFFSET}});
-								else {
-									document.getElementById('album_cover_image').src = result+"&random="+Math.random();
-									$.bootstrapGrowl("Loading new album cover succeeded.", { ele: '#mainbody', type: 'success' , offset: {from: 'top', amount: MSG_OFFSET}});
-								}
-							}
+							document.getElementById("Mimage_item_filename_"+ idx).innerHTML = image_item_obj.Filename;
+							document.getElementById("Mimage_item_album_"+idx).innerHTML = image_item_obj.AlbumName;
+							document.getElementById("Mimage_item_username_"+idx).innerHTML = image_item_obj.Username;
+							document.getElementById("Mimage_item_userid_"+idx).innerHTML = image_item_obj.UserID;
 						</script>
 					</c:forEach>
 				</div>
-				Chosen Image: <span id="chosen_image"></span>
+				<div>Chosen Image: <span id="chosen_image"></span></div>
+				<div><strong>Hint:</strong>Cover is recommended to be square with minimum resolution of 120px *120px. </div>
 				<div class="alert alert-danger" id="errror_msg" style="display:none"></div>
 			</div>
             <div class="modal-footer">
@@ -428,6 +412,56 @@ div.album-cover img {
             </div>
         </div><!-- /.modal-content -->
     </div><!-- /.modal -->
+    <script>
+    	var chosen_cover_img_idx = 0;
+		function chooseAlbumCover(idx) {
+			chosen_cover_img_idx = idx;
+			document.getElementById("chosen_image").innerHTML = document.getElementById("Mimage_item_img_" + idx).alt;
+			document.getElementById("errror_msg").style.display = "none";
+			document.getElementById("modal_body").style.height = "280px";
+		}
+		
+		function saveAlbumCover() {
+			var new_album_cover = document.getElementById("chosen_image").innerHTML;
+			if (new_album_cover.length == 0) {
+				document.getElementById("errror_msg").innerHTML = "Must assign an image as cover.";
+				document.getElementById("errror_msg").style.display = "block";
+				document.getElementById("modal_body").style.height = "330px";
+				return;
+			} else {
+				$('#myModal').modal('toggle');
+				
+				<c:if test="${Is_personal}">
+				ajaxProcess(saveAlbumCoverCallback, '/Souvenirs/updateAlbumCover?album_name='+encodeURIComponent(original_album_name)+
+					'&new_cover='+encodeURIComponent(new_album_cover)+"&is_personal=${Is_personal?'true':'false'}");
+				</c:if>
+				
+				<c:if test="${not Is_personal}">
+				album_name = document.getElementById("Mimage_item_album_"+chosen_cover_img_idx).innerHTML;
+				user_id = document.getElementById("Mimage_item_userid_"+chosen_cover_img_idx).innerHTML;
+				ajaxProcess(saveAlbumCoverCallback, '/Souvenirs/updateAlbumCover?album_name='+encodeURIComponent(album_name)+
+					'&new_cover='+encodeURIComponent(new_album_cover)+"&is_personal=${Is_personal?'true':'false'}&group_id="+'${Group_id}'+
+					"&user_id="+encodeURIComponent(user_id));
+				</c:if>
+			}
+		}
+		function saveAlbumCoverCallback(result) {
+			if (result.trim()=="true") {
+				$.bootstrapGrowl("Setting album cover succeeded.", { ele: '#mainbody', type: 'success' , offset: {from: 'top', amount: MSG_OFFSET}});
+				ajaxProcess(queryAlbumCoverCallback, '/Souvenirs/queryAlbumCover?album_name='+encodeURIComponent(original_album_name)
+						+"&is_personal=${Is_personal?'true':'false'}&group_id=${Group_id}");
+			} else
+				$.bootstrapGrowl("Setting album cover failed. Error:"+result, { ele: '#mainbody', type: 'danger' , offset: {from: 'top', amount: MSG_OFFSET}});
+		}
+		function queryAlbumCoverCallback(result) {
+			if (result.substring(0, 4)=="false") 
+				$.bootstrapGrowl("Loading new album cover failed. Error:"+result.sunstring(6), { type: 'danger' , offset: {from: 'top', amount: MSG_OFFSET}});
+			else {
+				document.getElementById('album_cover_image').src = result+"&random="+Math.random();
+				$.bootstrapGrowl("Loading new album cover succeeded.", { ele: '#mainbody', type: 'success' , offset: {from: 'top', amount: MSG_OFFSET}});
+			}
+		}
+    </script>
 </div>
 </body>
 </html>

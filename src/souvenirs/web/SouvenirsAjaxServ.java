@@ -66,7 +66,7 @@ public class SouvenirsAjaxServ extends HttpServlet {
 			para.put("login_user_id",
 					session.getAttribute("user_id") == null ? "" : (String) session.getAttribute("user_id"));
 
-			logger.debug(para);
+			logger.debug(request.getQueryString());
 			String result = new String();
 
 			// Obtain operation

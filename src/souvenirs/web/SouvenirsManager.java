@@ -167,7 +167,7 @@ public class SouvenirsManager {
 			logger.warn("There are something wrong when getting image address in album <"
 					+ parameter.get("login_user_id") + ">, (User ID:<" + parameter.get("album_identifier") + ">)", e);
 		}
-		logger.debug("image_list: " + image_list);
+		//logger.debug("image_list: " + image_list);
 		JSONArray json_array = new JSONArray();
 		Map<String, String> image_content = null;
 		for (Picture image_item : image_list) {
@@ -178,9 +178,10 @@ public class SouvenirsManager {
 			image_content.put("Filename", image_item.getFilename());
 			image_content.put("Addr", ImageLoader.genAddrOfPicture(image_item.getUserId(), image_item.getAlbumName(),
 					image_item.getFilename()));
+			image_content.put("Username", UserManager.getUsernameByID(image_item.getUserId()));
 			json_array.put(image_content);
 		}
-		//logger.debug("json:" + json_array);
+		logger.debug("json:" + json_array);
 		return json_array.toString();
 	}
 
