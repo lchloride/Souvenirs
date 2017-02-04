@@ -19,6 +19,7 @@ import user.web.UserManager;
 
 /**
  * Servlet implementation class SouvenirsAjax
+ * 处理Souvenirs相关的Ajax请求的Servlet
  */
 //@WebServlet({ "/changeAlbumName", "/changeDescription", "/sendComment" })
 public class SouvenirsAjaxServ extends HttpServlet {
@@ -34,6 +35,7 @@ public class SouvenirsAjaxServ extends HttpServlet {
     }
 
 	/**
+	 * Control层，获取前台传来的参数并分发给对应的Manager层方法；收取Manager层处理的结果并返回给前台
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

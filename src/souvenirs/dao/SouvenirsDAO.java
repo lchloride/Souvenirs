@@ -281,30 +281,30 @@ public class SouvenirsDAO {
 	}
 	
 	/**
-	 * 
-	 * @param user_id
-	 * @param original_album_name
-	 * @param new_album_name
-	 * @return
-	 * @throws Exception
+	 * 更新个人相册的相册名
+	 * @param user_id 用户名
+	 * @param original_album_name 原始相册名
+	 * @param new_album_name 新相册名
+	 * @return 更新相册名操作的执行结果
+	 * @throws Exception 数据库语句执行失败会抛出异常
 	 */
-	public int updatePAlbumName(String user_id, String original_album_name, String new_album_name) throws Exception {
+	public boolean updatePAlbumName(String user_id, String original_album_name, String new_album_name) throws Exception {
 		String sql = "call UpdateAlbumName(?, ?, ?)";
 		List<String> para = Arrays.asList(user_id, original_album_name, new_album_name);
 		List<List<Object>> rs = DB.execSQLQuery(sql, para);
 		if (rs.size() > 0 && rs.get(0).size() > 0)
-			return (int) rs.get(0).get(0);
+			return (boolean) rs.get(0).get(0);
 		else
-			throw  new Exception("Invalid SQL Result with sql:<"+sql+">, parameters:<"+para+">");
+			throw new Exception("Invalid SQL Result with sql:<"+sql+">, parameters:<"+para+">");
 	}
 	
 	/**
-	 * 
-	 * @param user_id
-	 * @param album_name
-	 * @param new_descritpion
-	 * @return
-	 * @throws Exception
+	 * 更新个人相册的简介
+	 * @param user_id 用户名
+	 * @param album_name 待更改相册的名称
+	 * @param new_descritpion 新的简介
+	 * @return sql操作所影响的行数，操作成功的话应为1
+	 * @throws Exception 数据库语句执行失败会抛出异常
 	 */
 	public int updatePAlbumDescription(String user_id, String album_name, String new_description) throws Exception {
 		String sql = "update album set intro=? where user_id=? and album_name = ?";
@@ -314,12 +314,12 @@ public class SouvenirsDAO {
 	}
 	
 	/**
-	 * 
-	 * @param user_id
-	 * @param album_name
-	 * @param filename
-	 * @return
-	 * @throws Exception
+	 * 删除一张照片
+	 * @param user_id 照片所属用户ID
+	 * @param album_name 相册名
+	 * @param filename 文件名
+	 * @return sql操作所影响的行数
+	 * @throws Exception 数据库语句执行失败会抛出异常
 	 */
 	public int deletePicture(String user_id, String album_name, String filename) throws Exception {
 		String sql = "delete from picture where user_id=? and album_name=? and filename=?";
@@ -328,6 +328,14 @@ public class SouvenirsDAO {
 		return rs;
 	}
 	
+	/**
+	 * 更新个人相册的封面
+	 * @param user_id 用户名
+	 * @param album_name 相册名
+	 * @param album_cover 新的相册封面地址
+	 * @return sql操作所影响的行数
+	 * @throws Exception 数据库语句执行失败会抛出异常
+	 */
 	public int updatePAlbumCover(String user_id, String album_name, String album_cover) throws Exception {
 		String sql = "update album set album_cover = ? where user_id=? and album_name=?";
 		List<String> para = Arrays.asList(album_cover, user_id, album_name);
@@ -335,6 +343,14 @@ public class SouvenirsDAO {
 		return rs;
 	}
 	
+	/**
+	 * 更新共享相册的相册名
+	 * @param user_id 执行操作的用户ID
+	 * @param group_id 该共享相册所属的小组ID
+	 * @param new_album_name 新的共享相册名
+	 * @return sql操作所影响的行数
+	 * @throws Exception 数据库语句执行失败会抛出异常
+	 */
 	public int updateSAlbumName(String user_id, String group_id, String new_album_name) throws Exception {
 		String sql = "update `group`, user_belong_group set shared_album_name = ? "
 				+ "where `group`.group_id = ? and `group`.group_id = user_belong_group.group_id and user_id=?";
@@ -342,6 +358,14 @@ public class SouvenirsDAO {
 		return DB.execSQLUpdate(sql, para);
 	}
 	
+	/**
+	 * 更新共享相册的简介
+	 * @param user_id 执行操作的用户ID
+	 * @param group_id 该共享相册所属的小组ID
+	 * @param new_description 新的简介内容
+	 * @return sql操作所影响的行数
+	 * @throws Exception 数据库语句执行失败会抛出异常
+	 */
 	public int updateSAlbumDescription(String user_id, String group_id, String new_description) throws Exception {
 		String sql = "update `group`, user_belong_group set intro = ? "
 				+ "where `group`.group_id = ? and `group`.group_id = user_belong_group.group_id and user_id=?";
@@ -349,6 +373,14 @@ public class SouvenirsDAO {
 		return DB.execSQLUpdate(sql, para);
 	}
 	
+	/**
+	 * 更新共享相册的封面
+	 * @param user_id 执行操作的用户ID
+	 * @param group_id 该共享相册所属的小组ID
+	 * @param new_cover 新的相册封面地址
+	 * @return sql操作所影响的行数
+	 * @throws Exception 数据库语句执行失败会抛出异常
+	 */
 	public int updateSAlbumCover(String user_id, String group_id, String new_cover) throws Exception {
 		String sql = "update `group`, user_belong_group set album_cover = ? "
 				+ "where `group`.group_id = ? and `group`.group_id = user_belong_group.group_id and user_id=?";
