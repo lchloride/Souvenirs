@@ -205,9 +205,6 @@ div.album-cover img {
 					<li>
 						<a href="upload">Upload</a>
 					</li>
-					<li>
-						<a href="making">Making</a>
-					</li>
 				</ul>
 
 				<ul class="nav navbar-nav navbar-right" style="padding-right: 5%">

@@ -151,8 +151,9 @@ public class SouvenirsManager {
 	 * 
 	 * @see org.json
 	 * @param parameter
-	 *            前端传来的参数，key包括login_user_id(登录的用户ID), album_name(相册名)
-	 * @return 相册中所有图片名字和地址所组成的json字符串(形如：[{Filename: "A", Addr:"B"}, {UserID: "C", AlbumName: "D", Filename: "E", Addr:"F"}, ...])
+	 *            前端传来的参数，key包括login_user_id(登录的用户ID), album_identifier(相册标识名：个人相册指相册名；共享相册指小组编号)
+	 * @return 相册中所有图片名字和地址所组成的json字符串(形如：[{UserID: "A1", AlbumName: "B1", Filename: "C1", Addr:"D1", "Username":"E1", Description:"F1"}, 
+	 * 					{UserID: "C", AlbumName: "D", Filename: "E", Addr:"F"}, ...])
 	 */
 	public String getImageAddrInAlbum(Map<String, String> parameter) {
 		checkValidDAO();
@@ -170,6 +171,7 @@ public class SouvenirsManager {
 		//logger.debug("image_list: " + image_list);
 		JSONArray json_array = new JSONArray();
 		Map<String, String> image_content = null;
+		DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		for (Picture image_item : image_list) {
 			// Form json object of filename and address
 			image_content = new HashMap<>();
@@ -179,6 +181,8 @@ public class SouvenirsManager {
 			image_content.put("Addr", ImageLoader.genAddrOfPicture(image_item.getUserId(), image_item.getAlbumName(),
 					image_item.getFilename()));
 			image_content.put("Username", UserManager.getUsernameByID(image_item.getUserId()));
+			image_content.put("Description", image_item.getDescription());
+			image_content.put("UploadTime", sdf.format(image_item.getUploadTimestamp()));
 			json_array.put(image_content);
 		}
 		logger.debug("json:" + json_array);
@@ -410,6 +414,39 @@ public class SouvenirsManager {
 			result.put("Title", img_url_para[OWNER_FILENAME]);
 		}else{
 			result.put("DispatchURL", "showPicture.jsp");
+		}
+		return result;
+	}
+	
+	public Map<String, Object> displaySharePicture(Map<String, String> parameter) throws Exception {
+		checkValidDAO();
+		String user_id = parameter.get("login_user_id");
+		Map<String, Object> result = new HashMap<>();
+		result.put("DispatchURL", "share.jsp");
+		try {
+			List<PersonalAlbum> album_list = dao.getAllPAlbumInfo(user_id, SouvenirsDAO.PERSONAL_ALBUM);
+			List<String> album_name_list = new ArrayList<>();
+			for (PersonalAlbum pAlbum : album_list) {
+				album_name_list.add(pAlbum.getAlbumName());
+			}
+			result.put("Album_name_list", album_name_list);
+			
+			if (album_name_list.size() == 0)
+				throw new Exception("No album for user <"+user_id+">");
+			Map<String, String> para = new HashMap<>();
+			para.put("login_user_id", user_id);
+			para.put("album_identifier", album_name_list.get(0));
+			logger.debug("para:"+para);
+/*			JSONArray jArray = new JSONArray(getImageAddrInAlbum(para));
+			List<String> image_json_list = new ArrayList<>();
+			for (int i = 0; i < jArray.length(); i++) {
+				image_json_list.add(jArray.getJSONObject(i).toString());
+			}*/
+			result.put("image_list_json", getImageAddrInAlbum(para));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			throw e;
 		}
 		return result;
 	}

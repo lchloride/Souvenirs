@@ -8,12 +8,10 @@ import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Map;
 
-import org.apache.jasper.tagplugins.jstl.core.If;
 import org.apache.log4j.Logger;
 
 import group.Group;
 import souvenirs.PersonalAlbum;
-import souvenirs.SharedAlbum;
 import souvenirs.dao.SouvenirsDAO;
 import tool.FileOper;
 import tool.ImageLoader;
@@ -346,6 +344,23 @@ public class SouvenirsAjaxManager {
 			throw new BadRequestException("Cannot update album name with error of invalid parameter is_personal. Parameters: User_id<" + 
 					user_id + ">, is_personal=<"+is_personal+">");
 			
+		return result;
+	}
+	
+	/**
+	 * 获取某个用户的一个相册中的全部照片信息，并以json字符串的形式发给前端。
+	 * <p>
+	 * 发送到前端的数据格式：<br>
+	 * json字符串，由多个对象组成的json数组；其中每个json对象由5个域组成：Filename, Addr, UserID, AlbumName, Username
+	 * </p>
+	 * @param parameter 发给SouvenirsAjaxManager的参数表，key包括login_user_id(登录用户名)、album_identifier(相册标识符：
+	 * 				personal album指的是album name；shared album指的是group_id)
+	 * @see souvenirs.web.SouvenirsManager#getImageAddrInAlbum(Map)
+	 */
+	public String queryPictureInAlbum(Map<String, String>parameter) {
+		checkValidDAO();
+		SouvenirsManager sm = SouvenirsManager.getInstance();
+		String result = sm.getImageAddrInAlbum(parameter);
 		return result;
 	}
 }
