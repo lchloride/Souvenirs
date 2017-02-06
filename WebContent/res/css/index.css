@@ -1,6 +1,6 @@
 body {
 	background-color: #4b4a4a;
-	background-image: url('/Souvenirs/res/image/index_bg.jpg');
+	background-image: url('/Souvenirs/res/image/bg1.jpg');
 	background-size: cover;
 	background-position: center center;
 	background-repeat: no-repeat;
@@ -81,7 +81,7 @@ div.login {
 	height: 50%;
 	min-width: 250px;
 	min-height: 350px;
-	background-color: rgba(192, 192, 192, .9);
+	background-color: rgba(192, 192, 192, .7);
 	border-radius: 5%;
 /* 	padding-left:1%;
 	padding-right:1%; */

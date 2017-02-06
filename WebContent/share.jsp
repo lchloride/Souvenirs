@@ -95,8 +95,8 @@
 			if (document.getElementById("checkbox_"+i).checked) {
 				var item = {album_name:image_obj[i].AlbumName, filename:image_obj[i].Filename, addr:image_obj[i].Addr};
 				var compare_flag = false;
-				for (i=0; i<selected_image.length; i++)
-					if (cmpSelectedImageItem(selected_image[i], item)) {
+				for (j=0; j<selected_image.length; j++)
+					if (cmpSelectedImageItem(selected_image[j], item)) {
 						compare_flag = true;
 						break;
 					}

@@ -86,6 +86,7 @@ public class SouvenirsAjaxManager {
 				//Write log
 				logger.info("Updating personal album name succeed. User_id<" + user_id + ">, original_album_name<"
 						+ original_album_name + ">, new_album_name<" + new_album_name + ">");
+				
 			} else if (is_personal.contentEquals("false")){
 				//  Update name of shared album
 				// Get group id to be operated
@@ -157,6 +158,7 @@ public class SouvenirsAjaxManager {
 				if (rs != DEFAULT_AFFECTED_ROW)
 					throw new Exception("Updating personal album description failed.  Parameters:<"
 							+ Arrays.asList(user_id, album_name, new_description) + ">");
+				
 				// Result back to front side
 				result = "true";
 				// Write log
@@ -210,6 +212,7 @@ public class SouvenirsAjaxManager {
 				throw new Exception(
 						"Cannot delete picture item in database. parameter: user_id=<" + user_id + ">, album_name=<"
 								+ album_name + ">, filename=<" + filename + ">, sql affecting rows=<" + rs + ">");
+			
 			// Delete picture in file system (Attention: this operation cannot be undone!)
 			if (!FileOper.deleteFile(
 					BASE_PATH + File.separator + user_id + File.separator + album_name + File.separator + filename)) {

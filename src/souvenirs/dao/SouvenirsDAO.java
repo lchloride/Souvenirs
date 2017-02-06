@@ -293,7 +293,7 @@ public class SouvenirsDAO {
 		List<String> para = Arrays.asList(user_id, original_album_name, new_album_name);
 		List<List<Object>> rs = DB.execSQLQuery(sql, para);
 		if (rs.size() > 0 && rs.get(0).size() > 0)
-			return (boolean) rs.get(0).get(0);
+			return ((int)rs.get(0).get(0)==0)?false:true;
 		else
 			throw new Exception("Invalid SQL Result with sql:<"+sql+">, parameters:<"+para+">");
 	}
