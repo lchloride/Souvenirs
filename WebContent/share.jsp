@@ -27,7 +27,7 @@
 	var MSG_OFFSET = 50;
 	window.onload = function() {
 		$(".container").css("min-width",
-				($("#mainbody").innerWidth() - 10) + "px");
+				($("#mainbody").width()-60) + "px");
 		drawImageList('${image_list_json}');
 		displaySelectedPicture();
 	}
@@ -77,8 +77,8 @@
 			image_html = "<tr><td><h4>No Image In this Album!</h4></td></tr>";
 		for (i=0; i<image_obj.length; i++)
 			image_html +=		'<tr>'+
-				'<td><input type="checkbox" value="" id="checkbox_'+i+'"></td>'+
-				'<td>'+
+				'<td style="border-top: 1px solid #bbb;"><input type="checkbox" value="" id="checkbox_'+i+'"></td>'+
+				'<td style="border-top: 1px solid #bbb;">'+
 					'<div class="media">'+
 						'<a class="pull-left" href="#"> <img class="media-object" src="'+image_obj[i].Addr+'" alt="'+image_obj[i].Filename+'" width="120" height="">'+
 						'</a>'+
@@ -123,13 +123,14 @@
 		for (i=0; i<selected_image.length; i++)
 			image_html += 	'<tr>'+
 				// '<td><input type="checkbox" value=""></td>'+
-				'<td>'+selected_image[i].album_name+'</td>'+
-				'<td>'+selected_image[i].filename+'</td>'+
-				'<td><div id="large"></div>'+
+				'<td style="border-top: 1px solid #bbb;">'+selected_image[i].album_name+'</td>'+
+				'<td style="border-top: 1px solid #bbb;">'+selected_image[i].filename+'</td>'+
+				'<td style="border-top: 1px solid #bbb;"><div id="large"></div>'+
 				'<button type="button" class="btn btn-link " style="padding: 0px" onmouseover="mouseover(\''+selected_image[i].addr+'\')" onmouseout="mouseout()">Preview</button>'+
 				' | <button type="button" class="btn btn-link " style="padding: 0px" onclick="removeSelectedImage('+i+')">Remove</button></td>'+
 				'</td>'	
 				'</tr>';
+		image_html += '<tr><td></td><td></td><td></td><td></td></tr>';
 		document.getElementById("selected_image_table_body").innerHTML = image_html;
 	}
 	
@@ -188,14 +189,14 @@
 
 			for (var i = 0; i < success_list_obj.length; i++) {
 				setTimeout($.bootstrapGrowl("Sharing "+success_list_obj[i]+" succeed.", { type: 'success' , delay:2000, offset: {from: 'top', amount: MSG_OFFSET}}), 1000);
-			};
+			}
 			
 			for (var i = 0; i < failure_list_obj.length; i++) {
 				setTimeout($.bootstrapGrowl("Sharing "+failure_list_obj[i]+" failed.", { type: 'danger' , delay:4000, offset: {from: 'top', amount: MSG_OFFSET}}), 1000);
-			};
+			}
 			for (var i = 0; i < duplication_list_obj.length; i++) {
 				setTimeout($.bootstrapGrowl(duplication_list_obj[i]+" has already existed.", { type: 'info' , delay:3000, offset: {from: 'top', amount: MSG_OFFSET}}), 1000);
-			};
+			}
 		}
 	}
 </script>
@@ -204,6 +205,29 @@
 	border-top:solid;
 	border-width:1px;
 	border-color:#777;
+}
+.list-title {
+	background-color: rgba(221, 237, 205, .8);
+	/* border-radius: 5px; */
+	border: solid;
+	border-bottom-style: none;
+	border-width: 2px;
+	border-color: #337ab7;
+	border-top-left-radius:3px;
+	border-top-right-radius:3px;
+}
+.list-panel {
+	background-color: rgba(166, 216, 222, .3);
+	/* border-radius: 5px; */
+	border: solid;
+	border-width: 2px;
+	border-color: #0099cc;
+	border-top-style: none;
+	border-bottom-left-radius: 5px;
+	border-bottom-right-radius: 5px;
+}
+td.top-border {
+    border-top: 2px solid #ddd;
 }
 </style>
 </head>
@@ -217,10 +241,20 @@
 			</div>
 			<div>
 				<ul class="nav navbar-nav">
-					<li class="active"><a href="homepage">HomePage</a></li>
+					<li ><a href="homepage">HomePage</a></li>
 					<li><a href="#">Group</a></li>
 					<li><a href="upload">Upload</a></li>
+					<li class="active"><a>Sharing Pictures</a></li>
 				</ul>
+				
+				<form class="navbar-form navbar-left" role="search">
+		            <div class="form-group">
+		                <input type="text" class="form-control" placeholder="Search your pictures">
+		            </div>
+		            <button type="submit" class="btn btn-default " style="font-size: 1.45em;text-shadow: #aaa 1px 2px 3px;">
+		            	<span class="glyphicon glyphicon-search" style="color:#999"></span>
+		            </button>
+		        </form>
 
 				<ul class="nav navbar-nav navbar-right" style="padding-right: 5%">
 					<li><img class="navbar-form" src="${empty Avatar?'':Avatar}" alt="avatar" width="32" height="32"></li>
@@ -237,23 +271,23 @@
 		</div>
 		</nav>
 
-		<div class="container" style="min-width: 80%;width:auto;">
+		<div class="container" style="min-width: 80%;width:auto;margin-left:15px;margin-right:15px;">
 			<h3>Share Pictures to Album <a href="/Souvenirs/sharedAlbum?group_id=${Group_id }">${SAlbum_name }</a> <small>(Group ID: ${Group_id })</small></h3>
-			<div class="row" style="margin-top:20px;">
-				<div class="col-sm-6"><h4>Available</h4></div>
-				<div class="col-sm-5 col-sm-offset-1">
+			<div class="row" style="margin-top:40px;">
+				<div class="col-sm-6 list-title"><h4>Available</h4></div>
+				<div class="col-sm-5 col-sm-offset-1 list-title">
 					<h4 style="display:inline-block;">Share List </h4>
 					<span class="badge" id="share_list_num" style="margin-bottom: 10px;margin-left: 5px;"></span>
-					<button class="btn btn-primary" style="float:right;" onclick="sharePictures()">Share</button>
+					<button class="btn btn-primary btn-sm" style="float:right;margin-top: 5px;" onclick="sharePictures()">Share</button>
 				</div>
 			</div>
 			
 			
 			<div class="row">
-				<div class="col-sm-6">
+				<div class="col-sm-6 list-panel">
 					<div class="row">
 						<div class="form-group">
-    						<label for="lastname" class="col-sm-4 control-label" style="padding-top: 5px; padding-bottom: 5px;">Album Name</label>
+    						<label for="lastname" class="col-sm-4 control-label" style="padding-top: 10px; ">Album Name</label>
     						<div class="col-sm-8">
       							<select class="form-control" onchange="queryPictureInAlbum(this.value)">
 									<c:forEach var="option" items="${Album_name_list }"><option>${option }</option></c:forEach>
@@ -308,14 +342,14 @@
 					<button onclick="addAllPictures()" disabled style="display: none;">Add All&gt;&gt;</button><br>
 				</div>
 
-				<div class="col-sm-5">
+				<div class="col-sm-5 list-panel">
 					<table class="table">
 						<thead>
 							<tr>
 								<!-- <th>Select</th> -->
-								<th>Album Name</th>
-								<th>Filename</th>
-								<th>Operation</th>
+								<th style="border-bottom: 2px solid #bbb;">Album Name</th>
+								<th style="border-bottom: 2px solid #bbb;">Filename</th>
+								<th style="border-bottom: 2px solid #bbb;">Operation</th>
 							</tr>
 						</thead>
 						<tbody id="selected_image_table_body">
