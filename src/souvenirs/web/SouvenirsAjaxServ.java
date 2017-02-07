@@ -89,6 +89,8 @@ public class SouvenirsAjaxServ extends HttpServlet {
 					result = sm.queryAlbumCover(para);
 				} else if (query_url.contentEquals("AlbumAjax")) {
 					result = sm.queryPictureInAlbum(para);
+				} else if (query_url.contentEquals("sharePictures")) {
+					result = sm.sharePictures(para);
 				}else {
 					;
 				}

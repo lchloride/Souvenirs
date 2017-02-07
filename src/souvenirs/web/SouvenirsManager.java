@@ -418,11 +418,15 @@ public class SouvenirsManager {
 		return result;
 	}
 	
-	public Map<String, Object> displaySharePicture(Map<String, String> parameter) throws Exception {
+	public Map<String, Object> displaySharePicture(Map<String, String> parameter) throws BadRequestException, Exception {
 		checkValidDAO();
 		String user_id = parameter.get("login_user_id");
 		Map<String, Object> result = new HashMap<>();
 		result.put("DispatchURL", "share.jsp");
+		String group_id = parameter.get("group_id");
+		if (group_id == null || group_id.isEmpty())
+			throw new BadRequestException("Invalid parameter group_id=null or group is empty.");
+		
 		try {
 			List<PersonalAlbum> album_list = dao.getAllPAlbumInfo(user_id, SouvenirsDAO.PERSONAL_ALBUM);
 			List<String> album_name_list = new ArrayList<>();
@@ -443,6 +447,10 @@ public class SouvenirsManager {
 				image_json_list.add(jArray.getJSONObject(i).toString());
 			}*/
 			result.put("image_list_json", getImageAddrInAlbum(para));
+
+			result.put("Group_id", group_id);
+			Group sAlbum = dao.getSAlbumInfo(group_id);
+			result.put("SAlbum_name", sAlbum.getSharedAlbumName());
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -5,10 +5,15 @@ package souvenirs.web;
 
 import java.io.File;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import group.Group;
 import souvenirs.PersonalAlbum;
@@ -364,6 +369,46 @@ public class SouvenirsAjaxManager {
 		checkValidDAO();
 		SouvenirsManager sm = SouvenirsManager.getInstance();
 		String result = sm.getImageAddrInAlbum(parameter);
+		return result;
+	}
+	
+	public String sharePictures(Map<String, String>parameter) throws JSONException, Exception {
+		checkValidDAO();
+		String result = "";
+		String share_list_json = parameter.get("list_json");
+		String user_id = parameter.get("login_user_id");
+		String group_id = parameter.get("group_id");
+		List<String> failure_list = new ArrayList<>();
+		List<String> success_list = new ArrayList<>();
+		List<String> duplication_list = new ArrayList<>();
+		try {
+			JSONArray jsonArray = new JSONArray(share_list_json);
+			JSONObject jsonObject = null;
+			
+			if (user_id == null || user_id.isEmpty() || group_id==null || group_id.isEmpty())
+				throw new BadRequestException("user_id / group_id is invalid! Parameters: <"+parameter+">");
+			
+			for (int i=0; i<jsonArray.length(); i++) {
+				jsonObject = jsonArray.getJSONObject(i);
+				int rs = dao.sharePicture(user_id, jsonObject.optString("album_name"), jsonObject.optString("filename"), group_id);
+				if (rs == SouvenirsDAO.SHARE_PICTURE_DUPLICATE)
+					duplication_list.add(jsonObject.optString("album_name")+" - "+jsonObject.optString("filename"));
+				else if (rs == SouvenirsDAO.SHARE_PICTURE_SUCCESS)
+					success_list.add(jsonObject.optString("album_name")+" - "+jsonObject.optString("filename"));
+				else
+					failure_list.add(jsonObject.optString("album_name")+" - "+jsonObject.optString("filename"));
+			}
+		} catch (JSONException e) {
+			throw new JSONException("Bad parameter list_json!", e);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			throw e;
+		}
+		JSONObject result_json = new JSONObject();
+		result_json.put("failure_list", failure_list);
+		result_json.put("success_list", success_list);
+		result_json.put("duplication_list", duplication_list);
+		result = result_json.toString();
 		return result;
 	}
 }

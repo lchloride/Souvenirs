@@ -23,6 +23,7 @@
 	var original_description = '${Description}';
 	var mouse_over_idx = 0;
 	var MSG_OFFSET = 50;
+	var default_img_height = 180;
 	window.onload = function() {
 		if ($("#album_show").innerHeight() < $("#album_info").innerHeight()){
 			document.getElementById("album_show").className = "col-sm-9";
@@ -34,6 +35,7 @@
 		<c:if test="${not empty Update and Update==true}">
 			$.bootstrapGrowl("Success.", { type: 'success' , offset: {from: 'top', amount: 50}});
 		</c:if>
+		default_img_height = $('#img_1').outerHeight();
 	}
 	
 	function activate(idx) {
@@ -46,7 +48,13 @@
 				document.getElementById("img_details_btn_"+mouse_over_idx).style.display = "none";
 			</c:if>
 		}
+		var i=1;
+		while (document.getElementById("img_"+i)!=null) {
+			document.getElementById("img_"+i).style.height = "auto";
+			i++;
+		}
 		mouse_over_idx = idx;
+
 		<c:if test="${Is_personal}">
 			document.getElementById("img_edit_btn_"+idx).style.display = "inline";
 			document.getElementById("img_delete_btn_"+idx).style.display = "inline";
@@ -54,6 +62,14 @@
 		<c:if test="${not Is_personal}">
 			document.getElementById("img_details_btn_"+mouse_over_idx).style.display = "inline";
 		</c:if>
+		
+		var height = $('#img_'+idx).outerHeight();
+		//alert(height);
+		var i=1;
+		while (document.getElementById("img_"+i)!=null) {
+			document.getElementById("img_"+i).style.height = height+"px";
+			i++;
+		}
 	}
 	
 	function normalize() {
@@ -251,7 +267,7 @@ div.album-cover img {
 					<div class="images">
 						<c:forEach var="image_item" items="${image_json_list }" varStatus="idx">
 
-							<div class="img" onmouseover="activate(${idx.count})" onmouseout="normalize(${idx.count})">
+							<div class="img" id="img_${idx.count }" onmouseover="activate(${idx.count})" onmouseout="normalize(${idx.count})">
 								<a id="image_item_frame_${idx.count }" target="_self" href="#"> <img id="image_item_img_${idx.count }" src="" alt=""
 										width="120" height="120"></a>
 								<div class="desc">
@@ -347,7 +363,7 @@ div.album-cover img {
 								Image</button></a>
 					</c:if>
 					<c:if test="${not Is_personal }">
-						<button type="button" class="btn btn-default">Share My Picture</button>
+						<a href="/Souvenirs/share?group_id=${Group_id }"><button type="button" class="btn btn-default">Share My Picture</button></a>
 					</c:if>
 				</div>
 			</div>

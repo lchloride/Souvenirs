@@ -32,7 +32,7 @@
 		displaySelectedPicture();
 	}
 	
-	function ajaxProcess(callback, URL)
+	function ajaxProcess(callback, URL, send)
 	{
 	  var xmlhttp;    
 	  if (window.XMLHttpRequest)
@@ -52,8 +52,14 @@
 	      callback(xmlhttp.responseText);
 	    }
 	  }
-	  xmlhttp.open("GET",URL, true);
-	  xmlhttp.send();
+	  if (send == undefined || send == "" ) {
+	  	xmlhttp.open("GET",URL, true);
+	  	xmlhttp.send();
+	  } else {
+	  	xmlhttp.open("POST",URL, true);
+	  	xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+	  	xmlhttp.send(send);
+	  }
 	}
 	
 	function queryPictureInAlbum(album_name) {
@@ -102,9 +108,9 @@
 					}
 				if (!compare_flag) {
 					selected_image.push(item);
-					$.bootstrapGrowl("Add "+image_obj[i].Filename+" in Album "+image_obj[i].AlbumName+" successfully.", { type: 'success' , offset: {from: 'top', amount: MSG_OFFSET}});
+					$.bootstrapGrowl("Add "+image_obj[i].Filename+" in Album "+image_obj[i].AlbumName+" successfully.", { type: 'success' , delay:2000, offset: {from: 'top', amount: MSG_OFFSET}});
 				}else
-					$.bootstrapGrowl(image_obj[i].Filename+" in Album "+image_obj[i].AlbumName+" has already existed.", { type: 'danger' , offset: {from: 'top', amount: MSG_OFFSET}});
+					$.bootstrapGrowl(image_obj[i].Filename+" in Album "+image_obj[i].AlbumName+" has already existed.", { type: 'danger' , delay:2000, offset: {from: 'top', amount: MSG_OFFSET}});
 			}
 		}
 		
@@ -113,9 +119,10 @@
 	
 	function displaySelectedPicture() {
 		var image_html = "";
+		document.getElementById("share_list_num").innerHTML = selected_image.length;
 		for (i=0; i<selected_image.length; i++)
 			image_html += 	'<tr>'+
-				'<td><input type="checkbox" value=""></td>'+
+				// '<td><input type="checkbox" value=""></td>'+
 				'<td>'+selected_image[i].album_name+'</td>'+
 				'<td>'+selected_image[i].filename+'</td>'+
 				'<td><div id="large"></div>'+
@@ -158,7 +165,47 @@
 		for (i=0; i<image_obj.length; i++)
 			document.getElementById("checkbox_"+i).checked="checked";
 	}
+
+	function sharePictures() {
+		var share_list_obj = new Array();
+		for (var i = 0; i < selected_image.length; i++) {
+			var item = {album_name:selected_image[i].album_name, filename:selected_image[i].filename};
+			share_list_obj.push(item);
+		}
+		var share_list_json = JSON.stringify(share_list_obj);
+		ajaxProcess(sharePicturesCallback, "sharePictures", "list_json="+share_list_json+"&group_id=${Group_id}");
+		//alert(share_list_json);
+	}
+
+	function sharePicturesCallback (result) {
+		if (result.indexOf('{')!=0)
+			$.bootstrapGrowl("Sharing pictures failed. Error: "+result, { type: 'danger' , delay:4000, offset: {from: 'top', amount: MSG_OFFSET}});
+		else {
+			var result_obj = JSON.parse(result);
+			var success_list_obj = result_obj.success_list;
+			var failure_list_obj = result_obj.failure_list;
+			var duplication_list_obj = result_obj.duplication_list;
+
+			for (var i = 0; i < success_list_obj.length; i++) {
+				setTimeout($.bootstrapGrowl("Sharing "+success_list_obj[i]+" succeed.", { type: 'success' , delay:2000, offset: {from: 'top', amount: MSG_OFFSET}}), 1000);
+			};
+			
+			for (var i = 0; i < failure_list_obj.length; i++) {
+				setTimeout($.bootstrapGrowl("Sharing "+failure_list_obj[i]+" failed.", { type: 'danger' , delay:4000, offset: {from: 'top', amount: MSG_OFFSET}}), 1000);
+			};
+			for (var i = 0; i < duplication_list_obj.length; i++) {
+				setTimeout($.bootstrapGrowl(duplication_list_obj[i]+" has already existed.", { type: 'info' , delay:3000, offset: {from: 'top', amount: MSG_OFFSET}}), 1000);
+			};
+		}
+	}
 </script>
+<style type="text/css">
+.top-border{
+	border-top:solid;
+	border-width:1px;
+	border-color:#777;
+}
+</style>
 </head>
 <body>
 	<div class="mainbody" id="mainbody">
@@ -190,22 +237,33 @@
 		</div>
 		</nav>
 
-		<div class="container" style="min-width: 80%;">
-			<div class="row">
-				<div class="col-sm-2">
-					Album Name
-				</div>
-				<div class="col-sm-4">
-					<select class="form-control" onchange="queryPictureInAlbum(this.value)">
-				      <c:forEach var="option" items="${Album_name_list }"><option>${option }</option></c:forEach>
-				    </select>
+		<div class="container" style="min-width: 80%;width:auto;">
+			<h3>Share Pictures to Album <a href="/Souvenirs/sharedAlbum?group_id=${Group_id }">${SAlbum_name }</a> <small>(Group ID: ${Group_id })</small></h3>
+			<div class="row" style="margin-top:20px;">
+				<div class="col-sm-6"><h4>Available</h4></div>
+				<div class="col-sm-5 col-sm-offset-1">
+					<h4 style="display:inline-block;">Share List </h4>
+					<span class="badge" id="share_list_num" style="margin-bottom: 10px;margin-left: 5px;"></span>
+					<button class="btn btn-primary" style="float:right;" onclick="sharePictures()">Share</button>
 				</div>
 			</div>
 			
+			
 			<div class="row">
 				<div class="col-sm-6">
+					<div class="row">
+						<div class="form-group">
+    						<label for="lastname" class="col-sm-4 control-label" style="padding-top: 5px; padding-bottom: 5px;">Album Name</label>
+    						<div class="col-sm-8">
+      							<select class="form-control" onchange="queryPictureInAlbum(this.value)">
+									<c:forEach var="option" items="${Album_name_list }"><option>${option }</option></c:forEach>
+								</select>
+							</div>
+						</div>
+					</div>
+
 					<table class="table">
-						<caption>Pictures in album <button type="button" class="btn btn-link " style="padding: 0px" onclick="selectImageListAll()">Select All</button></caption>
+						<caption>Pictures in album <button type="button" class="btn btn-link " style="padding: 0px;float:right;" onclick="selectImageListAll()">Select All</button></caption>
 						<tbody id="image_list_table_body">
 <%-- 							<c:forEach var="image_item" items="${image_json_list }" varStatus="idx">
 								<tr>
@@ -246,14 +304,15 @@
 				</div>
 
 				<div class="col-sm-1">
-					<button onclick="addPictures()">&gt;&gt;</button><br>
+					<button onclick="addPictures()">Add &gt;</button><br>
+					<button onclick="addAllPictures()" disabled style="display: none;">Add All&gt;&gt;</button><br>
 				</div>
 
 				<div class="col-sm-5">
 					<table class="table">
 						<thead>
 							<tr>
-								<th>Select</th>
+								<!-- <th>Select</th> -->
 								<th>Album Name</th>
 								<th>Filename</th>
 								<th>Operation</th>

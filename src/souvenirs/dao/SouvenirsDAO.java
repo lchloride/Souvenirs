@@ -45,6 +45,18 @@ public class SouvenirsDAO {
 	 */
 	final public static int SALBUM_NAME_ROW = 0;
 	/**
+	 * 分享照片成功时的返回值
+	 */
+	final public static int SHARE_PICTURE_SUCCESS = 1;
+	/**
+	 * 分享照片失败时的返回值
+	 */
+	final public static int SHARE_PICTURE_FAILURE = 0;
+	/**
+	 * 要分享的照片已经分享了(数据库中已存在)时的返回值
+	 */
+	final public static int SHARE_PICTURE_DUPLICATE = 2;
+	/**
 	 * 单例模式获取对象的方法
 	 * 
 	 * @return SouvenirDAO类的对象
@@ -386,5 +398,24 @@ public class SouvenirsDAO {
 				+ "where `group`.group_id = ? and `group`.group_id = user_belong_group.group_id and user_id=?";
 		List<String> para = Arrays.asList(new_cover, group_id, user_id);
 		return DB.execSQLUpdate(sql, para);
+	}
+	
+	/**
+	 * 
+	 * @param user_id
+	 * @param album_name
+	 * @param filename
+	 * @param group_id
+	 * @return
+	 * @throws Exception
+	 */
+	public int sharePicture(String user_id, String album_name, String filename, String group_id) throws Exception {
+		String sql = "call sharePicture(?, ?, ?, ?)";
+		List<String>para = Arrays.asList(user_id, album_name, filename, group_id);
+		List<List<Object>> rs = DB.execSQLQuery(sql, para);
+		if (rs.size() > 0 && rs.get(0).size() > 0)
+			return (int)rs.get(0).get(0);
+		else
+			throw new Exception("Invalid SQL Result with sql:<"+sql+">, parameters:<"+para+">");
 	}
 }
