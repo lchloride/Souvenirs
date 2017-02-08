@@ -207,7 +207,7 @@
 	border-color:#777;
 }
 .list-title {
-	background-color: rgba(221, 237, 205, .8);
+	background-color: rgba(148, 209, 179, 0.8);
 	/* border-radius: 5px; */
 	border: solid;
 	border-bottom-style: none;
