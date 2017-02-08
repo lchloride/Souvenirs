@@ -74,6 +74,9 @@
 	var display_idx=0;
 	var last_display_idx = 0;
 	var MSG_OFFSET = 50;
+	
+	var move_step_ratio = 0.05;
+	var zoom_step_ratio = 0.05;
 
 	//在页面加载完成后执行的脚本
 	window.onload = function() {
@@ -213,16 +216,44 @@
 		image.src = souvenir_obj[idx].url;//+"&random="+Math.random();
 
 		image.onload = (function(ctx, idx) {
-			var d = souvenir_obj[idx].zoom;
-			var moveX = souvenir_obj[idx].moveX;
-			var moveY = souvenir_obj[idx].moveY;
+			var dx = souvenir_obj[idx].zoom*image.width;
+			var dy = souvenir_obj[idx].zoom*image.height;
+			if (2*dx >= image.width*0.99 || 2*dy >= image.height*0.99) {
+				souvenir_obj[idx].zoom -= zoom_step_ratio;
+				dx = souvenir_obj[idx].zoom*image.width;
+				dy = souvenir_obj[idx].zoom*image.height;
+				$.bootstrapGrowl("Already maximum size.", { type: 'info' , delay:3000, offset: {from: 'top', amount: MSG_OFFSET}});
+			}
+			
+			var moveX = souvenir_obj[idx].moveX*image.width;
+			var moveY = souvenir_obj[idx].moveY*image.height;
+			if (moveX >= image.width-dx) {
+				souvenir_obj[idx].moveX -= move_step_ratio;
+				moveX = souvenir_obj[idx].moveX*image.width;
+				$.bootstrapGrowl("Out of right range.", { type: 'info' , delay:3000, offset: {from: 'top', amount: MSG_OFFSET}});
+			}
+			if (moveX <= 2*dx-image.width) {
+				souvenir_obj[idx].moveX += move_step_ratio;
+				moveX = souvenir_obj[idx].moveX*image.width;
+				$.bootstrapGrowl("Out of left range.", { type: 'info' , delay:3000, offset: {from: 'top', amount: MSG_OFFSET}});
+			}
+			if (moveY >= image.height-dy) {
+				souvenir_obj[idx].moveY -= move_step_ratio;
+				moveY = souvenir_obj[idx].moveY*image.height;
+				$.bootstrapGrowl("Out of bottom range.", { type: 'info' , delay:3000, offset: {from: 'top', amount: MSG_OFFSET}});
+			}
+			if (moveY <= 2*dy-image.height) {
+				souvenir_obj[idx].moveY += move_step_ratio;
+				moveY = souvenir_obj[idx].moveY*image.height;
+				$.bootstrapGrowl("Out of top range.", { type: 'info' , delay:3000, offset: {from: 'top', amount: MSG_OFFSET}});
+			}
 			//Transform image based on transforming metrix
 			ctx.transform(souvenir_obj[idx].t11, souvenir_obj[idx].t12,
 					souvenir_obj[idx].t21, souvenir_obj[idx].t22,
 					souvenir_obj[idx].t13, souvenir_obj[idx].t23);
 			//Draw image under the control of zoom pixels, horizontal translating pixels and verticle translating pixels
-			ctx.drawImage(image, 0 + d - moveX, 0 + d - moveY, image.width - 2
-					* d - moveX, image.height - 2 * d - moveY,
+			ctx.drawImage(image, 0 + dx - moveX, 0 + dy - moveY, image.width - 2
+					* dx, image.height - 2 * dy,
 					R(souvenir_obj[idx].startX), R(souvenir_obj[idx].startY),
 					R(souvenir_obj[idx].drawW), R(souvenir_obj[idx].drawH));
 			idx++;
@@ -714,6 +745,66 @@
 				.getElementById("myCanvas").width
 				+ "px * " + document.getElementById("myCanvas").height + "px";
 	}
+	
+	function moveUp() {
+		if (souvenir_obj[proc_position].type == "image") {
+			souvenir_obj[proc_position].moveY -= move_step_ratio;
+			drawSouvenir("myCanvas");
+		}else {
+			alert("Wrong parameter");
+			return;
+		}
+	}
+	
+	function moveDown() {
+		if (souvenir_obj[proc_position].type == "image") {
+			souvenir_obj[proc_position].moveY += move_step_ratio;
+			drawSouvenir("myCanvas");
+		}else {
+			alert("Wrong parameter");
+			return;
+		}
+	}
+	
+	function moveLeft() {
+		if (souvenir_obj[proc_position].type == "image") {
+			souvenir_obj[proc_position].moveX -= move_step_ratio;
+			drawSouvenir("myCanvas");
+		}else {
+			alert("Wrong parameter");
+			return;
+		}
+	}
+	
+	function moveRight() {
+		if (souvenir_obj[proc_position].type == "image") {
+			souvenir_obj[proc_position].moveX += move_step_ratio;
+			drawSouvenir("myCanvas");
+		}else {
+			alert("Wrong parameter");
+			return;
+		}
+	}
+	
+	function zoomIn() {
+		if (souvenir_obj[proc_position].type == "image") {
+				souvenir_obj[proc_position].zoom += zoom_step_ratio;
+				drawSouvenir("myCanvas");
+		}else {
+			$.bootstrapGrowl("Cannot move text.", { type: 'danger' , delay:4000, offset: {from: 'top', amount: MSG_OFFSET}});
+			return;
+		}
+	}
+	
+	function zoomOut() {
+		if (souvenir_obj[proc_position].type == "image") {
+			souvenir_obj[proc_position].zoom -= zoom_step_ratio;
+			drawSouvenir("myCanvas");
+		}else {
+			$.bootstrapGrowl("Cannot move text.", { type: 'danger' , delay:4000, offset: {from: 'top', amount: MSG_OFFSET}});
+			return;
+		}
+	}
 </script>
 
 <style type="text/css">
@@ -922,7 +1013,20 @@ div.border-rect-active {
 					<div class="img-content" id="img_content" style="float:left;"></div>
 
 					<!-- Modify position and Zoom -->
-					<div id="modify_panel" style="width:100px;margin-left:10px; margin-right:10px;float:left">123</div>
+					<div id="modify_panel" style="width:100px;margin-left:10px; margin-right:10px;float:left">
+						<h4>Move</h4>
+						<img src="/Souvenirs/res/image/arrow.png" width="100" height="100" alt="Move Panel" usemap="#MoveMap"style="margin-top:5px;">
+
+							<map name="MoveMap">
+							  <area shape="circle" coords="63,22,22" alt="up"  onclick="moveUp()">
+							  <area shape="circle" coords="63,98,22" alt="down" onclick="moveDown()">
+							  <area shape="circle" coords="22,62,22" alt="left"  onclick="moveLeft()">
+							  <area shape="circle" coords="104,62,22" alt="right"  onclick="moveRight()">
+							</map>
+						<h4 style="padding-top:10px;">Zoom</h4>
+						<img src="/Souvenirs/res/image/zoom_in.png" width="40" alt="Zoom In" style="margin:4px;" onclick="zoomIn()">
+						<img alt="Zoom Out" src="/Souvenirs/res/image/zoom_out.png" width="40" style="margin:4px;" onclick="zoomOut()">
+					</div>
 
 					<!-- Add button -->
 					<div style="margin-top: 10px;clear:both;">
