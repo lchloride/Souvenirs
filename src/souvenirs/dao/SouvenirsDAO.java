@@ -57,6 +57,18 @@ public class SouvenirsDAO {
 	 */
 	final public static int SHARE_PICTURE_DUPLICATE = 2;
 	/**
+	 * 照片解除分享成功时的返回值
+	 */
+	final public static int UNSHARE_PICTURE_SUCCESS = 1;
+	/**
+	 * 照片解除分享失败时的返回值
+	 */
+	final public static int UNSHARE_PICTURE_FAILURE = 0;
+	/**
+	 * 要解除分享的照片不存在时的返回值
+	 */
+	final public static int UNSHARE_PICTURE_NOTEXIST = 2;
+	/**
 	 * 单例模式获取对象的方法
 	 * 
 	 * @return SouvenirDAO类的对象
@@ -418,4 +430,32 @@ public class SouvenirsDAO {
 		else
 			throw new Exception("Invalid SQL Result with sql:<"+sql+">, parameters:<"+para+">");
 	}
+	
+	public int unsharePicture(String user_id, String album_name, String filename, String group_id) throws Exception {
+		String sql = "call sharePicture(?, ?, ?, ?)";
+		List<String>para = Arrays.asList(user_id, album_name, filename, group_id);
+		List<List<Object>> rs = DB.execSQLQuery(sql, para);
+		if (rs.size() > 0 && rs.get(0).size() > 0)
+			return (int)rs.get(0).get(0);
+		else
+			throw new Exception("Invalid SQL Result with sql:<"+sql+">, parameters:<"+para+">");
+	}
+	
+	public boolean updatePictureName(String user_id, String album_name, String original_filename, String new_filename) throws Exception {
+		String sql = "call UpdatePictureName(?, ?, ?, ?)";
+		List<String>para = Arrays.asList(user_id, album_name, original_filename, new_filename);
+		List<List<Object>> rs = DB.execSQLQuery(sql, para);
+		if (rs.size() > 0 && rs.get(0).size() > 0)
+			return ((int)rs.get(0).get(0)==0)?false:true;
+		else
+			throw new Exception("Invalid SQL Result with sql:<"+sql+">, parameters:<"+para+">");
+	}
+	
+	public int updatePictureDescription(String user_id, String album_name, String filename, String new_description) throws Exception {
+		String sql = "update picture set description=? where user_id = ? and album_name = ? and filename = ?";
+		List<String>para = Arrays.asList(new_description, user_id, album_name, filename);
+		return DB.execSQLUpdate(sql, para);
+	}
+	
+	
 }

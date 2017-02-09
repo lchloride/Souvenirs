@@ -123,7 +123,11 @@
     <servlet-name>SouvenirsServ</servlet-name>
     <url-pattern>/share</url-pattern>
   </servlet-mapping>
-  
+  <servlet-mapping>
+    <servlet-name>SouvenirsServ</servlet-name>
+    <url-pattern>/updatePictureInfo</url-pattern>
+  </servlet-mapping>
+    
   <servlet-mapping>
     <servlet-name>SouvenirsAjax</servlet-name>
     <url-pattern>/updateAlbumName</url-pattern>

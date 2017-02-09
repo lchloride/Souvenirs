@@ -100,7 +100,7 @@ div.comment {
 </style>
 <script type="text/javascript">
 	<c:if test="${Is_personal}">
-	var salbum_obj = new Object(<%=((List<String>) request.getAttribute("SAlbum_own_pic_json_list")).size()%>);
+	var salbum_obj = new Array();//<%=((List<String>) request.getAttribute("SAlbum_own_pic_json_list")).size()%>
 	</c:if>
 	var liking_person_json = '${Liking_person_json}';
 
@@ -114,9 +114,11 @@ div.comment {
 
 		var clickSwitch = function() {
 			if ($("#onoffswitch").is(':checked')) {
-				;//console.log("在ON的状态下");  
+				var idx = document.getElementById("salbum_list").selectedIndex;//console.log("在ON的状态下");
+				salbum_obj[idx].is_shared = true;
 			} else {
-				;//console.log("在OFF的状态下");  
+				var idx = document.getElementById("salbum_list").selectedIndex;//console.log("在OFF的状态下");  
+				salbum_obj[idx].is_shared = false;
 			}
 		};
 		</c:if>
@@ -138,10 +140,19 @@ div.comment {
 	}
 	function changeShareStatus(s) {
 		//alert(s);
-		if (salbum_obj[s + 1].is_shared)
+		if (salbum_obj[s].is_shared)
 			document.getElementById("onoffswitch").checked = "checked";
 		else
 			document.getElementById("onoffswitch").checked = "";
+	}
+	
+	function resetSAlbumJSON() {
+		var original_json = $('#salbum_json').val();
+		salbum_obj = JSON.parse(original_json);
+	}
+	
+	function prepareSubmit() {
+		$('#salbum_json').attr("value", JSON.stringify(salbum_obj));
 	}
 </script>
 </head>
@@ -248,17 +259,19 @@ div.comment {
 
 						<div class="col-sm-4 information">
 							<h4>Information</h4>
-							<form class="form-horizontal" role="form">
+							<form class="form-horizontal" role="form" action="/Souvenirs/updatePictureInfo" method="post">
 								<div class="form-group">
 									<label for="picture_name" class="col-sm-5 col-md-4 col-lg-3 control-label">Name</label>
 									<div class="col-sm-7 col-md-8 col-lg-9">
-										<input type="text" class="form-control" id="picture_name" value="${Picture_name}" ${not Is_personal?"disabled":"" }>
+										<input type="text" class="form-control" id="picture_name" name="picture_name" value="${Picture_name}" ${not Is_personal?"disabled":"" }>
+										<input type="hidden" class="form-control" name="original_picture_name" value="${Picture_name}">
 									</div>
 								</div>
 								<div class="form-group">
 									<label for="album_name" class="col-sm-5 col-md-4 col-lg-3 control-label">Album</label>
 									<div class="col-sm-7 col-md-8 col-lg-9">
 										<input type="text" class="form-control" id="album_name" value="${Album_name }" disabled>
+										<input type="hidden" class="form-control" name="album_name" value="${Album_name }">
 									</div>
 								</div>
 								<div class="form-group">
@@ -271,37 +284,35 @@ div.comment {
 									<label for="format" class="col-sm-5 col-md-4 col-lg-3 control-label">Format</label>
 									<div class="col-sm-7 col-md-8 col-lg-9">
 										<input type="text" class="form-control" id="format" value="${Format }" disabled>
+										<input type="hidden" class="form-control" name="format" value="${Format }" >
 									</div>
 								</div>
 								<div class="form-group">
 									<label for="description" class="col-sm-5 col-md-4 col-lg-3 control-label" style="letter-spacing: -1px;">Description</label>
 									<div class="col-sm-7 col-md-8 col-lg-9">
-										<textarea id="description" class="form-control" rows="3" ${not Is_personal?"disabled":"" }>${Description }</textarea>
+										<textarea id="description" class="form-control" rows="3" ${not Is_personal?"disabled":"" } name="description">${Description }</textarea>
+										<input type="hidden" class="form-control" name="original_description" value="${Description }" >
 									</div>
 								</div>
+								
 								<c:if test="${Is_personal }">
 									<div class="form-group">
 										<label for="share" class="col-sm-5 col-md-4 col-lg-3 control-label">Share to</label>
 										<div class="col-sm-7 col-md-8 col-lg-9">
-											<select class="form-control" onchange="changeShareStatus(this.options.selectedIndex)">
+											<select class="form-control" id="salbum_list" onchange="changeShareStatus(this.options.selectedIndex)" name="share">
 												<c:forEach var="salbum_name" items="${SAlbum_own_pic_json_list }" varStatus="idx">
 													<option id="salbum_name_${idx.count }" value="${idx.count }"></option>
 
 													<script>
 														idx = ${idx.count};
 														salbum_json = '${salbum_name}';
-														salbum_obj[idx] = JSON
-																.parse(salbum_json);
-														document
-																.getElementById("salbum_name_"
-																		+ idx).innerHTML = salbum_obj[idx].salbum_name;
+														obj = JSON.parse(salbum_json);
+														document	.getElementById("salbum_name_"	+ idx).innerHTML = obj.salbum_name;
+														salbum_obj.push(obj);
 													</script>
 												</c:forEach>
 											</select>
-											<!-- 										<div class="btn-group btn-group-sm" style="margin-top: 10px;">
-												<button type="button" class="btn btn-success" style="width: 70px">Share</button>
-												<button type="button" class="btn btn-danger" style="width: 70px" disabled>Unshare</button>
-											</div> -->
+
 											<div class="testswitch" id="test_switch" style="margin-top: 10px;">
 												<input class="testswitch-checkbox" id="onoffswitch" type="checkbox">
 												<label class="testswitch-label" for="onoffswitch">
@@ -310,12 +321,14 @@ div.comment {
 											</div>
 
 										</div>
+										<input type="hidden" id="salbum_json" name="salbum_json" value="">
+										<script type="text/javascript">$('#salbum_json').attr("value", JSON.stringify(salbum_obj));</script>
 									</div>
 
 									<div class="form-group">
 										<div class="col-sm-offset-5 col-md-offset-4 col-lg-offset-3 col-sm-7 col-md-8 col-lg-9">
-											<button type="submit" class="btn btn-primary">Save Changes</button>
-											<button type="submit" class="btn btn-default">Discard Changes</button>
+											<button type="submit" class="btn btn-primary" onclick="return prepareSubmit()">Save Changes</button>
+											<button type="reset" class="btn btn-default" onclick="resetSAlbumJSON()">Discard Changes</button>
 										</div>
 									</div>
 								</c:if>

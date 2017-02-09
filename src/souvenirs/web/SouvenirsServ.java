@@ -142,6 +142,10 @@ public class SouvenirsServ extends HttpServlet {
 					
 					//Show picture in original size 
 					result = sm.displaySharePicture(para);
+				} else if (query_url.contentEquals("updatePictureInfo")) {
+					
+					//Show picture in original size 
+					result = sm.updatePictureInfo(para);
 				} else {
 					
 					// query_url is wrong
@@ -161,10 +165,15 @@ public class SouvenirsServ extends HttpServlet {
 			for (Entry<String, Object> entry : result.entrySet()) {
 				request.setAttribute(entry.getKey(), entry.getValue());
 			}
-			// Forward to assigned page
+			
+			// Forward or redirect to assigned page
 			String dispatchURL = result.containsKey("DispatchURL") ? (String) result.get("DispatchURL") : "index.jsp";
-			RequestDispatcher dispatcher = request.getRequestDispatcher(dispatchURL);
-			dispatcher.forward(request, response);
+			if (result.containsKey("Is_redirect"))
+				response.sendRedirect(dispatchURL);
+			else {
+				RequestDispatcher dispatcher = request.getRequestDispatcher(dispatchURL);
+				dispatcher.forward(request, response);
+			}
 		}
 	}
 
