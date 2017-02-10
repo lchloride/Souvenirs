@@ -15,6 +15,7 @@
 
 <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
 <script src="/Souvenirs/res/bootstrap/js/bootstrap.min.js"></script>
+<script src="/Souvenirs/res/js/jquery.bootstrap-growl.min.js"></script>
 <link href="/Souvenirs/res/css/website.css" rel="stylesheet" type="text/css">
 
 <title>Picture Information</title>
@@ -103,7 +104,8 @@ div.comment {
 	var salbum_obj = new Array();//<%=((List<String>) request.getAttribute("SAlbum_own_pic_json_list")).size()%>
 	</c:if>
 	var liking_person_json = '${Liking_person_json}';
-
+	var MSG_OFFSET = 50;
+	
 	$(document).ready(function() {
 		displayLikingPersons();
 		<c:if test="${Is_personal}">
@@ -128,9 +130,9 @@ div.comment {
 		liking_person_obj = JSON.parse(liking_person_json);
 		display_str = "";
 		if (liking_person_obj == 0) {
-			document.getElementById("liking_persons").style.display = "none";
+			;//document.getElementById("liking_persons").style.display = "none";
 		} else {
-			document.getElementById("liking_persons").style.display = "block";
+			//document.getElementById("liking_persons").style.display = "block";
 			for (i = 0; i < liking_person_obj.length - 1; i++) {
 				display_str += liking_person_obj[i] + ", ";
 			}
@@ -149,10 +151,77 @@ div.comment {
 	function resetSAlbumJSON() {
 		var original_json = $('#salbum_json').val();
 		salbum_obj = JSON.parse(original_json);
+/* 		if (salbum_obj.length > 0 && $("#onoffswitch").is(':checked') != salbum_obj[0].is_shared) {
+			alert($("#onoffswitch").is(':checked')+" "+salbum_obj[0].is_shared);
+			//$("#onoffswitch").click();
+			$("#onoffswitch").is(':checked');
+		} */
+		if (salbum_obj.length > 0) {
+			if (salbum_obj[0].is_shared)
+				$("#onoffswitch").attr("checked", "checked");
+			else
+				$("#onoffswitch").removeAttr("checked");
+		}
 	}
 	
 	function prepareSubmit() {
 		$('#salbum_json').attr("value", JSON.stringify(salbum_obj));
+	}
+	
+	function ajaxProcess(callback, URL, send)
+	{
+
+	var xmlhttp;
+		if (window.XMLHttpRequest) {
+			// IE7+, Firefox, Chrome, Opera, Safari 浏览器执行代码
+			xmlhttp = new XMLHttpRequest();
+		} else {
+			// IE6, IE5 浏览器执行代码
+			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+		}
+		xmlhttp.onreadystatechange = function() {
+			if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+				callback(xmlhttp.responseText);
+			}
+		}
+		if (send == undefined || send == "") {
+			xmlhttp.open("GET", URL, true);
+			xmlhttp.send();
+		} else {
+			xmlhttp.open("POST", URL, true);
+			xmlhttp.setRequestHeader("Content-type",
+					"application/x-www-form-urlencoded");
+			xmlhttp.send(send);
+		}
+	}
+
+	function clickLike() {
+		like_flag = false;
+		for (var i = 0; i < liking_person_obj.length; i++) {
+			if (liking_person_json == '${Login_user_id}') {
+				like_flag = true;
+				break;
+			}
+		}
+		if (like_flag)
+			ajaxProcess(clickLikeCallback,"/Souvenirs/dislikePicture?like_user_id="+encodeURIComponent('${Login_user_id}')+
+							"&picture_user_id="+encodeURIComponent("${Picture_user_id}")+
+							"&album_name="+encodeURIComponent("${Album_name}")+
+							"&picture_name="+encodeURIComponent("${Picture_name}"));
+		else
+			ajaxProcess(clickLikeCallback,"/Souvenirs/likePicture?like_user_id="+encodeURIComponent('${Login_user_id}')+
+					"&picture_user_id="+encodeURIComponent("${Picture_user_id}")+
+					"&album_name="+encodeURIComponent("${Album_name}")+
+					"&picture_name="+encodeURIComponent("${Picture_name}"));
+	}
+	
+	function clickLikeCallback(result) {
+		if (result.indexOf('{')==0) {
+			$.bootstrapGrowl("Success", { type: 'success' , delay:2000, offset: {from: 'top', amount: MSG_OFFSET}});
+			liking_person_json = result;
+			displayLikingPersons();
+		} else
+			$.bootstrapGrowl("Failure", { type: 'danger' , delay:4000, offset: {from: 'top', amount: MSG_OFFSET}});
 	}
 </script>
 </head>
@@ -253,7 +322,8 @@ div.comment {
 							</div>
 
 							<div id="liking_persons">
-								<span class="glyphicon glyphicon-thumbs-up"></span> <span id="liking_persons_name"></span>
+								<span class="glyphicon glyphicon-thumbs-up" style="font-size:1.4em;cursor:pointer" onclick="clickLike()"></span>
+								 <span id="liking_persons_name"></span>
 							</div>
 						</div>
 

@@ -2,6 +2,7 @@ package souvenirs.web;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -303,6 +304,8 @@ public class SouvenirsManager {
 		
 		//Basic parameters without SQL query
 		result.put("Is_personal", true);
+		result.put("Picture_user_id", user_id);
+		result.put("Login_user_id", user_id);
 		result.put("Username", UserManager.getUsernameByID(user_id));
 		result.put("Owner", UserManager.getUsernameByID(user_id));
 		result.put("Album_name", album_name);
@@ -359,7 +362,14 @@ public class SouvenirsManager {
 		JSONArray liking_person_json = new JSONArray(liking_person_list);
 		result.put("Liking_person_json", liking_person_json);
 		//logger.debug("liking_person_json:"+liking_person_json);
-		
+		if (parameter.get("success_msg")!=null) {
+			JSONArray success_msg = new JSONArray(URLDecoder.decode(parameter.get("success_msg"), "UTF-8"));
+			result.put("success_msg", success_msg.toString());
+		}
+		if (parameter.get("failure_msg")!=null) {
+			JSONArray failure_msg = new JSONArray(URLDecoder.decode(parameter.get("failure_msg"), "UTF-8"));
+			result.put("failure_msg", failure_msg.toString());
+		}
 		result.put("DispatchURL", "picture.jsp");
 		return result;
 	}
@@ -385,6 +395,7 @@ public class SouvenirsManager {
 		//and then modify some parameters of displaying such as album name and share album list
 		Map<String, Object> result = displayPictureManager(parameter);
 		result.put("Is_personal", false);
+		result.put("Login_user_id", parameter.get("login_user_id"));
 		result.put("Username", UserManager.getUsernameByID(parameter.get("login_user_id")));
 		String group_id = parameter.get("group_id");
 		if (group_id == null || group_id.isEmpty())
@@ -483,7 +494,7 @@ public class SouvenirsManager {
 		List<String> success_result = new ArrayList<>();
 		List<String> failure_result = new ArrayList<>();
 		try {
-			pic = dao.getPictureInfo(user_id, album_name, origin_picture_name);
+			//pic = dao.getPictureInfo(user_id, album_name, origin_picture_name);
 		} catch (Exception e) {
 			// Picture to be updated cannot be found.
 			//update_result.add("Picture to be updated cannot be found.");
