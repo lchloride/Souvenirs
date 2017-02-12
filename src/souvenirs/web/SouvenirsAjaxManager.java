@@ -411,4 +411,43 @@ public class SouvenirsAjaxManager {
 		result = result_json.toString();
 		return result;
 	}
+	
+	public String likePicture(Map<String, String>parameter) throws Exception {
+		checkValidDAO();
+		String picture_user_id = parameter.get("picture_user_id");
+		String like_user_id = parameter.get("like_user_id");
+		String album_name = parameter.get("album_name");
+		String filename = parameter.get("picture_name");
+		logger.debug("para "+parameter);
+		try {
+			int rs = dao.likePicture(like_user_id, picture_user_id, album_name, filename);
+			if (rs != DEFAULT_AFFECTED_ROW)
+				throw new Exception("Cannot set favorite picture of "+picture_user_id+"/"+album_name+"/"+filename+".");			
+		} catch (Exception e) {
+			throw e;
+		}
+		//Query liking status and format json string 
+		List<String> liking_person_list = dao.getLikingPersons(picture_user_id, album_name, filename);
+		JSONArray liking_person_json = new JSONArray(liking_person_list);
+		return liking_person_json.toString();
+	}
+	
+	public String dislikePicture(Map<String, String>parameter) throws Exception {
+		checkValidDAO();
+		String picture_user_id = parameter.get("picture_user_id");
+		String like_user_id = parameter.get("like_user_id");
+		String album_name = parameter.get("album_name");
+		String filename = parameter.get("picture_name");
+		try {
+			int rs = dao.dislikePicture(like_user_id, picture_user_id, album_name, filename);
+			if (rs != DEFAULT_AFFECTED_ROW)
+				throw new Exception("Cannot unset favorite picture of "+picture_user_id+"/"+album_name+"/"+filename+".");			
+		} catch (Exception e) {
+			throw e;
+		}
+		//Query liking status and format json string 
+		List<String> liking_person_list = dao.getLikingPersons(picture_user_id, album_name, filename);
+		JSONArray liking_person_json = new JSONArray(liking_person_list);
+		return liking_person_json.toString();
+	}
 }

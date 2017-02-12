@@ -2,9 +2,11 @@ package souvenirs.web;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -69,6 +71,11 @@ public class SouvenirsAjaxServ extends HttpServlet {
 					session.getAttribute("user_id") == null ? "" : (String) session.getAttribute("user_id"));
 
 			logger.debug(request.getQueryString());
+			if (request.getMethod().contentEquals("GET"))
+				for (Entry<String, String> item : para.entrySet()) {
+					item.setValue(URLDecoder.decode(item.getValue(), "UTF-8"));
+				}
+			
 			String result = new String();
 
 			// Obtain operation
@@ -78,21 +85,35 @@ public class SouvenirsAjaxServ extends HttpServlet {
 			PrintWriter out = response.getWriter();
 			try {
 				if (query_url.contentEquals("updateAlbumName"))
+					
 					result = sm.updateAlbumName(para);
 				else if (query_url.contentEquals("updateDescription")) {
+					
 					result = sm.updateDescription(para);
 				} else if (query_url.contentEquals("deletePicture")){
+					
 					result = sm.deletePicture(para);
 				} else if (query_url.contentEquals("updateAlbumCover")){
+					
 					result = sm.updateAlbumCover(para);
 				} else if (query_url.contentEquals("queryAlbumCover")){
+					
 					result = sm.queryAlbumCover(para);
 				} else if (query_url.contentEquals("AlbumAjax")) {
+					
 					result = sm.queryPictureInAlbum(para);
 				} else if (query_url.contentEquals("sharePictures")) {
+					
 					result = sm.sharePictures(para);
-				}else {
-					;
+				} else if (query_url.contentEquals("likePicture")) {
+					
+					result = sm.likePicture(para);
+				} else if (query_url.contentEquals("dislikePicture")) {
+					
+					result = sm.dislikePicture(para);
+				} else {
+					response.sendError(HttpServletResponse.SC_NOT_FOUND);
+					return;
 				}
 			} catch (Exception e) {
 				// TODO: handle exception

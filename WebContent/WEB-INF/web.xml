@@ -160,26 +160,33 @@
     <servlet-name>SouvenirsAjax</servlet-name>
     <url-pattern>/sharePictures</url-pattern>
   </servlet-mapping>
-      
+  <servlet-mapping>
+    <servlet-name>SouvenirsAjax</servlet-name>
+    <url-pattern>/likePicture</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>SouvenirsAjax</servlet-name>
+    <url-pattern>/dislikePicture</url-pattern>
+  </servlet-mapping>        
   <error-page>
     <error-code>400</error-code>
-    <location>/ErrorHandler</location>
+    <location>/errorHandler</location>
   </error-page>
   <error-page>
     <error-code>403</error-code>
-    <location>/ErrorHandler</location>
+    <location>/errorHandler</location>
   </error-page>
   <error-page>
     <error-code>404</error-code>
-    <location>/ErrorHandler</location>
+    <location>/errorHandler</location>
   </error-page>
   <error-page>
     <error-code>500</error-code>
-    <location>/ErrorHandler</location>
+    <location>/errorHandler</location>
   </error-page>
   <error-page>
     <exception-type>java.lang.Throwable</exception-type>
-    <location>/ErrorHandler</location>
+    <location>/errorHandler</location>
   </error-page>
   <welcome-file-list>
     <welcome-file>index.html</welcome-file>

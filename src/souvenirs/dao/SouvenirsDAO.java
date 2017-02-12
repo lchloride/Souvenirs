@@ -56,18 +56,7 @@ public class SouvenirsDAO {
 	 * 要分享的照片已经分享了(数据库中已存在)时的返回值
 	 */
 	final public static int SHARE_PICTURE_DUPLICATE = 2;
-	/**
-	 * 照片解除分享成功时的返回值
-	 */
-	final public static int UNSHARE_PICTURE_SUCCESS = 1;
-	/**
-	 * 照片解除分享失败时的返回值
-	 */
-	final public static int UNSHARE_PICTURE_FAILURE = 0;
-	/**
-	 * 要解除分享的照片不存在时的返回值
-	 */
-	final public static int UNSHARE_PICTURE_NOTEXIST = 2;
+
 	/**
 	 * 单例模式获取对象的方法
 	 * 
@@ -242,8 +231,8 @@ public class SouvenirsDAO {
 	 * @see souvenirs.dao.CommentImplStore#format(List)
 	 */
 	public List<Comment> getAllComments(String user_id, String album_name, String filename) throws Exception {
-		String sql = "SELECT user_id, album_name, picture_name, comment_user_id, comment_content, time, reply_user_id, reply_content"
-				+ " FROM souvenirs.`query_comment_and _reply` WHERE user_id=? and album_name=? and picture_name=? order by time asc";
+		String sql = "select user_id, album_name, filename, comment_id, comment_user_id, comment, is_valid, time, replied_comment_id " +
+				"from souvenirs.`query_comment_and _reply` WHERE user_id=? and album_name=? and filename=? order by comment_id asc";
 		List<String> parameter = Arrays.asList(user_id, album_name, filename);
 		return DB.execSQLQuery(sql, parameter, new CommentImplStore());
 	}
@@ -275,7 +264,8 @@ public class SouvenirsDAO {
 	 */
 	public List<String> getLikingPersons(String user_id, String album_name, String filename) {
 		String sql = "SELECT user.username from souvenirs.like_picture, user where "+
-							"user.user_id=souvenirs.like_picture.like_user_id and like_picture.user_id=? and album_name=? and filename=?";
+							"user.user_id=souvenirs.like_picture.like_user_id and like_picture.user_id=? and album_name=? and filename=? "+
+							"order by souvenirs.like_picture.create_timestamp asc";
 		List<String> parameter = Arrays.asList(user_id, album_name, filename);
 		List<List<Object>> rs = DB.execSQLQuery(sql, parameter);
 		List<String> result = new ArrayList<>();
@@ -432,13 +422,9 @@ public class SouvenirsDAO {
 	}
 	
 	public int unsharePicture(String user_id, String album_name, String filename, String group_id) throws Exception {
-		String sql = "call sharePicture(?, ?, ?, ?)";
-		List<String>para = Arrays.asList(user_id, album_name, filename, group_id);
-		List<List<Object>> rs = DB.execSQLQuery(sql, para);
-		if (rs.size() > 0 && rs.get(0).size() > 0)
-			return (int)rs.get(0).get(0);
-		else
-			throw new Exception("Invalid SQL Result with sql:<"+sql+">, parameters:<"+para+">");
+		String sql = "delete from salbum_own_picture where group_id=? and user_id=? and album_name=? and filename=?";
+		List<String>para = Arrays.asList(group_id, user_id, album_name, filename);
+		return DB.execSQLUpdate(sql, para);
 	}
 	
 	public boolean updatePictureName(String user_id, String album_name, String original_filename, String new_filename) throws Exception {
@@ -457,5 +443,15 @@ public class SouvenirsDAO {
 		return DB.execSQLUpdate(sql, para);
 	}
 	
+	public int likePicture(String like_user_id, String picture_user_id, String album_name, String filename) throws Exception {
+		String sql = "insert into like_picture(user_id, album_name, filename, like_user_id) values (?, ?, ?, ?)";
+		List<String>para = Arrays.asList(picture_user_id, album_name, filename, like_user_id);
+		return DB.execSQLUpdate(sql, para);
+	}
 	
+	public int dislikePicture(String like_user_id, String picture_user_id, String album_name, String filename) throws Exception {
+		String sql = "delete from like_picture where user_id = ? and album_name = ? and filename = ? and like_user_id = ?";
+		List<String>para = Arrays.asList(picture_user_id, album_name, filename, like_user_id);
+		return DB.execSQLUpdate(sql, para);
+	}
 }

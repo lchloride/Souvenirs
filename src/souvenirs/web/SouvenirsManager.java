@@ -328,11 +328,13 @@ public class SouvenirsManager {
 		for (Comment comment : comments) {
 			jsonObject = new JSONObject();
 			//logger.debug("comment_user_id:"+comment.getCommentUserId());
+			jsonObject.put("comment_id", comment.getCommentId());
 			jsonObject.put("comment_username", UserManager.getUsernameByID(comment.getCommentUserId()));
 			jsonObject.put("comment_user_avatar", ImageLoader.genAddrOfAvatar(comment.getCommentUserId()));
 			jsonObject.put("comment_content", comment.getCommentContent());
 			jsonObject.put("comment_time", sdf.format(comment.getTime()));
-			jsonObject.put("reply_username", UserManager.getUsernameByID(comment.getReplyUserId()));
+			jsonObject.put("is_valid", comment.getIsValid()==1?true:false);
+			jsonObject.put("replied_comment_id", comment.getRepliedCommentId());
 			comment_json_list.add(jsonObject.toString());
 		}
 		result.put("Comment_json_list", comment_json_list);
@@ -364,11 +366,11 @@ public class SouvenirsManager {
 		//logger.debug("liking_person_json:"+liking_person_json);
 		if (parameter.get("success_msg")!=null) {
 			JSONArray success_msg = new JSONArray(URLDecoder.decode(parameter.get("success_msg"), "UTF-8"));
-			result.put("success_msg", success_msg.toString());
+			result.put("Success_msg", success_msg.toString());
 		}
 		if (parameter.get("failure_msg")!=null) {
 			JSONArray failure_msg = new JSONArray(URLDecoder.decode(parameter.get("failure_msg"), "UTF-8"));
-			result.put("failure_msg", failure_msg.toString());
+			result.put("Failure_msg", failure_msg.toString());
 		}
 		result.put("DispatchURL", "picture.jsp");
 		return result;
@@ -570,13 +572,17 @@ public class SouvenirsManager {
 				if (salbum_item.getBoolean("is_shared") != original_shared_group.contains(salbum_item.getString("group_id"))) {
 					if (salbum_item.getBoolean("is_shared")) {
 						int rs = dao.sharePicture(user_id, album_name, picture_name, salbum_item.getString("group_id"));
-						if (rs == DEFAULT_AFFECTED_ROW) {
+						if (rs == SouvenirsDAO.SHARE_PICTURE_SUCCESS) {
 							success_result.add("sharing state of "+salbum_item.getString("salbum_name"));
 							logger.info("Sharing picture succeed. Parameters: user_id=<"+user_id+">, album_name=<"+album_name+">, "
 									+ "filename=<"+picture_name+">, group id=<"+salbum_item.getString("group_id")+">");
-						} else {
+						} else if (rs == SouvenirsDAO.SHARE_PICTURE_DUPLICATE) {
+							failure_result.add("sharing "+salbum_item.getString("salbum_name")+" since this picture has already existed.");
+							logger.info("Sharing picture failed since duplicated picture. Parameters: user_id=<"+user_id+">, album_name=<"+album_name+">, "
+									+ "filename=<"+picture_name+">, group id=<"+salbum_item.getString("group_id")+">");
+						}else {
 							failure_result.add("sharing "+salbum_item.getString("salbum_name"));
-							logger.info("Sharing picture succeed. Parameters: user_id=<"+user_id+">, album_name=<"+album_name+">, "
+							logger.info("Sharing picture failed. Parameters: user_id=<"+user_id+">, album_name=<"+album_name+">, "
 									+ "filename=<"+picture_name+">, group id=<"+salbum_item.getString("group_id")+">");
 						}
 					} else {
@@ -587,7 +593,7 @@ public class SouvenirsManager {
 									+ "filename=<"+picture_name+">, group id=<"+salbum_item.getString("group_id")+">");
 						} else {
 							failure_result.add("unsharing "+salbum_item.getString("salbum_name"));
-							logger.info("Unsharing picture succeed. Parameters: user_id=<"+user_id+">, album_name=<"+album_name+">, "
+							logger.info("Unsharing picture failed. Parameters: user_id=<"+user_id+">, album_name=<"+album_name+">, "
 									+ "filename=<"+picture_name+">, group id=<"+salbum_item.getString("group_id")+">");
 						}
 					}

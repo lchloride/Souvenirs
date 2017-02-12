@@ -63,48 +63,35 @@ img.user-avatar-img {
 	border-width: 1px;
 	border-radius: 5px;
 	border-color: #6495ED;
-	width: 40px;
-	height: 40px;
+	width: 46px;
+	height: 46px;
 	padding: 0px;
-	margin-left: 10px;
-	margin-right: 10px;
+	/*margin-left: 10px;*/
+	/*margin-right: 10px;*/
 }
 
-div.comment-content {
-	float: left;
-	width: 75%;
-}
-
-div.meta-data {
-	
-}
-
-div.comment-username {
-	/* 	float: left; */
-	color: #696969;
-}
-
-div.comment-time {
-	/* 	float: right; */
-	color: #888888;
+div.reply {
+	background-color: #e0ecff;
+	margin-top:5px;
+	padding-top:5px;
+	padding-bottom:5px;
 }
 
 div.comment {
-	clear: both;
-	word-break: break-all;
-	border-bottom: solid;
-	border-width: 1px;
-	margin-top: 5px;
-	padding-bottom: 10px;
-	border-color: rgba(153, 153, 153, 0.7);
+	border-top: solid;
+	border-width:1px;
+	border-color: #e0e0f0;
+	padding-top:5px;
 }
 </style>
-<script type="text/javascript">
+<script >
 	<c:if test="${Is_personal}">
 	var salbum_obj = new Array();//<%=((List<String>) request.getAttribute("SAlbum_own_pic_json_list")).size()%>
 	</c:if>
 	var liking_person_json = '${Liking_person_json}';
 	var MSG_OFFSET = 50;
+	var comment_list_obj = new Array();
+	var reply_idx = -1;
 	
 	$(document).ready(function() {
 		displayLikingPersons();
@@ -123,13 +110,25 @@ div.comment {
 				salbum_obj[idx].is_shared = false;
 			}
 		};
+		$('#comment').css("width", ($('#write_comment').width() - $('.user-avatar-img').outerWidth(true) - $('#send_btn').outerWidth(true)
+				- $('#comment').outerWidth(true) + $('#comment').width())
+				+"px");
+		var success_msg = '${Success_msg}';
+		var failure_msg = '${Failure_msg}';
+		var success_msg_obj = JSON.parse(success_msg);
+		var failure_msg_obj = JSON.parse(failure_msg);
+		
+		for (var i=0; i<success_msg_obj.length; i++)
+			setTimeout($.bootstrapGrowl("Updating "+success_msg_obj[i]+" succeeded.", { type: 'success' , delay:4000, offset: {from: 'top', amount: MSG_OFFSET}}),1000);
+		for (var i=0; i<failure_msg_obj.length; i++)
+			setTimeout($.bootstrapGrowl("Error when "+failure_msg_obj[i], { type: 'danger' , delay:5000, offset: {from: 'top', amount: MSG_OFFSET}}), 1000);
 		</c:if>
 	});
 
 	function displayLikingPersons() {
 		liking_person_obj = JSON.parse(liking_person_json);
 		display_str = "";
-		if (liking_person_obj == 0) {
+		if (liking_person_obj.length == 0) {
 			;//document.getElementById("liking_persons").style.display = "none";
 		} else {
 			//document.getElementById("liking_persons").style.display = "block";
@@ -137,9 +136,14 @@ div.comment {
 				display_str += liking_person_obj[i] + ", ";
 			}
 			display_str += liking_person_obj[liking_person_obj.length - 1];
-			document.getElementById("liking_persons_name").innerHTML = display_str;
 		}
+		document.getElementById("liking_persons_name").innerHTML = display_str;
+		if (display_str.indexOf('${Username}') >= 0)
+			$('.glyphicon-thumbs-up').css("color", "#cd201d");
+		else
+			$('.glyphicon-thumbs-up').css("color", "#286090");
 	}
+	
 	function changeShareStatus(s) {
 		//alert(s);
 		if (salbum_obj[s].is_shared)
@@ -195,33 +199,63 @@ div.comment {
 		}
 	}
 
-	function clickLike() {
+	function checkLikeOrDislike() {
 		like_flag = false;
 		for (var i = 0; i < liking_person_obj.length; i++) {
-			if (liking_person_json == '${Login_user_id}') {
+			if (liking_person_obj[i] == '${Username}') {
 				like_flag = true;
 				break;
 			}
 		}
-		if (like_flag)
+		return like_flag;
+	}
+	
+	function clickLike() {
+		if (checkLikeOrDislike())
 			ajaxProcess(clickLikeCallback,"/Souvenirs/dislikePicture?like_user_id="+encodeURIComponent('${Login_user_id}')+
 							"&picture_user_id="+encodeURIComponent("${Picture_user_id}")+
 							"&album_name="+encodeURIComponent("${Album_name}")+
-							"&picture_name="+encodeURIComponent("${Picture_name}"));
+							"&picture_name="+encodeURIComponent("${Picture_name}.${Format}"));
 		else
 			ajaxProcess(clickLikeCallback,"/Souvenirs/likePicture?like_user_id="+encodeURIComponent('${Login_user_id}')+
 					"&picture_user_id="+encodeURIComponent("${Picture_user_id}")+
 					"&album_name="+encodeURIComponent("${Album_name}")+
-					"&picture_name="+encodeURIComponent("${Picture_name}"));
+					"&picture_name="+encodeURIComponent("${Picture_name}.${Format}"));
 	}
 	
 	function clickLikeCallback(result) {
-		if (result.indexOf('{')==0) {
-			$.bootstrapGrowl("Success", { type: 'success' , delay:2000, offset: {from: 'top', amount: MSG_OFFSET}});
+		like_flag = checkLikeOrDislike();
+		if (like_flag)
+			oper_text = "Dislike";
+		else
+			oper_text = "Like";
+		
+		if (result.indexOf('[')==0) {
+			$.bootstrapGrowl(oper_text+" it successfully.", { type: 'success' , delay:2000, offset: {from: 'top', amount: MSG_OFFSET}});
 			liking_person_json = result;
 			displayLikingPersons();
 		} else
-			$.bootstrapGrowl("Failure", { type: 'danger' , delay:4000, offset: {from: 'top', amount: MSG_OFFSET}});
+			$.bootstrapGrowl(oper_text+" it unsuccessfully.", { type: 'danger' , delay:4000, offset: {from: 'top', amount: MSG_OFFSET}});
+	}
+	
+	function reply(idx) {
+		if (reply_idx > -1)
+			$('#reply_btn_'+reply_idx).css('font-weight', "normal");
+		reply_idx = idx;
+		$('#reply_msg').css("display", "block");
+		$('#reply_text').text("Reply "+comment_list_obj[reply_idx].comment_username+" (Comment ID: "+(reply_idx+1)+")");
+		$('#reply_btn_'+reply_idx).css('font-weight', "bold");
+	}
+	
+	function discardReply() {
+		if (reply_idx > -1)
+			$('#reply_btn_'+reply_idx).css('font-weight', "normal");
+		$('#reply_msg').css("display", "none");
+		reply_idx = -1;
+	}
+	
+	function sendComment() {
+		document.getElementById("")
 	}
 </script>
 </head>
@@ -248,7 +282,7 @@ div.comment {
 
 				<ul class="nav navbar-nav navbar-right" style="padding-right: 5%">
 					<li>
-						<img class="navbar-form" src="${empty Avatar?'/Souvenirs/res/image/default_avatar.png':Avatar}" alt="avatar" width="32"
+						<img class="navbar-form" src="${empty Avatar?'':Avatar}" alt="avatar" width="32"
 							height="32">
 					</li>
 					<li class="dropdown">
@@ -407,36 +441,41 @@ div.comment {
 
 						<div class="col-sm-5">
 							<h4>Comments</h4>
-							<div id="write_comment" style="display: inline-block; margin-top: 10px;">
-								<img class="user-avatar-img" src="${empty Avatar?'/Souvenirs/res/image/default_avatar.png':Avatar}" alt="avatar"
-									width="32" height="32" style="float: left" />
-								<textarea id="comment" class="form-control" style="width: auto; display: inline; vertical-align: bottom;" rows="1"
+							<div id="write_comment" style="display: inline-block; margin-top: 10px;width:100%;">
+								<img class="user-avatar-img" src="${empty Avatar?'':Avatar}" alt="avatar"
+									width="40" height="40" style="float: left" />
+								<textarea id="comment" class="form-control" style="width: auto; display: inline;vertical-align:bottom;margin-left:10px;height:46px" rows="2"
 									placeholder="Write your comment."></textarea>
-								<button class="btn btn-info" style="width: 57px;">Send</button>
+								<button class="btn btn-info btn-lg" id="send_btn"style="width: 74px;"onclick="sendComment()">Send</button>
 							</div>
+							<!-- Replying comment message box -->
+							<div class="alert alert-info alert-dismissable" id="reply_msg" style="display:none;padding-top:10px;padding-bottom:10px;margin-top:5px;">
+								<button type="button" class="close"  onclick="discardReply()">&times;</button>
+								<span id="reply_text"></span>
+							</div>
+							
 							<!-- Comment list -->
 							<div class="comments-display">
 								<c:forEach var="comment_item" items="${Comment_json_list }" varStatus="idx">
-									<!-- One comment item -->
-									<div class="comment-item">
-										<div class="user-avatar">
-											<img class="user-avatar-img" id="comment_user_avatar_${idx.count }" src="" alt="avatar" />
-										</div>
-										<div class="comment-content">
-											<div class="meta-data">
-												<div class="comment-username">
-													<strong id="comment_username_${idx.count }" style="line-height: 200%;">username</strong>
-
-												</div>
-												<div class="comment-time">
-													<small id="comment_time_${idx.count }">2016-01-01 00:00:00</small>
+									<div class="media comment">
+										<a class="pull-left" href="#">
+											<img class="media-object user-avatar-img" id="comment_user_avatar_${idx.count }" src="" alt="avatar" width="40" height="40">
+										</a>
+										<div class="media-body">
+											<h5 class="media-heading" id="comment_username_${idx.count }" style="font-weight:bold;"></h5>
+											<small id="comment_time_${idx.count }" style="color:#999">2016-01-01 00:00:00</small>
+											<div id="comment_content_${idx.count }"></div>
+											<!-- Replied comment -->
+											<div class="media reply" id="reply_${idx.count }" style="display:none">
+												<a class="pull-left" href="#">
+													<img class="media-object user-avatar-img" id="replied_avatar_${idx.count }"src="" alt="Avatar" width="40" height="40">
+												</a>
+												<div class="media-body">
+													<h5 class="media-heading" id="replied_username_${idx.count }"style="font-weight:bold;"></h5>
+													<div id="replied_content_${idx.count }"></div>
 												</div>
 											</div>
-											<div class="comment">
-												<span id="reply_title_${idx.count }" style="display: none;">Reply </span> <span id="reply_username_${idx.count }"
-													style="color: #337ab7;"></span> <span id="reply_end_${idx.count }" style="display: none;">: </span> <span
-													id="comment_content_${idx.count }">This is comment content.</span>
-											</div>
+											<!-- Replied comment END -->
 										</div>
 									</div>
 
@@ -444,6 +483,7 @@ div.comment {
 										idx = ${	idx.count};
 										comment_json = '${comment_item}';
 										comment_obj = JSON.parse(comment_json);
+										comment_list_obj.push(comment_obj);
 										document
 												.getElementById("comment_username_"
 														+ idx).innerHTML = comment_obj.comment_username;
@@ -455,18 +495,22 @@ div.comment {
 										document
 												.getElementById("comment_content_"
 														+ idx).innerHTML = comment_obj.comment_content;
-										if (comment_obj.reply_username != "") {
-											document
-													.getElementById("reply_username_"
-															+ idx).innerHTML = "@"
-													+ comment_obj.reply_username;
-											document
-													.getElementById("reply_title_"
-															+ idx).style.display = "inline";
-											document
-													.getElementById("reply_end_"
-															+ idx).style.display = "inline";
+										if (comment_obj.replied_comment_id > 0) {
+											document.getElementById("reply_"+idx).style.display = "block";
+											replied_comment_obj = comment_list_obj[comment_obj.replied_comment_id-1];
+											document.getElementById("comment_username_"+ idx).innerHTML += 
+												"<span style='font-weight:normal'> Reply "+
+												"<span style='color:#337ab7'>@"	+ replied_comment_obj.comment_username+'</span></span>';
+											document.getElementById("replied_avatar_"+idx).src = replied_comment_obj.comment_user_avatar;
+											document.getElementById("replied_avatar_"+idx).alt = replied_comment_obj.comment_username;
+											document.getElementById("replied_username_"+idx).innerHTML = 
+												"<span style='color:#337ab7'>@"+replied_comment_obj.comment_username+"</span>";
+											document.getElementById("replied_content_"+idx).innerHTML = replied_comment_obj.comment_content;
 										}
+										document.getElementById("comment_username_"+ idx).innerHTML += 
+											"<span style='font-weight:normal;float:right;'>"+
+											"<button class='btn btn-link' id='reply_btn_"+(idx-1)+"' style='padding:0px;' onclick='reply("+(idx-1)+")'>Reply</button> | "+
+											"<button class='btn btn-link' style='padding:0px;' disabled>Report</button></span>";
 									</script>
 								</c:forEach>
 

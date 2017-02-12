@@ -11,7 +11,6 @@ import tool.Store;
 
 /**
  * Comment类实现Store接口进行数据库操作的实现类
- * @author Chenghong Li
  *
  */
 public class CommentImplStore implements Store<Comment> {
@@ -24,17 +23,18 @@ public class CommentImplStore implements Store<Comment> {
 		// TODO Auto-generated method stub
 		Comment comment = new Comment();
 		try {
-			if (list.size() != Comment.getMemberCount())
+			if (list.size() != Comment.getMemberCount())// Comment.getMemberCount() should be 9
 				throw new Exception("Cannot transform result set from database to Comment object!");
 			else {
 				comment.setUserId((String)list.get(0));
 				comment.setAlbumName((String)list.get(1));
 				comment.setPictureName((String)list.get(2));
-				comment.setCommentUserId((String)list.get(3));
-				comment.setCommentContent((String)list.get(4));
-				comment.setTime((Timestamp)list.get(5));
-				comment.setReplyUserId(list.get(6)==null?"":(String)list.get(6));
-				comment.setReplyContent(list.get(7)==null?"":(String)list.get(7));
+				comment.setCommentId((int)list.get(3));
+				comment.setCommentUserId((String)list.get(4));
+				comment.setCommentContent((String)list.get(5));
+				comment.setIsValid((int)list.get(6));
+				comment.setTime((Timestamp)list.get(7));
+				comment.setRepliedCommentId(list.get(8)==null?0:(int)list.get(8));// list.get(8) should be a positive integer form 1 or null
 			}
 		} catch (Exception e) {
 			// TODO: handle exception
