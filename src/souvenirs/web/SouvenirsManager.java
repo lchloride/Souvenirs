@@ -311,6 +311,7 @@ public class SouvenirsManager {
 		result.put("Album_name", album_name);
 		result.put("Picture_name", picture_name.substring(0, picture_name.lastIndexOf('.')));
 		result.put("Picture", ImageLoader.genAddrOfPicture(user_id, album_name, picture_name));
+		result.put("Avatar", ImageLoader.genAddrOfAvatar(user_id));
 		
 		//Advanced parameters with SQL query
 		Picture pic = dao.getPictureInfo(user_id, album_name, picture_name);
@@ -367,11 +368,13 @@ public class SouvenirsManager {
 		if (parameter.get("success_msg")!=null) {
 			JSONArray success_msg = new JSONArray(URLDecoder.decode(parameter.get("success_msg"), "UTF-8"));
 			result.put("Success_msg", success_msg.toString());
-		}
+		} else 
+			result.put("Success_msg", new JSONArray().toString());
 		if (parameter.get("failure_msg")!=null) {
 			JSONArray failure_msg = new JSONArray(URLDecoder.decode(parameter.get("failure_msg"), "UTF-8"));
 			result.put("Failure_msg", failure_msg.toString());
-		}
+		} else
+			result.put("Failure_msg", new JSONArray().toString());
 		result.put("DispatchURL", "picture.jsp");
 		return result;
 	}

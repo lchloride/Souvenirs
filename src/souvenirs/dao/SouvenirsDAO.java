@@ -454,4 +454,14 @@ public class SouvenirsDAO {
 		List<String>para = Arrays.asList(picture_user_id, album_name, filename, like_user_id);
 		return DB.execSQLUpdate(sql, para);
 	}
+	
+	public boolean addComment(String user_id, String album_name, String filename, String comment_user_id, String comment, String reply_id) throws Exception {
+		String sql = "call AddComment(?, ?, ?, ?, ?, ?)";
+		List<String>para = Arrays.asList(user_id, album_name, filename, comment_user_id, comment, reply_id );
+		List<List<Object>> rs = DB.execSQLQuery(sql, para);
+		if (rs.size() > 0 && rs.get(0).size() > 0) {
+			return ((int)rs.get(0).get(0)==0)?false:true;
+		} else
+			throw new Exception("Invalid SQL Result with sql:<"+sql+">, parameters:<"+para+">");
+	}
 }

@@ -70,6 +70,16 @@ img.user-avatar-img {
 	/*margin-right: 10px;*/
 }
 
+img.reply_user-avatar-img {
+	border-style: solid;
+	border-width: 1px;
+	border-radius: 5px;
+	border-color: #6495ED;
+	width: 40px;
+	height: 40px;
+	padding: 0px;	
+}
+
 div.reply {
 	background-color: #e0ecff;
 	margin-top:5px;
@@ -95,6 +105,10 @@ div.comment {
 	
 	$(document).ready(function() {
 		displayLikingPersons();
+		$('#comment').css("width", ($('#write_comment').width() - $('.user-avatar-img').outerWidth(true) - $('#send_btn').outerWidth(true)
+				- $('#comment').outerWidth(true) + $('#comment').width())
+				+"px");
+		$('#comments_count').text(comment_list_obj.length);
 		<c:if test="${Is_personal}">
 		changeShareStatus(0);
 		$("#onoffswitch").on('click', function() {
@@ -110,9 +124,7 @@ div.comment {
 				salbum_obj[idx].is_shared = false;
 			}
 		};
-		$('#comment').css("width", ($('#write_comment').width() - $('.user-avatar-img').outerWidth(true) - $('#send_btn').outerWidth(true)
-				- $('#comment').outerWidth(true) + $('#comment').width())
-				+"px");
+
 		var success_msg = '${Success_msg}';
 		var failure_msg = '${Failure_msg}';
 		var success_msg_obj = JSON.parse(success_msg);
@@ -255,8 +267,58 @@ div.comment {
 	}
 	
 	function sendComment() {
-		document.getElementById("")
+		var text = document.getElementById("comment").value;
+		ajaxProcess(sendCommentCallback, "/Souvenirs/addComment?comment="+encodeURIComponent(text)+
+				"&reply_comment_id="+(reply_idx+1)+
+				"&picture_user_id="+encodeURIComponent("${Picture_user_id}")+
+				"&album_name="+encodeURIComponent("${Album_name}")+
+				"&picture_name="+encodeURIComponent("${Picture_name}.${Format}"));
+		discardReply();
 	}
+	
+	function sendCommentCallback(result) {
+		if (result.indexOf('{') == 0) {
+			var cobj = JSON.parse(result);
+			comment_list_obj.push(cobj);
+			var idx = comment_list_obj.length;
+			var html = '<div class="media comment">'+
+			'<a class="pull-left" href="#">'+
+				'<img class="media-object user-avatar-img" id="comment_user_avatar_'+idx+'" src="'+cobj.comment_user_avatar+'" alt="'+cobj.comment_username+'" width="40" height="40">'+
+			'</a>'+
+			'<div class="media-body">'+
+				'<h5 class="media-heading" id="comment_username_'+idx+'" style="font-weight:bold;">'+cobj.comment_username+'</h5>'+
+				'<small id="comment_time_'+idx+'" style="color:#999">'+cobj.comment_time+'</small>'+
+				'<div id="comment_content_'+idx+'">'+cobj.comment_content+'</div>';
+			if (cobj.replied_comment_id > 0) {
+				var reply_id = cobj.replied_comment_id-1;
+				alert(reply_id+" "+cobj.replied_comment_id);
+				html += '<div class="media reply" id="reply_'+idx+'" style="display:block">'+
+					'<a class="pull-left" href="#">'+
+						'<img class="media-object user-avatar-img" id="replied_avatar_'+idx+'"src="'+comment_list_obj[reply_id].comment_user_avatar+'" alt="'+comment_list_obj[reply_id].comment_username+'" width="40" height="40">'+
+					'</a>'+
+					'<div class="media-body">'+
+						'<h5 class="media-heading" id="replied_username_'+idx+'"style="font-weight:bold;"><span style="color:#337ab7">@'+comment_list_obj[reply_id].comment_username+'</span></h5>'+
+						'<div id="replied_content_'+idx+'">'+comment_list_obj[reply_id].comment_content+'</div>'+
+					'</div>'+
+				'</div>';
+			}
+			html +='</div></div>';
+			document.getElementById("comments_display").innerHTML += html;
+			if (cobj.replied_comment_id > 0) {
+				replied_comment_obj = comment_list_obj[cobj.replied_comment_id-1];
+				document.getElementById("comment_username_"+ idx).innerHTML += 
+					"<span style='font-weight:normal'> Reply "+
+					"<span style='color:#337ab7'>@"	+ replied_comment_obj.comment_username+'</span></span>';
+			}
+			document.getElementById("comment_username_"+ idx).innerHTML += 
+				"<span style='font-weight:normal;float:right;'>"+
+				"<button class='btn btn-link' id='reply_btn_"+(idx-1)+"' style='padding:0px;' onclick='reply("+(idx-1)+")'>Reply</button> | "+
+				"<button class='btn btn-link' style='padding:0px;' disabled>Report</button></span>";
+			$('#comments_count').text(comment_list_obj.length);
+			$.bootstrapGrowl("Comment successfully.", { type: 'success' , delay:2000, offset: {from: 'top', amount: MSG_OFFSET}});
+		}else
+			$.bootstrapGrowl("Comment unsuccessfully. Error Description: "+result, { type: 'danger' , delay:4000, offset: {from: 'top', amount: MSG_OFFSET}});
+	} 
 </script>
 </head>
 <body>
@@ -440,7 +502,7 @@ div.comment {
 						</div>
 
 						<div class="col-sm-5">
-							<h4>Comments</h4>
+							<h4 >Comments<span class="badge" id="comments_count"  style="margin-left:5px;vertical-align:top;"></span></h4>
 							<div id="write_comment" style="display: inline-block; margin-top: 10px;width:100%;">
 								<img class="user-avatar-img" src="${empty Avatar?'':Avatar}" alt="avatar"
 									width="40" height="40" style="float: left" />
@@ -455,7 +517,7 @@ div.comment {
 							</div>
 							
 							<!-- Comment list -->
-							<div class="comments-display">
+							<div class="comments-display" id="comments_display">
 								<c:forEach var="comment_item" items="${Comment_json_list }" varStatus="idx">
 									<div class="media comment">
 										<a class="pull-left" href="#">
@@ -468,7 +530,7 @@ div.comment {
 											<!-- Replied comment -->
 											<div class="media reply" id="reply_${idx.count }" style="display:none">
 												<a class="pull-left" href="#">
-													<img class="media-object user-avatar-img" id="replied_avatar_${idx.count }"src="" alt="Avatar" width="40" height="40">
+													<img class="media-object reply_user-avatar-img" id="replied_avatar_${idx.count }"src="" alt="Avatar" width="40" height="40">
 												</a>
 												<div class="media-body">
 													<h5 class="media-heading" id="replied_username_${idx.count }"style="font-weight:bold;"></h5>

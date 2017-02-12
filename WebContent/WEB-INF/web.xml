@@ -167,7 +167,14 @@
   <servlet-mapping>
     <servlet-name>SouvenirsAjax</servlet-name>
     <url-pattern>/dislikePicture</url-pattern>
-  </servlet-mapping>        
+  </servlet-mapping>       
+  <servlet-mapping>
+    <servlet-name>SouvenirsAjax</servlet-name>
+    <url-pattern>/addComment</url-pattern>
+  </servlet-mapping>    
+  
+  
+   
   <error-page>
     <error-code>400</error-code>
     <location>/errorHandler</location>

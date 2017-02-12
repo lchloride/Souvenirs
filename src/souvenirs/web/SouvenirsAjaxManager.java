@@ -5,6 +5,8 @@ package souvenirs.web;
 
 import java.io.File;
 import java.net.URLDecoder;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -16,6 +18,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import group.Group;
+import souvenirs.Comment;
 import souvenirs.PersonalAlbum;
 import souvenirs.dao.SouvenirsDAO;
 import tool.FileOper;
@@ -23,6 +26,7 @@ import tool.ImageLoader;
 import tool.PropertyOper;
 import tool.exception.BadRequestException;
 import tool.exception.RenameFolderErrorException;
+import user.web.UserManager;
 
 /**
  *Souvenirs完成Ajax操作的业务类，比如：更新相册的名字、更新相册的封面、删除相册中照片等
@@ -449,5 +453,48 @@ public class SouvenirsAjaxManager {
 		List<String> liking_person_list = dao.getLikingPersons(picture_user_id, album_name, filename);
 		JSONArray liking_person_json = new JSONArray(liking_person_list);
 		return liking_person_json.toString();
+	}
+	
+	public String addComment(Map<String, String> parameter) {
+		checkValidDAO();
+		String login_user_id = parameter.get("login_user_id");
+		String picture_user_id = parameter.get("picture_user_id");
+		String album_name = parameter.get("album_name");
+		String filename = parameter.get("picture_name");
+		String comment_content = parameter.get("comment");
+		String reply_id = parameter.get("reply_comment_id");
+		String result = "";
+		try {
+			boolean rs = dao.addComment(picture_user_id, album_name, filename, login_user_id, comment_content, reply_id);
+			if (rs) 
+				logger.info("Add new comment successfully. Parameters: login user id=<"+login_user_id+">, "+
+						"comment content=<"+comment_content+">, Picture=<"+picture_user_id+"/"+album_name+"/"+filename+">, "+
+						"replied comment id = <"+reply_id+">");
+			else {
+				logger.info("Add new comment UNSUCCESSFULLY. Parameters: login user id=<"+login_user_id+">, "+
+						"comment content=<"+comment_content+">, Picture=<"+picture_user_id+"/"+album_name+"/"+filename+">, "+
+						"replied comment id = <"+reply_id+">");
+				throw new Exception("Add new comment unsuccessfully.");
+			}
+			
+			//Query comment of picture and format json string
+			List<Comment> comments = dao.getAllComments(picture_user_id, album_name, filename);
+			Comment comment = comments.get(comments.size()-1);
+			DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			JSONObject jsonObject = new JSONObject();
+			//logger.debug("comment_user_id:"+comment.getCommentUserId());
+			jsonObject.put("comment_id", comment.getCommentId());
+			jsonObject.put("comment_username", UserManager.getUsernameByID(comment.getCommentUserId()));
+			jsonObject.put("comment_user_avatar", ImageLoader.genAddrOfAvatar(comment.getCommentUserId()));
+			jsonObject.put("comment_content", comment.getCommentContent());
+			jsonObject.put("comment_time", sdf.format(comment.getTime()));
+			jsonObject.put("is_valid", comment.getIsValid()==1?true:false);
+			jsonObject.put("replied_comment_id", comment.getRepliedCommentId());
+			result = jsonObject.toString();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return result;
 	}
 }
