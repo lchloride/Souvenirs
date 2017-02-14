@@ -319,6 +319,14 @@ div.comment {
 		}else
 			$.bootstrapGrowl("Comment unsuccessfully. Error Description: "+result, { type: 'danger' , delay:4000, offset: {from: 'top', amount: MSG_OFFSET}});
 	} 
+		
+	function checkCommentContent() {
+		text = $('#comment').val();
+		if (text.length == 0)
+			$('#send_btn').attr("disabled","disabled");
+		else
+			$('#send_btn').removeAttr("disabled");
+	}
 </script>
 </head>
 <body>
@@ -507,8 +515,8 @@ div.comment {
 								<img class="user-avatar-img" src="${empty Avatar?'':Avatar}" alt="avatar"
 									width="40" height="40" style="float: left" />
 								<textarea id="comment" class="form-control" style="width: auto; display: inline;vertical-align:bottom;margin-left:10px;height:46px" rows="2"
-									placeholder="Write your comment."></textarea>
-								<button class="btn btn-info btn-lg" id="send_btn"style="width: 74px;"onclick="sendComment()">Send</button>
+									placeholder="Write your comment." onkeyup="checkCommentContent()"></textarea>
+								<button class="btn btn-info btn-lg" id="send_btn"style="width: 74px;"onclick="sendComment()"disabled>Send</button>
 							</div>
 							<!-- Replying comment message box -->
 							<div class="alert alert-info alert-dismissable" id="reply_msg" style="display:none;padding-top:10px;padding-bottom:10px;margin-top:5px;">
@@ -572,7 +580,7 @@ div.comment {
 										document.getElementById("comment_username_"+ idx).innerHTML += 
 											"<span style='font-weight:normal;float:right;'>"+
 											"<button class='btn btn-link' id='reply_btn_"+(idx-1)+"' style='padding:0px;' onclick='reply("+(idx-1)+")'>Reply</button> | "+
-											"<button class='btn btn-link' style='padding:0px;' disabled>Report</button></span>";
+											"<button class='btn btn-link' style='padding:0px;' data-toggle='modal' data-target='#myModal'>Report</button></span>";
 									</script>
 								</c:forEach>
 
@@ -586,5 +594,56 @@ div.comment {
 
 	</div>
 	<div class="footer">Copyright &copy; 2016-2017 Souvenirs, All Rights Reserved.</div>
+	
+	<!-- 模态框（Modal） -->
+	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	    <div class="modal-dialog">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+	                <h4 class="modal-title" id="myModalLabel">Please choose your report reason </h4>
+	            </div>
+	            <!-- Modal body -->
+	            <div class="modal-body">
+	            	<div class="radio">
+					  <label>
+					    <input type="radio" name="reasonRadios" id="optionsRadios1" value="option1" checked onclick="$('#other_reason_text').attr('disabled', 'disabled')">Trolling or meaningless reply
+					  </label>
+					</div>
+					<div class="radio">
+					  <label>
+					    <input type="radio" name="reasonRadios" id="optionsRadios2" value="option2" onclick="$('#other_reason_text').attr('disabled', 'disabled')">Advertisement or promotion message
+					  </label>
+					</div>
+					<div class="radio">
+					  <label>
+					    <input type="radio" name="reasonRadios" id="optionsRadios3" value="option3" onclick="$('#other_reason_text').attr('disabled', 'disabled')">Harassment or malicious assault
+					  </label>
+					</div>
+					<div class="radio">
+					  <label>
+					    <input type="radio" name="reasonRadios" id="optionsRadios4" value="option4" onclick="$('#other_reason_text').attr('disabled', 'disabled')">Excessive sexual content
+					  </label>
+					</div>
+					<div class="radio">
+					  <label>
+					    <input type="radio" name="reasonRadios" id="optionsRadios5" value="option5" onclick="$('#other_reason_text').attr('disabled', 'disabled')">Sensitive speech
+					  </label>
+					</div>
+					<div class="radio" style="display:inline-block">
+					  <label>
+					    <input type="radio" name="reasonRadios" id="optionsRadios6" value="option6" onclick="$('#other_reason_text').removeAttr('disabled')">Other reason
+					  </label>
+					</div>
+					<input id="other_reason_text"type="text" class="form-control" placeholder="Please explain" style="display:inline-block;width:auto;"disabled>
+	            </div>
+	            <!-- Modal body END -->
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+	                <button type="button" class="btn btn-primary">Report</button>
+	            </div>
+	        </div><!-- /.modal-content -->
+	    </div><!-- /.modal -->
+	</div>
 </body>
 </html>

@@ -447,6 +447,7 @@ public class SouvenirsManager {
 		String user_id = parameter.get("login_user_id");
 		Map<String, Object> result = new HashMap<>();
 		result.put("DispatchURL", "share.jsp");
+		result.put("Avatar", ImageLoader.genAddrOfAvatar(user_id));
 		String group_id = parameter.get("group_id");
 		if (group_id == null || group_id.isEmpty())
 			throw new BadRequestException("Invalid parameter group_id=null or group is empty.");
@@ -581,7 +582,7 @@ public class SouvenirsManager {
 									+ "filename=<"+picture_name+">, group id=<"+salbum_item.getString("group_id")+">");
 						} else if (rs == SouvenirsDAO.SHARE_PICTURE_DUPLICATE) {
 							failure_result.add("sharing "+salbum_item.getString("salbum_name")+" since this picture has already existed.");
-							logger.info("Sharing picture failed since duplicated picture. Parameters: user_id=<"+user_id+">, album_name=<"+album_name+">, "
+							logger.error("Sharing picture failed since duplicated picture. Parameters: user_id=<"+user_id+">, album_name=<"+album_name+">, "
 									+ "filename=<"+picture_name+">, group id=<"+salbum_item.getString("group_id")+">");
 						}else {
 							failure_result.add("sharing "+salbum_item.getString("salbum_name"));

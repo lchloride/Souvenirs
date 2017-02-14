@@ -1013,7 +1013,7 @@ div.border-rect-active {
 					<div class="img-content" id="img_content" style="float:left;"></div>
 
 					<!-- Modify position and Zoom -->
-					<div id="modify_panel" style="width:100px;margin-left:10px; margin-right:10px;float:left">
+					<div id="modify_panel" style="width:100px;margin-left:10px; margin-right:10px;float:left;display:none;">
 						<h4>Move</h4>
 						<img src="/Souvenirs/res/image/arrow.png" width="100" height="100" alt="Move Panel" usemap="#MoveMap"style="margin-top:5px;">
 

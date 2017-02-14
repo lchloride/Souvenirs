@@ -465,6 +465,8 @@ public class SouvenirsAjaxManager {
 		String reply_id = parameter.get("reply_comment_id");
 		String result = "";
 		try {
+			if (comment_content==null || comment_content.isEmpty())
+				throw new Exception("Empty Comment Content.");
 			boolean rs = dao.addComment(picture_user_id, album_name, filename, login_user_id, comment_content, reply_id);
 			if (rs) 
 				logger.info("Add new comment successfully. Parameters: login user id=<"+login_user_id+">, "+

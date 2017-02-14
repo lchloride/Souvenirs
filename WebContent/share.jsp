@@ -32,6 +32,9 @@
 		displaySelectedPicture();
 	}
 	
+	/*
+	ajax 访问URL的函数；其中callback是回调函数、URL是请求的后台网址、send是在POST方法下发送给后台的参数字符串列表，GET方法下的参数列表写入URL中
+	*/
 	function ajaxProcess(callback, URL, send)
 	{
 	  var xmlhttp;    
@@ -175,7 +178,12 @@
 		}
 		var share_list_json = JSON.stringify(share_list_obj);
 		ajaxProcess(sharePicturesCallback, "sharePictures", "list_json="+share_list_json+"&group_id=${Group_id}");
-		//alert(share_list_json);
+		// URL:/Souvenirs/sharePictures 
+		//POST: [{"list_json", %share_list_json%}, {"group_id", %Group_id%}] 注：POST参数表的一种表达形式，实际传输的格式不是这个样子
+		// 等价于
+		// 一个form: 
+		//  	input_text: 名字是list_json, 内容是%share_list_json%
+		//     input_text: 名字是group_id，内容是 %Group_id%
 	}
 
 	function sharePicturesCallback (result) {
