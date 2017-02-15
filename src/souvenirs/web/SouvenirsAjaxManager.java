@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.catalina.User;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -498,5 +499,30 @@ public class SouvenirsAjaxManager {
 			e.printStackTrace();
 		}
 		return result;
+	}
+	
+	public String reportComment(Map<String, String>parameter) throws Exception {
+		checkValidDAO();
+		String report_user_id = parameter.get("login_user_id");
+		String picture_user_id = parameter.get("picture_uid");
+		String album_name = parameter.get("album_name");
+		String picture_name = parameter.get("picture_name");
+		String comment_id = parameter.get("comment_id");
+		String report_label = parameter.get("report_label");
+		String report_content = parameter.get("report_content");
+		
+		try {
+			boolean rs = dao.reportComment(report_user_id, picture_user_id, album_name, picture_name, comment_id, report_label, report_content);
+			if (rs)
+				logger.info("User (id:<"+report_user_id+">) reported a comment of parameters: <"+parameter+">");
+			else {
+				logger.info("Comment report failed. Parameters: <"+parameter+">");
+				throw new Exception("Comment report failed. Parameters: <"+parameter+">");
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+			throw e;
+		}
+		return "true";
 	}
 }

@@ -172,7 +172,10 @@
     <servlet-name>SouvenirsAjax</servlet-name>
     <url-pattern>/addComment</url-pattern>
   </servlet-mapping>    
-  
+  <servlet-mapping>
+    <servlet-name>SouvenirsAjax</servlet-name>
+    <url-pattern>/reportComment</url-pattern>
+  </servlet-mapping>   
   
    
   <error-page>

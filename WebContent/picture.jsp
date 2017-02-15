@@ -93,6 +93,11 @@ div.comment {
 	border-color: #e0e0f0;
 	padding-top:5px;
 }
+
+.error-form {
+	border-color:#b3414c;
+	background-color: hsl(0, 70%, 90%);
+}
 </style>
 <script >
 	<c:if test="${Is_personal}">
@@ -101,7 +106,8 @@ div.comment {
 	var liking_person_json = '${Liking_person_json}';
 	var MSG_OFFSET = 50;
 	var comment_list_obj = new Array();
-	var reply_idx = -1;
+	var reply_idx = -1;//对应comment——list——obj的下标，有效值从0开始，无效值为-1
+	var report_idx = 0;//对应id="optionsRadios"+i的i，有效值从1开始，无效值为0
 	
 	$(document).ready(function() {
 		displayLikingPersons();
@@ -327,6 +333,56 @@ div.comment {
 		else
 			$('#send_btn').removeAttr("disabled");
 	}
+	
+	function reportComment(radio_count) {
+		for (var i=1; i<=radio_count; i++) {
+			if (document.getElementById("optionsRadios"+i).checked) {
+				reason_idx = i;
+				break;
+			}
+		}
+		var report_label = (reason_idx != 6 ?$('#optionsRadios'+reason_idx).val():$('#optionsRadios'+reason_idx).val()+":"+$("#other_reason_text").val());
+		ajaxProcess(reportCommentCallback, "/Souvenirs/reportComment?report_content="+encodeURIComponent($("#report_content").val())+
+				"&comment_id="+(report_idx)+
+				"&picture_uid="+encodeURIComponent("${Picture_user_id}")+
+				"&album_name="+encodeURIComponent("${Album_name}")+
+				"&picture_name="+encodeURIComponent("${Picture_name}.${Format}")+
+				"&report_label="+encodeURIComponent(report_label));		
+	}
+	
+	function reportCommentCallback(result) {
+		if (result.trim() == "true")
+			$.bootstrapGrowl("Report it successfully.", { type: 'success' , delay:2000, offset: {from: 'top', amount: MSG_OFFSET}});
+		else
+			$.bootstrapGrowl("Report failed. Error:"+result, { type: 'danger' , delay:4000, offset: {from: 'top', amount: MSG_OFFSET}});
+	}
+	
+	function checkOtherReasonText() {
+		var count = $('#other_reason_text').val().length;
+		if (count > 30) {
+			$('#other_reason_text').addClass("error-form");
+			$('#other_reason_text_too_long_msg').css('display', 'inline');
+			$('#report_btn').attr('disabled', 'disabled');
+		} else {
+			$('#other_reason_text').removeClass("error-form");
+			$('#other_reason_text_too_long_msg').css('display', 'none');
+			$('#report_btn').removeAttr('disabled');
+		}
+	}
+	
+	function checkReportContent() {
+		var count = $('#report_content').val().length;
+		$('#word_count').text(count);
+		if (count > 300) {
+			$('#report_content').addClass('error-form');
+			$('#word_count').css('color', '#b3414c');
+			$('#report_btn').attr('disabled', 'disabled');
+		} else {
+			$('#report_content').removeClass('error-form');
+			$('#word_count').css('color', '#000');
+			$('#report_btn').removeAttr('disabled');
+		}
+	}
 </script>
 </head>
 <body>
@@ -412,15 +468,15 @@ div.comment {
 								<h4>Image Preview</h4>
 								<div class="gallery">
 									<div>
-										<a href="res/image/laugh.gif"> <img id="picture_preview" src="${Picture }" alt="${Picture_name }"
-												style="width: 100%">
+										<a href="/Souvenirs/showPicture?addr=${Picture }" target="_blank"> 
+											<img id="picture_preview" src="${Picture }" alt="${Picture_name }"style="width: 100%">
 										</a>
 									</div>
 								</div>
-								<a href="/Souvenirs/showPicture?addr=${Picture }">
+								<a href="/Souvenirs/showPicture?addr=${Picture }"target="_blank">
 									<button type="button" class="btn btn-default btn-sm"
 										style="margin: 5px auto; width: 120px">Original Size</button></a>
-								<a href="${Picture }"><button type="button" class="btn btn-default btn-sm"
+								<a href="${Picture }&download=true"><button type="button" class="btn btn-default btn-sm"
 										style="margin: 5px auto; width: 120px">Download</button>
 								</a>
 							</div>
@@ -580,7 +636,7 @@ div.comment {
 										document.getElementById("comment_username_"+ idx).innerHTML += 
 											"<span style='font-weight:normal;float:right;'>"+
 											"<button class='btn btn-link' id='reply_btn_"+(idx-1)+"' style='padding:0px;' onclick='reply("+(idx-1)+")'>Reply</button> | "+
-											"<button class='btn btn-link' style='padding:0px;' data-toggle='modal' data-target='#myModal'>Report</button></span>";
+											"<button class='btn btn-link' style='padding:0px;' data-toggle='modal' data-target='#myModal' onclick='report_idx="+idx+"'>Report</button></span>";
 									</script>
 								</c:forEach>
 
@@ -600,47 +656,51 @@ div.comment {
 	    <div class="modal-dialog">
 	        <div class="modal-content">
 	            <div class="modal-header">
-	                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+	                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="report_idx=0">&times;</button>
 	                <h4 class="modal-title" id="myModalLabel">Please choose your report reason </h4>
 	            </div>
 	            <!-- Modal body -->
 	            <div class="modal-body">
 	            	<div class="radio">
 					  <label>
-					    <input type="radio" name="reasonRadios" id="optionsRadios1" value="option1" checked onclick="$('#other_reason_text').attr('disabled', 'disabled')">Trolling or meaningless reply
+					    <input type="radio" name="reasonRadios" id="optionsRadios1" value="Troll or meaningless reply" checked onclick="$('#other_reason_text').attr('disabled', 'disabled')">Troll or meaningless reply
 					  </label>
 					</div>
 					<div class="radio">
 					  <label>
-					    <input type="radio" name="reasonRadios" id="optionsRadios2" value="option2" onclick="$('#other_reason_text').attr('disabled', 'disabled')">Advertisement or promotion message
+					    <input type="radio" name="reasonRadios" id="optionsRadios2" value="Advertisement or promotion message" onclick="$('#other_reason_text').attr('disabled', 'disabled')">Advertisement or promotion message
 					  </label>
 					</div>
 					<div class="radio">
 					  <label>
-					    <input type="radio" name="reasonRadios" id="optionsRadios3" value="option3" onclick="$('#other_reason_text').attr('disabled', 'disabled')">Harassment or malicious assault
+					    <input type="radio" name="reasonRadios" id="optionsRadios3" value="Harassment or malicious assault" onclick="$('#other_reason_text').attr('disabled', 'disabled')">Harassment or malicious assault
 					  </label>
 					</div>
 					<div class="radio">
 					  <label>
-					    <input type="radio" name="reasonRadios" id="optionsRadios4" value="option4" onclick="$('#other_reason_text').attr('disabled', 'disabled')">Excessive sexual content
+					    <input type="radio" name="reasonRadios" id="optionsRadios4" value="Excessive sexual content" onclick="$('#other_reason_text').attr('disabled', 'disabled')">Excessive sexual content
 					  </label>
 					</div>
 					<div class="radio">
 					  <label>
-					    <input type="radio" name="reasonRadios" id="optionsRadios5" value="option5" onclick="$('#other_reason_text').attr('disabled', 'disabled')">Sensitive speech
+					    <input type="radio" name="reasonRadios" id="optionsRadios5" value="Sensitive or offensive speech" onclick="$('#other_reason_text').attr('disabled', 'disabled')">Sensitive or offensive speech
 					  </label>
 					</div>
 					<div class="radio" style="display:inline-block">
 					  <label>
-					    <input type="radio" name="reasonRadios" id="optionsRadios6" value="option6" onclick="$('#other_reason_text').removeAttr('disabled')">Other reason
+					    <input type="radio" name="reasonRadios" id="optionsRadios6" value="Other reason" onclick="$('#other_reason_text').removeAttr('disabled')">Other reason
 					  </label>
 					</div>
-					<input id="other_reason_text"type="text" class="form-control" placeholder="Please explain" style="display:inline-block;width:auto;"disabled>
+					<input id="other_reason_text"type="text" class="form-control" placeholder="Please explain in 30 letters" 
+					style="display:inline-block;width:auto;"disabled onkeydown="checkOtherReasonText()">
+					<span id="other_reason_text_too_long_msg" style="color:#b3414c;display:none;font-weight:bold;">Too Long</span>
+	            	<label for="report_content">Detailed Reason (Selected, No More than 300 letters.) <span id="word_count">0</span> / 300</label>
+	            	<textarea id="report_content"  class="form-control" name="report_content" rows="3" onkeyup="checkReportContent()" onkeydown="checkReportContent()"></textarea>
 	            </div>
 	            <!-- Modal body END -->
 	            <div class="modal-footer">
-	                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-	                <button type="button" class="btn btn-primary">Report</button>
+	                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="report_idx=0">Cancel</button>
+	                <button type="button" class="btn btn-primary" id="report_btn" onclick="reportComment(6)">Report</button>
 	            </div>
 	        </div><!-- /.modal-content -->
 	    </div><!-- /.modal -->

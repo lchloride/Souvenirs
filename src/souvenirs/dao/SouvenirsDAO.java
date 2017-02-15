@@ -464,4 +464,15 @@ public class SouvenirsDAO {
 		} else
 			throw new Exception("Invalid SQL Result with sql:<"+sql+">, parameters:<"+para+">");
 	}
+	
+	public boolean reportComment(String report_user_id, String picture_user_id, String album_name, String picture_name, 
+			String comment_id, String report_label, String report_content) throws Exception {
+		String sql = "call ReportComment(?, ?, ?, ?, ?, ?, ?)";
+		List<String>para = Arrays.asList(report_user_id, picture_user_id, album_name, picture_name, comment_id, report_label, report_content );
+		List<List<Object>> rs = DB.execSQLQuery(sql, para);
+		if (rs.size() > 0 && rs.get(0).size() > 0) {
+			return ((int)rs.get(0).get(0)==0)?false:true;
+		} else
+			throw new Exception("Invalid SQL Result with sql:<"+sql+">, parameters:<"+para+">");
+	}
 }
