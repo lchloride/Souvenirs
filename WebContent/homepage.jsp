@@ -116,7 +116,14 @@ div.album-manage-title {
 					<li><a href="upload">Upload</a></li>
 					<li><a href="making">Making</a></li>
 				</ul>
-
+				<form class="navbar-form navbar-left" role="search">
+		            <div class="form-group">
+		                <input type="text" class="form-control" placeholder="Search your pictures">
+		            </div>
+		            <button type="submit" class="btn btn-default " style="font-size: 1.45em;text-shadow: #aaa 1px 2px 3px;">
+		            	<span class="glyphicon glyphicon-search" style="color:#999"></span>
+		            </button>
+		        </form>
 				<ul class="nav navbar-nav navbar-right" style="padding-right: 5%">
 					<li><img class="navbar-form" src="${empty Avatar?'/Souvenirs/res/image/default_avatar.png':Avatar}"
 						alt="avatar" width="32" height="32"></li>
@@ -134,6 +141,7 @@ div.album-manage-title {
 		</nav>
 
 		<div class="select-template">
+			<img alt="123" src="/Souvenirs/res/image/impression.png" style="width:100%;margin-top:-20px;">
 			<h3>Select a template to start making souvenir</h3>
 			<div class="templates">
 				<div class="img">

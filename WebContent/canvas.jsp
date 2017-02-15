@@ -24,6 +24,7 @@
 <script src="/Souvenirs/res/bootstrap/js/bootstrap.min.js"></script>
 <!-- Text Color Picker -->
 <script src="/Souvenirs/res/js/iColorPicker.js" type="text/javascript"></script>
+<script src="/Souvenirs/res/js/jquery.bootstrap-growl.min.js"></script>
 
 <link href="/Souvenirs/res/css/website.css" rel="stylesheet" type="text/css">
 <script>
@@ -68,6 +69,14 @@
 	//For personal album, it stands for group id while for shared album, it stands for album_name.
 	var album_json = '${Album_identifier_json}';
 	var album_obj = JSON.parse(album_json);
+	
+	var display_timer;
+	var display_idx=0;
+	var last_display_idx = 0;
+	var MSG_OFFSET = 50;
+	
+	var move_step_ratio = 0.05;
+	var zoom_step_ratio = 0.05;
 
 	//在页面加载完成后执行的脚本
 	window.onload = function() {
@@ -82,17 +91,18 @@
 			alert("Invalid template name!");
 			//throw SyntaxError();
 		}
-		//set height and width of canvas that fits the displaying area
-		//设置能够匹配窗口大小的canvas宽度和高度
-		changeContentSize();
 		//query display image of selected album on the panel of selecting image
 		//为照片操作面板获取要显示的album中照片
 		assignImage();
+		//set height and width of canvas that fits the displaying area
+		//设置能够匹配窗口大小的canvas宽度和高度
+		changeContentSize();
+
 		//计算下载时可选择的souvenir的不同尺寸
 		calcSouvenirResolution();
 		//draw canvas content using souvenir_obj
 		//使用souvenir_obj绘制canvas
-		drawSouvenir("myCanvas");
+		//drawSouvenir("myCanvas");
 		//drawing outer border of each part
 		//为每个区域绘制外框
 		drawBorderRect();
@@ -109,10 +119,13 @@
 		//Processing first part of templete
 		var idx = 1;
 		isFinished = false;
+		last_display_idx = 0;
+		display_idx = 1;
 		//Loading background image
 		bg = new Image();
 		bg.src = "res/image/template/" + souvenir_obj[0].background;
 		bg.onload = function() {
+			display_timer = setInterval(function(){checkDisplay()},5000);
 			//Drawing bavkground image
 			ctx.drawImage(bg, 0, 0, c.width, c.height);
 			//Creating displaying parts
@@ -169,13 +182,16 @@
 	function drawContent(ctx, idx) {
 		//If idx points to an invalid item in templete, just return
 		document.getElementById("size").innerHTML += idx+", ";
+		
 		if (isError || souvenir_obj[idx] == undefined
 				|| souvenir_obj[idx] == null
 				|| souvenir_obj[idx].type == undefined
 				|| souvenir_obj[idx].type == null) {
 			isFinished = true;
+			clearInterval(display_timer);
 			return;
 		} else {
+			display_idx = idx;
 			//Call specific function to finish drawing 
 			if (souvenir_obj[idx].type == "image")
 				drawImg(ctx, idx);
@@ -197,25 +213,53 @@
 			return;
 		//Create image and load it
 		image = new Image();
-		image.src = souvenir_obj[idx].url;
+		image.src = souvenir_obj[idx].url;//+"&random="+Math.random();
 
-		image.onload = (function(idx) {
-			var d = souvenir_obj[idx].zoom;
-			var moveX = souvenir_obj[idx].moveX;
-			var moveY = souvenir_obj[idx].moveY;
+		image.onload = (function(ctx, idx) {
+			var dx = souvenir_obj[idx].zoom*image.width;
+			var dy = souvenir_obj[idx].zoom*image.height;
+			if (2*dx >= image.width*0.99 || 2*dy >= image.height*0.99) {
+				souvenir_obj[idx].zoom -= zoom_step_ratio;
+				dx = souvenir_obj[idx].zoom*image.width;
+				dy = souvenir_obj[idx].zoom*image.height;
+				$.bootstrapGrowl("Already maximum size.", { type: 'info' , delay:3000, offset: {from: 'top', amount: MSG_OFFSET}});
+			}
+			
+			var moveX = souvenir_obj[idx].moveX*image.width;
+			var moveY = souvenir_obj[idx].moveY*image.height;
+			if (moveX >= image.width-dx) {
+				souvenir_obj[idx].moveX -= move_step_ratio;
+				moveX = souvenir_obj[idx].moveX*image.width;
+				$.bootstrapGrowl("Out of right range.", { type: 'info' , delay:3000, offset: {from: 'top', amount: MSG_OFFSET}});
+			}
+			if (moveX <= 2*dx-image.width) {
+				souvenir_obj[idx].moveX += move_step_ratio;
+				moveX = souvenir_obj[idx].moveX*image.width;
+				$.bootstrapGrowl("Out of left range.", { type: 'info' , delay:3000, offset: {from: 'top', amount: MSG_OFFSET}});
+			}
+			if (moveY >= image.height-dy) {
+				souvenir_obj[idx].moveY -= move_step_ratio;
+				moveY = souvenir_obj[idx].moveY*image.height;
+				$.bootstrapGrowl("Out of bottom range.", { type: 'info' , delay:3000, offset: {from: 'top', amount: MSG_OFFSET}});
+			}
+			if (moveY <= 2*dy-image.height) {
+				souvenir_obj[idx].moveY += move_step_ratio;
+				moveY = souvenir_obj[idx].moveY*image.height;
+				$.bootstrapGrowl("Out of top range.", { type: 'info' , delay:3000, offset: {from: 'top', amount: MSG_OFFSET}});
+			}
 			//Transform image based on transforming metrix
 			ctx.transform(souvenir_obj[idx].t11, souvenir_obj[idx].t12,
 					souvenir_obj[idx].t21, souvenir_obj[idx].t22,
 					souvenir_obj[idx].t13, souvenir_obj[idx].t23);
 			//Draw image under the control of zoom pixels, horizontal translating pixels and verticle translating pixels
-			ctx.drawImage(image, 0 + d - moveX, 0 + d - moveY, image.width - 2
-					* d - moveX, image.height - 2 * d - moveY,
+			ctx.drawImage(image, 0 + dx - moveX, 0 + dy - moveY, image.width - 2
+					* dx, image.height - 2 * dy,
 					R(souvenir_obj[idx].startX), R(souvenir_obj[idx].startY),
 					R(souvenir_obj[idx].drawW), R(souvenir_obj[idx].drawH));
 			idx++;
 			//Draw the next image/text
 			drawContent(ctx, idx);
-		})(idx);
+		})(ctx, idx);
 
 		image.onerror = function() {
 			isError = true;
@@ -306,6 +350,16 @@
 		//ctx.clip();
 	}
 
+	function checkDisplay() {
+		if (display_idx == last_display_idx) {
+			$.bootstrapGrowl("Displaying "+display_idx+" failed.", { type: 'danger' , delay:4000, offset: {from: 'top', amount: MSG_OFFSET}});
+			clearInterval(display_timer);
+			setTimeout(drawSouvenir("myCanvas"), 1000);
+		}else {
+			last_display_idx = display_idx;
+		}
+	}
+	
 	//绘制矩形区域函数
 	function createRectClip(ctx, stX, stY, width, height) {
 		ctx.rect(stX, stY, width, height);
@@ -415,6 +469,7 @@
 					+ obj[i].Filename + '</a></div></div>';
 		}
 		document.getElementById("img_content").innerHTML = img_content;
+		document.getElementById("img_content").style.width = $('#choose_album').width()-$('#modify_panel').outerWidth(true)+"px";
 	}
 
 	//更换操作面板时的响应函数，完成旧面板的隐藏与新面板的显示，同时进行相关变量的销毁与初始化
@@ -466,6 +521,8 @@
 				document.getElementById("italic_btn").className = "btn btn-default active";
 			} else
 				document.getElementById("italic_btn").className = "btn btn-default";
+		} else if (new_content_id == "choose_album") {
+			document.getElementById("img_content").style.width = $('#choose_album').width()-$('#modify_panel').outerWidth(true)+"px";
 		}
 	}
 
@@ -526,8 +583,8 @@
 				+ "px";
 		//20 is margin of each column
 
-		document.getElementById("img_content").style.width = display_width
-				* 0.8 - (20 * 3) - c.width - 10 + "px";
+		document.getElementById("img_content").style.width = $('#choose_album').width()-$('#modify_panel').outerWidth(true)+"px";
+		//display_width* 0.8 - (20 * 3) - $('#div_canvas').outerWidth(true) - 10 - $('#modify_panel').outerWidth(true) + "px";
 		document.getElementById("img_content").style.height = display_height
 				- (41 + 74 + 39) + "px";//41 is the height of <h4>, 74 is the height of form and 39 is the height of button	
 
@@ -687,6 +744,66 @@
 		document.getElementById("edit_size_text").innerHTML = document
 				.getElementById("myCanvas").width
 				+ "px * " + document.getElementById("myCanvas").height + "px";
+	}
+	
+	function moveUp() {
+		if (souvenir_obj[proc_position].type == "image") {
+			souvenir_obj[proc_position].moveY -= move_step_ratio;
+			drawSouvenir("myCanvas");
+		}else {
+			alert("Wrong parameter");
+			return;
+		}
+	}
+	
+	function moveDown() {
+		if (souvenir_obj[proc_position].type == "image") {
+			souvenir_obj[proc_position].moveY += move_step_ratio;
+			drawSouvenir("myCanvas");
+		}else {
+			alert("Wrong parameter");
+			return;
+		}
+	}
+	
+	function moveLeft() {
+		if (souvenir_obj[proc_position].type == "image") {
+			souvenir_obj[proc_position].moveX -= move_step_ratio;
+			drawSouvenir("myCanvas");
+		}else {
+			alert("Wrong parameter");
+			return;
+		}
+	}
+	
+	function moveRight() {
+		if (souvenir_obj[proc_position].type == "image") {
+			souvenir_obj[proc_position].moveX += move_step_ratio;
+			drawSouvenir("myCanvas");
+		}else {
+			alert("Wrong parameter");
+			return;
+		}
+	}
+	
+	function zoomIn() {
+		if (souvenir_obj[proc_position].type == "image") {
+				souvenir_obj[proc_position].zoom += zoom_step_ratio;
+				drawSouvenir("myCanvas");
+		}else {
+			$.bootstrapGrowl("Cannot move text.", { type: 'danger' , delay:4000, offset: {from: 'top', amount: MSG_OFFSET}});
+			return;
+		}
+	}
+	
+	function zoomOut() {
+		if (souvenir_obj[proc_position].type == "image") {
+			souvenir_obj[proc_position].zoom -= zoom_step_ratio;
+			drawSouvenir("myCanvas");
+		}else {
+			$.bootstrapGrowl("Cannot move text.", { type: 'danger' , delay:4000, offset: {from: 'top', amount: MSG_OFFSET}});
+			return;
+		}
 	}
 </script>
 
@@ -893,13 +1010,26 @@ div.border-rect-active {
 
 
 					<!-- Choose a picture for the rect -->
-					<div class="img-content" id="img_content"></div>
+					<div class="img-content" id="img_content" style="float:left;"></div>
 
 					<!-- Modify position and Zoom -->
-					<div></div>
+					<div id="modify_panel" style="width:100px;margin-left:10px; margin-right:10px;float:left;display:none;">
+						<h4>Move</h4>
+						<img src="/Souvenirs/res/image/arrow.png" width="100" height="100" alt="Move Panel" usemap="#MoveMap"style="margin-top:5px;">
+
+							<map name="MoveMap">
+							  <area shape="circle" coords="63,22,22" alt="up"  onclick="moveUp()">
+							  <area shape="circle" coords="63,98,22" alt="down" onclick="moveDown()">
+							  <area shape="circle" coords="22,62,22" alt="left"  onclick="moveLeft()">
+							  <area shape="circle" coords="104,62,22" alt="right"  onclick="moveRight()">
+							</map>
+						<h4 style="padding-top:10px;">Zoom</h4>
+						<img src="/Souvenirs/res/image/zoom_in.png" width="40" alt="Zoom In" style="margin:4px;" onclick="zoomIn()">
+						<img alt="Zoom Out" src="/Souvenirs/res/image/zoom_out.png" width="40" style="margin:4px;" onclick="zoomOut()">
+					</div>
 
 					<!-- Add button -->
-					<div style="margin-top: 10px;">
+					<div style="margin-top: 10px;clear:both;">
 						<button class="btn-sm btn-primary" id="add_pic_btn" type="button" onclick="addImage2Canvas()">Add
 							Selected Image</button>
 					</div>

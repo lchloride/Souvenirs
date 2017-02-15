@@ -10,41 +10,68 @@ import java.io.FileOutputStream;
 import org.apache.log4j.Logger;
 
 /**
- *
+ * 文件操作工具类，包括复制、删除、重命名
  */
 public class FileOper {
 	private final static Logger logger = Logger.getLogger(FileOper.class);
-
+	/**
+	 * 重命名文件(文件夹)
+	 * @param old_name 原始文件(夹)路径
+	 * @param new_name 新的文件(夹)路径
+	 * @return 操作执行结果，true代表执行成功；false代表执行失败
+	 */
 	public static boolean rename(String old_name, String new_name) {
 		// Rename folder name
 		File file1 = new File(old_name);
 		return file1.renameTo(new File(new_name));
 	}
 
-	// 递归删除文件夹
+	/**
+	 * 删除文件(文件夹)
+	 * @param path 待删除的文件(夹)名称
+	 * @return 操作执行结果，true代表执行成功；false代表执行失败
+	 */
 	public static boolean deleteFile(String path) {
 		File file = new File(path);
-		if (file.exists()) {// 判断文件是否存在
-			if (file.isFile()) {// 判断是否是文件
-				return file.delete();// 删除文件
+		// Check existence of file
+		if (file.exists()) {
+			// Check whether it id file or not
+			if (file.isFile()) {
+				// For file, delete it directly
+				return file.delete();
 			} else if (file.isDirectory()) {// 否则如果它是一个目录
-				File[] files = file.listFiles();// 声明目录下所有的文件 files[];
-				for (int i = 0; i < files.length; i++) {// 遍历目录下所有的文件
+				// For folder, delete all its contents first and then delete folder
+				File[] files = file.listFiles();
+				for (int i = 0; i < files.length; i++) {
 					if (!deleteFile(files[i].getPath()))
-						return false;// 把每个文件用这个方法进行迭代
+						return false;
 				}
-				return file.delete();// 删除文件夹
+				return file.delete();
 			}
 		} else {
-			logger.warn("Deleted file does not exist. File path=<" + path + ">");
+			// Variant file cannot be found.
+			logger.warn("File/folder to be deleted does not exist. File/folder path=<" + path + ">");
 			return false;
 		}
 		return true;
 	}
 
+	/**
+	 * 复制文件。<strong>注意：如果目标文件已存在，该操作会覆盖目标文件！</strong>
+	 * @param f1 源文件
+	 * @param f2 目标文件
+	 * @return 操作执行结果，true代表执行成功；false代表执行失败
+	 */
 	public static boolean copyFile(String f1, String f2) {
 		try {
-			int length = Integer.parseInt(PropertyOper.GetValueByKey("souvenirs.properties", "MEMORY_THRESHOLD"), 16);// default is 2097152
+			// length is the memory threshold of copying file 
+			int length = 0;
+			try {
+				length = Integer.parseInt(PropertyOper.GetValueByKey("souvenirs.properties", "MEMORY_THRESHOLD"), 16);
+			} catch (NumberFormatException e) {
+				// TODO: handle exception
+				length = 2097152;// default is 2097152
+			}		
 			FileInputStream in = new FileInputStream(new File(f1));
 			FileOutputStream out = new FileOutputStream(new File(f2));
 			byte[] buffer = new byte[length];

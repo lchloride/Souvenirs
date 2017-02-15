@@ -1,5 +1,9 @@
 package souvenirs.web;
 
+import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -17,9 +21,11 @@ import souvenirs.Picture;
 import souvenirs.SharedAlbum;
 import souvenirs.dao.SouvenirsDAO;
 import tool.Base64;
+import tool.FileOper;
 import tool.ImageLoader;
 import tool.PropertyOper;
 import tool.exception.BadRequestException;
+import tool.exception.RenameFolderErrorException;
 import user.web.UserManager;
 
 /**
@@ -32,7 +38,9 @@ public class SouvenirsManager {
 	final int OWNER_ID = 0;
 	final int OWNER_ALBUM_NAME = 1;
 	final int OWNER_FILENAME = 2;
-
+	private final static int DEFAULT_AFFECTED_ROW = 1;
+	private static String BASE_PATH = PropertyOper.GetValueByKey("souvenirs.properties", "data_path");
+	
 	public SouvenirsManager() {
 		// checkValidDAO();
 	}
@@ -151,8 +159,9 @@ public class SouvenirsManager {
 	 * 
 	 * @see org.json
 	 * @param parameter
-	 *            前端传来的参数，key包括login_user_id(登录的用户ID), album_name(相册名)
-	 * @return 相册中所有图片名字和地址所组成的json字符串(形如：[{Filename: "A", Addr:"B"}, {UserID: "C", AlbumName: "D", Filename: "E", Addr:"F"}, ...])
+	 *            前端传来的参数，key包括login_user_id(登录的用户ID), album_identifier(相册标识名：个人相册指相册名；共享相册指小组编号)
+	 * @return 相册中所有图片名字和地址所组成的json字符串(形如：[{UserID: "A1", AlbumName: "B1", Filename: "C1", Addr:"D1", "Username":"E1", Description:"F1"}, 
+	 * 					{UserID: "C", AlbumName: "D", Filename: "E", Addr:"F"}, ...])
 	 */
 	public String getImageAddrInAlbum(Map<String, String> parameter) {
 		checkValidDAO();
@@ -170,6 +179,7 @@ public class SouvenirsManager {
 		//logger.debug("image_list: " + image_list);
 		JSONArray json_array = new JSONArray();
 		Map<String, String> image_content = null;
+		DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		for (Picture image_item : image_list) {
 			// Form json object of filename and address
 			image_content = new HashMap<>();
@@ -179,6 +189,8 @@ public class SouvenirsManager {
 			image_content.put("Addr", ImageLoader.genAddrOfPicture(image_item.getUserId(), image_item.getAlbumName(),
 					image_item.getFilename()));
 			image_content.put("Username", UserManager.getUsernameByID(image_item.getUserId()));
+			image_content.put("Description", image_item.getDescription());
+			image_content.put("UploadTime", sdf.format(image_item.getUploadTimestamp()));
 			json_array.put(image_content);
 		}
 		logger.debug("json:" + json_array);
@@ -292,11 +304,14 @@ public class SouvenirsManager {
 		
 		//Basic parameters without SQL query
 		result.put("Is_personal", true);
+		result.put("Picture_user_id", user_id);
+		result.put("Login_user_id", user_id);
 		result.put("Username", UserManager.getUsernameByID(user_id));
 		result.put("Owner", UserManager.getUsernameByID(user_id));
 		result.put("Album_name", album_name);
 		result.put("Picture_name", picture_name.substring(0, picture_name.lastIndexOf('.')));
 		result.put("Picture", ImageLoader.genAddrOfPicture(user_id, album_name, picture_name));
+		result.put("Avatar", ImageLoader.genAddrOfAvatar(user_id));
 		
 		//Advanced parameters with SQL query
 		Picture pic = dao.getPictureInfo(user_id, album_name, picture_name);
@@ -314,11 +329,13 @@ public class SouvenirsManager {
 		for (Comment comment : comments) {
 			jsonObject = new JSONObject();
 			//logger.debug("comment_user_id:"+comment.getCommentUserId());
+			jsonObject.put("comment_id", comment.getCommentId());
 			jsonObject.put("comment_username", UserManager.getUsernameByID(comment.getCommentUserId()));
 			jsonObject.put("comment_user_avatar", ImageLoader.genAddrOfAvatar(comment.getCommentUserId()));
 			jsonObject.put("comment_content", comment.getCommentContent());
 			jsonObject.put("comment_time", sdf.format(comment.getTime()));
-			jsonObject.put("reply_username", UserManager.getUsernameByID(comment.getReplyUserId()));
+			jsonObject.put("is_valid", comment.getIsValid()==1?true:false);
+			jsonObject.put("replied_comment_id", comment.getRepliedCommentId());
 			comment_json_list.add(jsonObject.toString());
 		}
 		result.put("Comment_json_list", comment_json_list);
@@ -331,6 +348,7 @@ public class SouvenirsManager {
 		List<String> salbum_own_pic_json_list = new ArrayList<>();
 		for (SharedAlbum sharedAlbum : sAlbums) {
 			own_json_item = new JSONObject();
+			own_json_item.put("group_id", sharedAlbum.getGroupId());
 			own_json_item.put("salbum_name", sharedAlbum.getSharedAlbumName());
 			if (picSAlbums.contains(sharedAlbum.getGroupId())) {
 				own_json_item.put("is_shared", true);
@@ -347,7 +365,16 @@ public class SouvenirsManager {
 		JSONArray liking_person_json = new JSONArray(liking_person_list);
 		result.put("Liking_person_json", liking_person_json);
 		//logger.debug("liking_person_json:"+liking_person_json);
-		
+		if (parameter.get("success_msg")!=null) {
+			JSONArray success_msg = new JSONArray(URLDecoder.decode(parameter.get("success_msg"), "UTF-8"));
+			result.put("Success_msg", success_msg.toString());
+		} else 
+			result.put("Success_msg", new JSONArray().toString());
+		if (parameter.get("failure_msg")!=null) {
+			JSONArray failure_msg = new JSONArray(URLDecoder.decode(parameter.get("failure_msg"), "UTF-8"));
+			result.put("Failure_msg", failure_msg.toString());
+		} else
+			result.put("Failure_msg", new JSONArray().toString());
 		result.put("DispatchURL", "picture.jsp");
 		return result;
 	}
@@ -373,6 +400,7 @@ public class SouvenirsManager {
 		//and then modify some parameters of displaying such as album name and share album list
 		Map<String, Object> result = displayPictureManager(parameter);
 		result.put("Is_personal", false);
+		result.put("Login_user_id", parameter.get("login_user_id"));
 		result.put("Username", UserManager.getUsernameByID(parameter.get("login_user_id")));
 		String group_id = parameter.get("group_id");
 		if (group_id == null || group_id.isEmpty())
@@ -411,6 +439,182 @@ public class SouvenirsManager {
 		}else{
 			result.put("DispatchURL", "showPicture.jsp");
 		}
+		return result;
+	}
+	
+	public Map<String, Object> displaySharePicture(Map<String, String> parameter) throws BadRequestException, Exception {
+		checkValidDAO();
+		String user_id = parameter.get("login_user_id");
+		Map<String, Object> result = new HashMap<>();
+		result.put("DispatchURL", "share.jsp");
+		result.put("Avatar", ImageLoader.genAddrOfAvatar(user_id));
+		String group_id = parameter.get("group_id");
+		if (group_id == null || group_id.isEmpty())
+			throw new BadRequestException("Invalid parameter group_id=null or group is empty.");
+		
+		try {
+			List<PersonalAlbum> album_list = dao.getAllPAlbumInfo(user_id, SouvenirsDAO.PERSONAL_ALBUM);
+			List<String> album_name_list = new ArrayList<>();
+			for (PersonalAlbum pAlbum : album_list) {
+				album_name_list.add(pAlbum.getAlbumName());
+			}
+			result.put("Album_name_list", album_name_list);
+			
+			if (album_name_list.size() == 0)
+				throw new Exception("No album for user <"+user_id+">");
+			Map<String, String> para = new HashMap<>();
+			para.put("login_user_id", user_id);
+			para.put("album_identifier", album_name_list.get(0));
+			logger.debug("para:"+para);
+/*			JSONArray jArray = new JSONArray(getImageAddrInAlbum(para));
+			List<String> image_json_list = new ArrayList<>();
+			for (int i = 0; i < jArray.length(); i++) {
+				image_json_list.add(jArray.getJSONObject(i).toString());
+			}*/
+			result.put("image_list_json", getImageAddrInAlbum(para));
+
+			result.put("Group_id", group_id);
+			Group sAlbum = dao.getSAlbumInfo(group_id);
+			result.put("SAlbum_name", sAlbum.getSharedAlbumName());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			throw e;
+		}
+		return result;
+	}
+	
+	public Map<String, Object> updatePictureInfo(Map<String, String>parameter) throws Exception {
+		checkValidDAO();
+		logger.debug("parameters:"+parameter);
+		String user_id = parameter.get("login_user_id");
+		String format = parameter.get("format");
+		String origin_picture_name = parameter.get("original_picture_name")+"."+format;
+		String picture_name = parameter.get("picture_name")+"."+format;
+		String album_name = parameter.get("album_name");
+		String original_description = parameter.get("original_description");
+		String description = parameter.get("description");
+		String salbum_json = parameter.get("salbum_json");
+		Map<String, Object> result = new HashMap<>();
+		Picture pic = null;
+		List<String> success_result = new ArrayList<>();
+		List<String> failure_result = new ArrayList<>();
+		try {
+			//pic = dao.getPictureInfo(user_id, album_name, origin_picture_name);
+		} catch (Exception e) {
+			// Picture to be updated cannot be found.
+			//update_result.add("Picture to be updated cannot be found.");
+			logger.warn("Picture to be updated cannot be found. Parameters: user_id=<"+user_id+">, album_name=<"+album_name+">, "
+					+ "filename=<"+origin_picture_name+">");
+			//result.put("result_list", URLEncoder.encode((new JSONArray(update_result)).toString(), "UTF-8"));
+			throw e;
+		}
+		try {
+			if (!picture_name.contentEquals(origin_picture_name)) {
+				String album_path = BASE_PATH+File.separator+user_id+File.separator+album_name;
+				// Rename picture first
+				if (!FileOper.rename(album_path+File.separator+origin_picture_name, album_path+File.separator+picture_name)) {
+					// Renaming failed, throw exception
+					throw new RenameFolderErrorException("Cannot rename picture from "+origin_picture_name+" to "+picture_name);
+				}
+				// Renaming succeeded then update record in database(table picture)
+				boolean rs = dao.updatePictureName(user_id, album_name, origin_picture_name, picture_name);
+				if (rs) {
+					// Updating table succeeded
+					success_result.add("picture name");
+					logger.info("Updating picture name succeed. Parameters: user_id=<"+user_id+">, album_name=<"+album_name+">, "
+							+ "previous filename=<"+origin_picture_name+">, current filename=<"+picture_name+">");
+				} else {
+					// Updating table failed
+					failure_result.add("picture name");
+					logger.info("Updating picture name failed. Parameters: user_id=<"+user_id+">, album_name=<"+album_name+">, "
+							+ "previous filename=<"+origin_picture_name+">, current filename=<"+picture_name+">");
+				}
+			}
+		} catch (RenameFolderErrorException e){
+			// Renaming failure exception is captured, just print error message
+			failure_result.add("picture name: "+e.getMessage().substring(0, Math.min(100, e.getMessage().length())));
+			logger.warn("Updating picture name failed since renaming failure. Parameters: user_id=<"+user_id+">, album_name=<"+album_name+">, "
+					+ "previous filename=<"+origin_picture_name+">, current filename=<"+picture_name+">", e);
+		} catch (Exception e) {
+			// Non-renaming failure exception is captured, undo renaming operation as well as print error message
+			String album_path = BASE_PATH+File.separator+user_id+File.separator+album_name;
+			if (!FileOper.rename(album_path+File.separator+picture_name, album_path+File.separator+origin_picture_name)) {
+				// Undo renaming failed, this means system error occurred, so throw exception
+				logger.error("Undo renaming picture failed, which leads to inconsistence between database and file system. Parameters: "+parameter);
+				throw e;
+			}
+			failure_result.add("picture name: "+e.getMessage().substring(0, Math.min(100, e.getMessage().length())));
+			logger.warn("Updating picture name failed. Parameters: user_id=<"+user_id+">, album_name=<"+album_name+">, "
+					+ "previous filename=<"+origin_picture_name+">, current filename=<"+picture_name+">", e);
+		}
+		
+		try {
+			if (!description.contentEquals(original_description)) {
+				int rs = dao.updatePictureDescription(user_id, album_name, picture_name, description);
+				if (rs == DEFAULT_AFFECTED_ROW) {
+					success_result.add("description");
+					logger.info("Updating picture description succeed. Parameters: user_id=<"+user_id+">, album_name=<"+album_name+">, "
+							+ "filename=<"+picture_name+">, previous description=<"+original_description+">, current description=<"+description+">");
+				} else {
+					failure_result.add("description");
+					logger.info("Updating picture description succeed. Parameters: user_id=<"+user_id+">, album_name=<"+album_name+">, "
+							+ "filename=<"+picture_name+">, previous description=<"+original_description+">, current description=<"+description+">");
+				}
+			}
+		} catch (Exception e) {
+			failure_result.add("description: "+e.getMessage().substring(0, Math.min(100, e.getMessage().length())));
+			logger.warn("Updating picture description succeed. Parameters: user_id=<"+user_id+">, album_name=<"+album_name+">, "
+					+ "filename=<"+picture_name+">, previous description=<"+original_description+">, current description=<"+description+">", e);
+		}
+		
+		try {
+			List<String> original_shared_group = dao.getPictureBelongGroup(user_id, album_name, picture_name);
+			JSONArray salbum_share_list = new JSONArray(salbum_json);
+			for (int i=0; i<salbum_share_list.length(); i++) {
+				JSONObject salbum_item = salbum_share_list.getJSONObject(i);
+				if (salbum_item.getBoolean("is_shared") != original_shared_group.contains(salbum_item.getString("group_id"))) {
+					if (salbum_item.getBoolean("is_shared")) {
+						int rs = dao.sharePicture(user_id, album_name, picture_name, salbum_item.getString("group_id"));
+						if (rs == SouvenirsDAO.SHARE_PICTURE_SUCCESS) {
+							success_result.add("sharing state of "+salbum_item.getString("salbum_name"));
+							logger.info("Sharing picture succeed. Parameters: user_id=<"+user_id+">, album_name=<"+album_name+">, "
+									+ "filename=<"+picture_name+">, group id=<"+salbum_item.getString("group_id")+">");
+						} else if (rs == SouvenirsDAO.SHARE_PICTURE_DUPLICATE) {
+							failure_result.add("sharing "+salbum_item.getString("salbum_name")+" since this picture has already existed.");
+							logger.error("Sharing picture failed since duplicated picture. Parameters: user_id=<"+user_id+">, album_name=<"+album_name+">, "
+									+ "filename=<"+picture_name+">, group id=<"+salbum_item.getString("group_id")+">");
+						}else {
+							failure_result.add("sharing "+salbum_item.getString("salbum_name"));
+							logger.info("Sharing picture failed. Parameters: user_id=<"+user_id+">, album_name=<"+album_name+">, "
+									+ "filename=<"+picture_name+">, group id=<"+salbum_item.getString("group_id")+">");
+						}
+					} else {
+						int rs = dao.unsharePicture(user_id, album_name, picture_name, salbum_item.getString("group_id"));
+						if (rs == DEFAULT_AFFECTED_ROW) {
+							success_result.add("unsharing state of "+salbum_item.getString("salbum_name"));
+							logger.info("Unsharing picture succeed. Parameters: user_id=<"+user_id+">, album_name=<"+album_name+">, "
+									+ "filename=<"+picture_name+">, group id=<"+salbum_item.getString("group_id")+">");
+						} else {
+							failure_result.add("unsharing "+salbum_item.getString("salbum_name"));
+							logger.info("Unsharing picture failed. Parameters: user_id=<"+user_id+">, album_name=<"+album_name+">, "
+									+ "filename=<"+picture_name+">, group id=<"+salbum_item.getString("group_id")+">");
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			failure_result.add("changing sharing status: "+e.getMessage().substring(0, Math.min(100, e.getMessage().length())));
+			logger.info("Unsharing picture succeed. Parameters: user_id=<"+user_id+">, album_name=<"+album_name+">, "
+					+ "filename=<"+picture_name+">", e);
+		}
+		result.put("Is_redirect", true);
+		String url = "/Souvenirs/picture?album_name="+URLEncoder.encode(album_name, "UTF-8")+
+				"&picture_name="+URLEncoder.encode(picture_name, "UTF-8") +
+				"&success_msg="+URLEncoder.encode((new JSONArray(success_result).toString()), "UTF-8") +
+				"&failure_msg="+URLEncoder.encode((new JSONArray(failure_result).toString()), "UTF-8");
+		
+		result.put("DispatchURL",url );
 		return result;
 	}
 }

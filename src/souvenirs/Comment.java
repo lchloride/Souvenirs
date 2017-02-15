@@ -24,6 +24,10 @@ public class Comment {
 	 */
 	private String picture_name;
 	/**
+	 * 在一张照片中该条评论的ID
+	 */
+	private int comment_id;
+	/**
 	 * 发表本条评论的用户ID
 	 */
 	private String comment_user_id;
@@ -32,21 +36,21 @@ public class Comment {
 	 */
 	private String comment_content;
 	/**
+	 * 评论是否可见的标志
+	 */
+	private int is_valid;
+	/**
 	 * 发表评论的时间
 	 */
 	private Timestamp time;
 	/**
-	 * 本条评论所回复的评论的发表用户ID。如果不是任何一条评论的回复则为空字符串
+	 * 在一张照片中，本条评论所回复的评论的ID。如果不是任何一条评论的回复则为空字符串
 	 */
-	private String reply_user_id;
-	/**
-	 * 本条评论所回复的评论内容
-	 */
-	private String reply_content;
+	private int replied_comment_id;
 	/**
 	 * Comment类的成员数量
 	 */
-	private final static int MEMBER_COUNT = 8;
+	private final static int MEMBER_COUNT = 9;
 	
 	/**
 	 * 照片所属用户的ID的获取方法
@@ -132,33 +136,48 @@ public class Comment {
 	public void setTime(Timestamp time) {
 		this.time = time;
 	}
+
 	/**
-	 * 本条评论所回复的评论的发表用户ID的获取方法
-	 * @return the reply_user_id
+	 * 一张照片中，评论ID的获取方法
+	 * @return 评论ID
 	 */
-	public String getReplyUserId() {
-		return reply_user_id;
+	public int getCommentId() {
+		return comment_id;
 	}
 	/**
-	 * 本条评论所回复的评论的发表用户ID的赋值方法
-	 * @param reply_user_id the reply_user_id to set
+	 * 一张照片中，评论ID的赋值方法
+	 * @param comment_id the comment ID to be set
 	 */
-	public void setReplyUserId(String reply_user_id) {
-		this.reply_user_id = reply_user_id;
+	public void setCommentId(int comment_id) {
+		this.comment_id = comment_id;
 	}
 	/**
-	 * 本条评论所回复的评论内容的获取方法
-	 * @return the reply_content
+	 * 评论可见标志的获取方法
+	 * @return a boolean flag
 	 */
-	public String getReplyContent() {
-		return reply_content;
+	public int getIsValid() {
+		return is_valid;
 	}
 	/**
-	 * 本条评论所回复的评论内容的赋值方法
-	 * @param reply_content the reply_content to set
+	 * 评论可见标志的赋值方法
+	 * @param is_valid the flag indicating validation of this comment
 	 */
-	public void setReplyContent(String reply_content) {
-		this.reply_content = reply_content;
+	public void setIsValid(int is_valid) {
+		this.is_valid = is_valid;
+	}
+	/**
+	 * 该评论所回复的那条评论的ID的获取方法
+	 * @return replied comment ID
+	 */
+	public int getRepliedCommentId() {
+		return replied_comment_id;
+	}
+	/**
+	 * 该评论所回复的那条评论的ID的赋值方法
+	 * @param replied_comment_id replied comment ID to set
+	 */
+	public void setRepliedCommentId(int replied_comment_id) {
+		this.replied_comment_id = replied_comment_id;
 	}
 	/**
 	 * Comment类的成员数量的获取方法
@@ -179,20 +198,15 @@ public class Comment {
 		jsonObject.put("comment_user_id", comment_user_id);
 		jsonObject.put("comment_content", comment_content);
 		jsonObject.put("time", time);
-		jsonObject.put("reply_user_id", reply_user_id);
-		jsonObject.put("reply_content", reply_content);
 		return jsonObject.toString();
 	}
 	
-	/**
-	 *  Format a string to show its content
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return "Comment [user_id=" + user_id + ", album_name=" + album_name + ", picture_name=" + picture_name
-				+ ", comment_user_id=" + comment_user_id + ", comment_content=" + comment_content + ", time=" + time
-				+ ", reply_user_id=" + reply_user_id + ", reply_content=" + reply_content + "]\n";
+				+ ", comment_id=" + comment_id + ", comment_user_id=" + comment_user_id + ", comment_content="
+				+ comment_content + ", is_valid=" + is_valid + ", time=" + time + ", replied_comment_id="
+				+ replied_comment_id + "]";
 	}
 	
 }

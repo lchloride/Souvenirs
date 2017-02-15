@@ -17,6 +17,8 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 
+import com.sun.org.apache.xpath.internal.operations.And;
+
 /**
  * ImageLoader用来处理图片url的编码、解码与显示。
 	 * <p>
@@ -82,7 +84,6 @@ public class ImageLoader extends HttpServlet {
 				//base_path is the folder storing all users' pictures
 				String base_path = PropertyOper.GetValueByKey("souvenirs.properties", "data_path");
 				//file_path is the true path that is formed from url based on parameters method and content 
-				//logger.debug("base_path: "+base_path);
 				String file_path = getPathFromPara(request.getParameter("method"), request.getParameter("content"),
 						user_id);
 				//logger.debug("file_path: "+file_path);
@@ -101,9 +102,10 @@ public class ImageLoader extends HttpServlet {
 				response.reset();
 				response.setCharacterEncoding("UTF-8");
 				// Set MIME of image
-				//response.setContentType("image/*");
+				response.setContentType("image/*");
 				response.setContentLength(bis.available());
-
+				if (request.getParameter("download")!=null && request.getParameter("download").contentEquals("true"))
+					response.setHeader("Content-Disposition", "attachment;filename="+java.net.URLEncoder.encode(file_path.substring(file_path.lastIndexOf(File.separator)+1), "UTF-8"));
 				os = response.getOutputStream();
 				int n;
 				while ((n = bis.read(buffer)) != -1) {

@@ -107,7 +107,7 @@ public class SouvenirsServ extends HttpServlet {
 				} else if (query_url.contains("AlbumAjax")) {
 					
 					// Send json string of album info when front side open an Ajax query
-					queryAlbumAjax(response, sm, para);
+					//queryAlbumAjax(response, sm, para);
 					return;
 				} else if (query_url.contentEquals("checkMakingDone")) {
 					
@@ -138,6 +138,14 @@ public class SouvenirsServ extends HttpServlet {
 					
 					//Show picture in original size 
 					result = sm.showPicture(para);
+				} else if (query_url.contentEquals("share")) {
+					
+					//Show picture in original size 
+					result = sm.displaySharePicture(para);
+				} else if (query_url.contentEquals("updatePictureInfo")) {
+					
+					//Show picture in original size 
+					result = sm.updatePictureInfo(para);
 				} else {
 					
 					// query_url is wrong
@@ -157,10 +165,15 @@ public class SouvenirsServ extends HttpServlet {
 			for (Entry<String, Object> entry : result.entrySet()) {
 				request.setAttribute(entry.getKey(), entry.getValue());
 			}
-			// Forward to assigned page
+			
+			// Forward or redirect to assigned page
 			String dispatchURL = result.containsKey("DispatchURL") ? (String) result.get("DispatchURL") : "index.jsp";
-			RequestDispatcher dispatcher = request.getRequestDispatcher(dispatchURL);
-			dispatcher.forward(request, response);
+			if (result.containsKey("Is_redirect"))
+				response.sendRedirect(dispatchURL);
+			else {
+				RequestDispatcher dispatcher = request.getRequestDispatcher(dispatchURL);
+				dispatcher.forward(request, response);
+			}
 		}
 	}
 
@@ -239,6 +252,8 @@ public class SouvenirsServ extends HttpServlet {
 	 * 				personal album指的是album name；shared album指的是group_id)
 	 * @throws Exception 如果发送失败则抛出异常
 	 * @see souvenirs.web.SouvenirsManager#getImageAddrInAlbum(Map)
+	 * @see souvenirs.web.SouvenirsAjaxManager#queryPictureInAlbum(Map)
+	 * @deprecated
 	 */
 	private void queryAlbumAjax(HttpServletResponse response, SouvenirsManager sm, Map<String, String> para) throws Exception {
 		logger.info("User(id=<" + para.get("login_user_id") + ">) query image address in album <"
