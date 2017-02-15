@@ -403,13 +403,16 @@ public class SouvenirsDAO {
 	}
 	
 	/**
-	 * 
-	 * @param user_id
-	 * @param album_name
-	 * @param filename
-	 * @param group_id
-	 * @return
-	 * @throws Exception
+	 * 分享一张照片到一个共享相册
+	 * @param user_id 照片所属用户ID
+	 * @param album_name 照片所属相册
+	 * @param filename 照片名
+	 * @param group_id 共享相册所属的小组
+	 * @return 一个整数，表示操作结果。数值的含义请参阅常量SHARE_PICTURE_SUCCESS、SHARE_PICTURE_FAILURE、SHARE_PICTURE_DUPLICATE
+	 * @throws Exception 数据库操作异常或数据库查询结果为空会抛出异常
+	 * @see souvenirs.dao.SouvenirsDAO#SHARE_PICTURE_SUCCESS
+	 * @see souvenirs.dao.SouvenirsDAO#SHARE_PICTURE_FAILURE
+	 * @see souvenirs.dao.SouvenirsDAO#SHARE_PICTURE_DUPLICATE
 	 */
 	public int sharePicture(String user_id, String album_name, String filename, String group_id) throws Exception {
 		String sql = "call sharePicture(?, ?, ?, ?)";
@@ -421,12 +424,30 @@ public class SouvenirsDAO {
 			throw new Exception("Invalid SQL Result with sql:<"+sql+">, parameters:<"+para+">");
 	}
 	
+	/**
+	 * 解除一个共享相册中已经分享的一张照片
+	 * @param user_id 照片所属用户ID
+	 * @param album_name 照片所属相册
+	 * @param filename 照片名
+	 * @param group_id 共享相册所属的小组
+	 * @return 一个整数，表示操作所影响的行数。正常情况下应为1.
+	 * @throws Exception 数据库操作异常会抛出异常
+	 */
 	public int unsharePicture(String user_id, String album_name, String filename, String group_id) throws Exception {
 		String sql = "delete from salbum_own_picture where group_id=? and user_id=? and album_name=? and filename=?";
 		List<String>para = Arrays.asList(group_id, user_id, album_name, filename);
 		return DB.execSQLUpdate(sql, para);
 	}
 	
+	/**
+	 * 更新照片的名称
+	 * @param user_id 照片所属用户ID
+	 * @param album_name 照片所属相册
+	 * @param original_filename 原始照片名
+	 * @param new_filename 新照片名
+	 * @return 布尔值，表示操作结果：true为成功；false为失败
+	 * @throws Exception 数据库操作异常或数据库查询结果为空会抛出异常
+	 */
 	public boolean updatePictureName(String user_id, String album_name, String original_filename, String new_filename) throws Exception {
 		String sql = "call UpdatePictureName(?, ?, ?, ?)";
 		List<String>para = Arrays.asList(user_id, album_name, original_filename, new_filename);
@@ -437,24 +458,62 @@ public class SouvenirsDAO {
 			throw new Exception("Invalid SQL Result with sql:<"+sql+">, parameters:<"+para+">");
 	}
 	
+	/**
+	 * 更新照片描述
+	 * @param user_id 照片所属用户的ID
+	 * @param album_name 照片所属相册的相册名
+	 * @param filename 照片名
+	 * @param new_description 新的描述文字(不需要原始描述文字)
+	 * @return 一个整数，表示操作所影响的行数。正常情况下应为1.
+	 * @throws Exception 数据库操作异常会抛出异常
+	 */
 	public int updatePictureDescription(String user_id, String album_name, String filename, String new_description) throws Exception {
 		String sql = "update picture set description=? where user_id = ? and album_name = ? and filename = ?";
 		List<String>para = Arrays.asList(new_description, user_id, album_name, filename);
 		return DB.execSQLUpdate(sql, para);
 	}
 	
+	/**
+	 * 为一张照片点赞
+	 * @param like_user_id 点赞的用户
+	 * @param picture_user_id 照片所属用户的ID
+	 * @param album_name 照片所属相册的相册名
+	 * @param filename 照片名
+	 * @return 一个整数，表示操作所影响的行数。正常情况下应为1.
+	 * @throws Exception 数据库操作异常会抛出异常
+	 */
 	public int likePicture(String like_user_id, String picture_user_id, String album_name, String filename) throws Exception {
 		String sql = "insert into like_picture(user_id, album_name, filename, like_user_id) values (?, ?, ?, ?)";
 		List<String>para = Arrays.asList(picture_user_id, album_name, filename, like_user_id);
 		return DB.execSQLUpdate(sql, para);
 	}
 	
+	/**
+	 * 取消某个用户对某张照片的点赞操作
+	 * @param like_user_id 取消点赞的用户
+	 * @param picture_user_id 照片所属用户的ID
+	 * @param album_name 照片所属相册的相册名
+	 * @param filename 照片名
+	 * @return 一个整数，表示操作所影响的行数。正常情况下应为1. 
+	 * @throws Exception 数据库操作异常会抛出异常
+	 */
 	public int dislikePicture(String like_user_id, String picture_user_id, String album_name, String filename) throws Exception {
 		String sql = "delete from like_picture where user_id = ? and album_name = ? and filename = ? and like_user_id = ?";
 		List<String>para = Arrays.asList(picture_user_id, album_name, filename, like_user_id);
 		return DB.execSQLUpdate(sql, para);
 	}
 	
+	/**
+	 * 向一张照片添加一条评论
+	 * @param user_id 照片所属用户的ID
+	 * @param album_name 照片所属相册的相册名
+	 * @param filename 照片名
+	 * @param comment_user_id 添加评论的用户
+	 * @param comment 评论内容
+	 * @param reply_id 该条评论回复的评论编号，如果不回复任何一条评论则为0
+	 * @return 布尔值，表示操作结果：true为成功；false为失败
+	 * @throws Exception 数据库操作异常或数据库查询结果为空会抛出异常
+	 */
 	public boolean addComment(String user_id, String album_name, String filename, String comment_user_id, String comment, String reply_id) throws Exception {
 		String sql = "call AddComment(?, ?, ?, ?, ?, ?)";
 		List<String>para = Arrays.asList(user_id, album_name, filename, comment_user_id, comment, reply_id );
@@ -465,6 +524,18 @@ public class SouvenirsDAO {
 			throw new Exception("Invalid SQL Result with sql:<"+sql+">, parameters:<"+para+">");
 	}
 	
+	/**
+	 * 举报一条评论
+	 * @param report_user_id 举报人的ID
+	 * @param picture_user_id 照片所属用户的ID
+	 * @param album_name 照片所属相册的相册名
+	 * @param picture_name 照片名
+	 * @param comment_id 要举报的评论的编号
+	 * @param report_label 举报标签
+	 * @param report_content 举报的具体内容
+	 * @return 布尔值，表示操作结果：true为成功；false为失败
+	 * @throws Exception 数据库操作异常或数据库查询结果为空会抛出异常
+	 */
 	public boolean reportComment(String report_user_id, String picture_user_id, String album_name, String picture_name, 
 			String comment_id, String report_label, String report_content) throws Exception {
 		String sql = "call ReportComment(?, ?, ?, ?, ?, ?, ?)";

@@ -160,8 +160,9 @@ public class SouvenirsManager {
 	 * @see org.json
 	 * @param parameter
 	 *            前端传来的参数，key包括login_user_id(登录的用户ID), album_identifier(相册标识名：个人相册指相册名；共享相册指小组编号)
-	 * @return 相册中所有图片名字和地址所组成的json字符串(形如：[{UserID: "A1", AlbumName: "B1", Filename: "C1", Addr:"D1", "Username":"E1", Description:"F1"}, 
-	 * 					{UserID: "C", AlbumName: "D", Filename: "E", Addr:"F"}, ...])
+	 * @return 相册中所有图片名字和地址所组成的json字符串
+	 * 				(形如：[{UserID: "A1", AlbumName: "B1", Filename: "C1", Addr:"D1", "Username":"E1", "Description":"F1"， "UploadTime":"G1"}, 
+	 * 					{UserID: "A2", AlbumName: "B2", Filename: "C2", Addr:"D2", "Username":"E2", "Description":"F2"， "UploadTime":"G2"}, ...])
 	 */
 	public String getImageAddrInAlbum(Map<String, String> parameter) {
 		checkValidDAO();

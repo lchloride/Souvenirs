@@ -364,10 +364,11 @@ public class SouvenirsAjaxManager {
 	 * 获取某个用户的一个相册中的全部照片信息，并以json字符串的形式发给前端。
 	 * <p>
 	 * 发送到前端的数据格式：<br>
-	 * json字符串，由多个对象组成的json数组；其中每个json对象由5个域组成：Filename, Addr, UserID, AlbumName, Username
+	 * json字符串，由多个对象组成的json数组；其中每个json对象由7个域组成：Filename, Addr, UserID, AlbumName, Username, Description, UploadTime
 	 * </p>
 	 * @param parameter 发给SouvenirsAjaxManager的参数表，key包括login_user_id(登录用户名)、album_identifier(相册标识符：
 	 * 				personal album指的是album name；shared album指的是group_id)
+	 * @return 返回相册中全部照片信息所组成的json字符串
 	 * @see souvenirs.web.SouvenirsManager#getImageAddrInAlbum(Map)
 	 */
 	public String queryPictureInAlbum(Map<String, String>parameter) {
@@ -377,25 +378,48 @@ public class SouvenirsAjaxManager {
 		return result;
 	}
 	
+	/**
+	 * 批量分享照片到一个共享相册
+	 * @param parameter 从前端发来的参数列表，key包括list_json(要分享照片的相册名与照片名组成的json字符串，
+	 * 				形如[{"album_name":"A1", "filename":"B1"}, {"album_name":"A2", "filename":"B2"}, ...]); login_user_id(登录用户ID、，也是照片所属用户的ID)；
+	 * 				group_id(共享相册所属的小组ID)
+	 * @return json字符串，存放了操作成功、失败、键值重复三种结果分别对应的照片集合，
+	 * 				形如{"success_list", ["A1", "A2", ...]}, {"failure_list", ["B1", "B2", ...]}, {"duplication_list", ["C1", "C2", ...]}
+	 * @throws JSONException 传入的JSON数据解析失败会抛出异常
+	 * @throws Exception 数据库语句执行时抛出异常时会抛出异常
+	 */
 	public String sharePictures(Map<String, String>parameter) throws JSONException, Exception {
 		checkValidDAO();
+		
+		// Get parameters form front side
 		String result = "";
+		// A json string storing key information of sharing album   
 		String share_list_json = parameter.get("list_json");
+		// Login user id
 		String user_id = parameter.get("login_user_id");
+		// group_id indicates shared album
 		String group_id = parameter.get("group_id");
+		// Three list storing picture sets of each operation result
 		List<String> failure_list = new ArrayList<>();
 		List<String> success_list = new ArrayList<>();
 		List<String> duplication_list = new ArrayList<>();
+		
 		try {
+			// Parse share_json_list to an array
 			JSONArray jsonArray = new JSONArray(share_list_json);
 			JSONObject jsonObject = null;
 			
+			// Check validation of user_id and group_id
 			if (user_id == null || user_id.isEmpty() || group_id==null || group_id.isEmpty())
 				throw new BadRequestException("user_id / group_id is invalid! Parameters: <"+parameter+">");
 			
+			// For each item in jsonArray(which stands for one picture to be shared), use method sharePicture() in DAO to share it 
 			for (int i=0; i<jsonArray.length(); i++) {
+				// Get its information
 				jsonObject = jsonArray.getJSONObject(i);
+				// Share it
 				int rs = dao.sharePicture(user_id, jsonObject.optString("album_name"), jsonObject.optString("filename"), group_id);
+				// Check result
 				if (rs == SouvenirsDAO.SHARE_PICTURE_DUPLICATE)
 					duplication_list.add(jsonObject.optString("album_name")+" - "+jsonObject.optString("filename"));
 				else if (rs == SouvenirsDAO.SHARE_PICTURE_SUCCESS)
@@ -409,6 +433,7 @@ public class SouvenirsAjaxManager {
 			// TODO Auto-generated catch block
 			throw e;
 		}
+		// Form result json string
 		JSONObject result_json = new JSONObject();
 		result_json.put("failure_list", failure_list);
 		result_json.put("success_list", success_list);
@@ -417,13 +442,21 @@ public class SouvenirsAjaxManager {
 		return result;
 	}
 	
+	/**
+	 * 为一张照片点赞
+	 * @param parameter 从前端传来的参数列表，key包括picture_user_id(照片所属用户的ID)、like_user_id(点赞用户的ID)、album_name(照片所属相册的相册名)、
+	 * 				picture_name(照片名)
+	 * @return 一个json字符串，内容是操作后为该张照片点赞的用户列表, 格式参考souvenirs.dao.SouvenirsDAO#getLikingPersons()
+	 * @throws Exception 数据库操作失败会抛出异常
+	 * @see souvenirs.dao.SouvenirsDAO#getLikingPersons(String, String, String)
+	 */
 	public String likePicture(Map<String, String>parameter) throws Exception {
 		checkValidDAO();
+		// Get parameters from front side
 		String picture_user_id = parameter.get("picture_user_id");
 		String like_user_id = parameter.get("like_user_id");
 		String album_name = parameter.get("album_name");
 		String filename = parameter.get("picture_name");
-		logger.debug("para "+parameter);
 		try {
 			int rs = dao.likePicture(like_user_id, picture_user_id, album_name, filename);
 			if (rs != DEFAULT_AFFECTED_ROW)
@@ -431,14 +464,23 @@ public class SouvenirsAjaxManager {
 		} catch (Exception e) {
 			throw e;
 		}
-		//Query liking status and format json string 
+		// Query liking status and format json string 
 		List<String> liking_person_list = dao.getLikingPersons(picture_user_id, album_name, filename);
 		JSONArray liking_person_json = new JSONArray(liking_person_list);
 		return liking_person_json.toString();
 	}
 	
+	/**
+	 * 取消对一张照片的赞
+	 * @param parameter 前端发来的参数，key包括picture_user_id(照片所属用户的ID)、like_user_id(点赞用户的ID)、album_name(照片所属相册的相册名)、
+	 * 				picture_name(照片名)
+	 * @return 一个json字符串，内容是操作后为该张照片点赞的用户列表，格式参考souvenirs.dao.SouvenirsDAO#getLikingPersons()
+	 * @throws Exception 数据库操作失败会抛出异常
+	 * @see souvenirs.dao.SouvenirsDAO#getLikingPersons(String, String, String)
+	 */
 	public String dislikePicture(Map<String, String>parameter) throws Exception {
 		checkValidDAO();
+		// Get parameters from front side
 		String picture_user_id = parameter.get("picture_user_id");
 		String like_user_id = parameter.get("like_user_id");
 		String album_name = parameter.get("album_name");
@@ -450,12 +492,18 @@ public class SouvenirsAjaxManager {
 		} catch (Exception e) {
 			throw e;
 		}
-		//Query liking status and format json string 
+		// Query liking status and format json string 
 		List<String> liking_person_list = dao.getLikingPersons(picture_user_id, album_name, filename);
 		JSONArray liking_person_json = new JSONArray(liking_person_list);
 		return liking_person_json.toString();
 	}
 	
+	/**
+	 * 添加一条评论
+	 * @param parameter 前端发来的参数，key包括login_user_id(登录用户ID，代表了发表评论的用户的ID)、picture_user_id(照片所属用户的ID)、
+	 * 				album_name(照片所属相册的相册名)、picture_name(照片名)、comment(评论内容)、reply_comment_id(该评论所回复的评论的编号，如果不回复任何一条，其值为0)
+	 * @return 添加的那条评论的格式输出json字符串
+	 */
 	public String addComment(Map<String, String> parameter) {
 		checkValidDAO();
 		String login_user_id = parameter.get("login_user_id");
@@ -485,7 +533,6 @@ public class SouvenirsAjaxManager {
 			Comment comment = comments.get(comments.size()-1);
 			DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			JSONObject jsonObject = new JSONObject();
-			//logger.debug("comment_user_id:"+comment.getCommentUserId());
 			jsonObject.put("comment_id", comment.getCommentId());
 			jsonObject.put("comment_username", UserManager.getUsernameByID(comment.getCommentUserId()));
 			jsonObject.put("comment_user_avatar", ImageLoader.genAddrOfAvatar(comment.getCommentUserId()));
@@ -501,6 +548,14 @@ public class SouvenirsAjaxManager {
 		return result;
 	}
 	
+	/**
+	 * 举报一条评论
+	 * @param parameter 前端发来的参数，key包括login_user_id(登录用户的ID，用来指定举报人的ID)、picture_uid(图片所属用户的ID)、
+	 * 				album_name(图片所属相册的相册名)、picture_name(图片名)、comment_id(举报的那条评论的ID)、report_label(举报标签)、
+	 * 				report_content(举报内容详情)
+	 * @return 执行成功返回字符串true；否则无返回值并抛出异常
+	 * @throws Exception 数据库执行失败时抛出异常
+	 */
 	public String reportComment(Map<String, String>parameter) throws Exception {
 		checkValidDAO();
 		String report_user_id = parameter.get("login_user_id");

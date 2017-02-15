@@ -17,8 +17,6 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 
-import com.sun.org.apache.xpath.internal.operations.And;
-
 /**
  * ImageLoader用来处理图片url的编码、解码与显示。
 	 * <p>
@@ -101,11 +99,15 @@ public class ImageLoader extends HttpServlet {
 				byte[] buffer = new byte[512];
 				response.reset();
 				response.setCharacterEncoding("UTF-8");
+				
 				// Set MIME of image
 				response.setContentType("image/*");
 				response.setContentLength(bis.available());
+				
+				// If download operation is specified, form picture's filename
 				if (request.getParameter("download")!=null && request.getParameter("download").contentEquals("true"))
 					response.setHeader("Content-Disposition", "attachment;filename="+java.net.URLEncoder.encode(file_path.substring(file_path.lastIndexOf(File.separator)+1), "UTF-8"));
+				
 				os = response.getOutputStream();
 				int n;
 				while ((n = bis.read(buffer)) != -1) {
@@ -115,7 +117,6 @@ public class ImageLoader extends HttpServlet {
 				os.flush();
 				os.close();
 			} catch (Exception e) {
-				// e.printStackTrace();
 				//There are something wrong with reading and sending image
 				logger.warn(e.getMessage() + ", request: <" + request.getQueryString() + ">, request user id = <"
 						+ user_id + ">");
