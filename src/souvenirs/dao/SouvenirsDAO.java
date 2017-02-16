@@ -546,4 +546,10 @@ public class SouvenirsDAO {
 		} else
 			throw new Exception("Invalid SQL Result with sql:<"+sql+">, parameters:<"+para+">");
 	}
+	
+	public List<Picture> getLatestPictures(String user_id) throws Exception {
+		String sql = "SELECT user_id, album_name, filename, format, description, upload_timestamp FROM souvenirs.picture where user_id = ? order by upload_timestamp desc";
+		List<String>para = Arrays.asList(user_id);
+		return DB.execSQLQuery(sql, para,  new PictureImplStore());
+	}
 }

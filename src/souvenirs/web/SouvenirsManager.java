@@ -40,7 +40,7 @@ public class SouvenirsManager {
 	final int OWNER_FILENAME = 2;
 	private final static int DEFAULT_AFFECTED_ROW = 1;
 	private static String BASE_PATH = PropertyOper.GetValueByKey("souvenirs.properties", "data_path");
-	
+	public final static int DEFAULT_LATEST_NUMBER = 4;
 	public SouvenirsManager() {
 		// checkValidDAO();
 	}
@@ -74,7 +74,7 @@ public class SouvenirsManager {
 	 * @see souvenirs.dao.SouvenirsDAO#getAllPAlbumInfo(String, int)
 	 * @see souvenirs.dao.SouvenirsDAO#getAllSAlbumInfo(String, int)
 	 */
-	public Map<String, Object> displayContent(Map<String, String> parameter) throws Exception {
+	public Map<String, Object> displayContentOld(Map<String, String> parameter) throws Exception {
 		checkValidDAO();
 		Map<String, Object> result = new HashMap<>();
 		result.put("Avatar", ImageLoader.genAddrOfAvatar(parameter.get("login_user_id")));
@@ -106,6 +106,83 @@ public class SouvenirsManager {
 			shared_album_json_list.add(shared_album_json.toString().replaceAll("'", "&apos;"));
 		}
 		result.put("SAlbum_json_list", shared_album_json_list);
+		// logger.debug("personal_album_json=<"+person_album_json_list+">");
+		result.put("DispatchURL", "homepageOld.jsp");
+		return result;
+	}
+
+	/**
+	 * 获取相册的信息，显示在用户主页上。
+	 * 
+	 * @param parameter
+	 *            前端传来的参数，key包括login_user_id(用户ID)
+	 * @return 发回前端的显示参数，包括用户头像(key=Avatar)、个人相册json字符串列表(key=PAlbum_json_list)、
+	 *         共享相册json字符串列表(key=SAlbum_json_list)、待转向的页面(key=DispatchURL)
+	 * @throws Exception
+	 *             获取Album信息失败会抛出异常
+	 * @see souvenirs.dao.SouvenirsDAO#getAllPAlbumInfo(String, int)
+	 * @see souvenirs.dao.SouvenirsDAO#getAllSAlbumInfo(String, int)
+	 */
+	public Map<String, Object> displayContent(Map<String, String> parameter) throws Exception {
+		checkValidDAO();
+		String user_id = parameter.get("login_user_id");
+		Map<String, Object> result = new HashMap<>();
+		result.put("Avatar", ImageLoader.genAddrOfAvatar(user_id));
+
+		// Get information of latest uploaded pictures
+		List<Picture> latest_picture_list = dao.getLatestPictures(user_id);
+		List<String> picture_json_list = new ArrayList<>();
+		Map<String, String> image_content = null;
+		DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		int idx = 0;
+		for (Picture image_item : latest_picture_list) {
+			// Form json object of filename and address
+			if (idx >= DEFAULT_LATEST_NUMBER)
+				break;
+			image_content = new HashMap<>();
+			image_content.put("UserID", image_item.getUserId());
+			image_content.put("AlbumName", image_item.getAlbumName());
+			image_content.put("Filename", image_item.getFilename());
+			image_content.put("Addr", ImageLoader.genAddrOfPicture(image_item.getUserId(), image_item.getAlbumName(),
+					image_item.getFilename()));
+			image_content.put("Username", UserManager.getUsernameByID(image_item.getUserId()));
+			image_content.put("Description", image_item.getDescription());
+			image_content.put("UploadTime", sdf.format(image_item.getUploadTimestamp()));
+			picture_json_list.add(new JSONObject(image_content).toString());
+			idx++;
+		}
+		result.put("picture_json_list", picture_json_list);
+		result.put("Picture_count", latest_picture_list.size());
+		
+		// Get information list of user's personal albums 
+		List<PersonalAlbum> rPAlbums = dao.getAllPAlbumInfo(user_id, SouvenirsDAO.PERSONAL_ALBUM);
+		JSONObject personal_album_json = null;
+		Map<String, String> personal_album_map = new HashMap<>();
+		List<String> person_album_json_list = new ArrayList<>();
+		for (PersonalAlbum personalAlbum : rPAlbums) {
+			personal_album_map.put("album_name", personalAlbum.getAlbumName());
+			personal_album_map.put("cover_addr",
+					ImageLoader.genAddrOfPAlbumCover(user_id, personalAlbum.getAlbumName()));
+			personal_album_json = new JSONObject(personal_album_map);
+			person_album_json_list.add(personal_album_json.toString().replaceAll("'", "&apos;"));
+		}
+		result.put("PAlbum_json_list", person_album_json_list);
+		result.put("PAlbum_count", rPAlbums.size());
+		// logger.debug("personal_album_json=<"+person_album_json_list+">");
+
+		List<SharedAlbum> rSAlbums = dao.getAllSAlbumInfo(user_id, SouvenirsDAO.SHARED_ALBUM);
+		JSONObject shared_album_json = null;
+		Map<String, String> shared_album_map = new HashMap<>();
+		List<String> shared_album_json_list = new ArrayList<>();
+		for (SharedAlbum sharedAlbum : rSAlbums) {
+			shared_album_map.put("album_name", sharedAlbum.getSharedAlbumName());
+			shared_album_map.put("cover_addr", ImageLoader.genAddrOfSAlbumCover(sharedAlbum.getGroupId()));
+			shared_album_map.put("group_id", sharedAlbum.getGroupId());
+			shared_album_json = new JSONObject(shared_album_map);
+			shared_album_json_list.add(shared_album_json.toString().replaceAll("'", "&apos;"));
+		}
+		result.put("SAlbum_json_list", shared_album_json_list);
+		result.put("SAlbum_count", rSAlbums.size());
 		// logger.debug("personal_album_json=<"+person_album_json_list+">");
 		result.put("DispatchURL", "homepage.jsp");
 		return result;

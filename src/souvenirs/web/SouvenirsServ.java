@@ -93,6 +93,10 @@ public class SouvenirsServ extends HttpServlet {
 				if (query_url.contentEquals("homepage")) {
 					
 					// Display Content when firstly open the page
+					result = sm.displayContentOld(para);
+				} else if (query_url.contentEquals("homepagenew")) {
+					
+					// Display Content when firstly open the page
 					result = sm.displayContent(para);
 				} else if (query_url.contentEquals("formPicture")) {
 					

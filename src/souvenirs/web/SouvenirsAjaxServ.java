@@ -3,6 +3,7 @@ package souvenirs.web;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -63,19 +64,15 @@ public class SouvenirsAjaxServ extends HttpServlet {
 				String paraName = (String) paraNames.nextElement();
 				String[] paraValues = request.getParameterValues(paraName);
 				String paraValue = paraValues[0];
-				para.put(paraName, new String(paraValue.getBytes("iso8859-1"), "UTF-8"));
+				if (request.getMethod().contentEquals("GET"))
+					para.put(paraName, URLDecoder.decode(paraValue, "UTF-8"));
+				else
+					para.put(paraName, new String(paraValue.getBytes("iso8859-1"), "UTF-8"));
 			}
 
 			// Send user_id as primary key of user to manager object
 			para.put("login_user_id",
 					session.getAttribute("user_id") == null ? "" : (String) session.getAttribute("user_id"));
-
-			logger.debug(request.getQueryString());
-			if (request.getMethod().contentEquals("GET"))
-				for (Entry<String, String> item : para.entrySet()) {
-					item.setValue(URLDecoder.decode(item.getValue(), "UTF-8"));
-				}
-			
 			String result = new String();
 
 			// Obtain operation
@@ -127,7 +124,7 @@ public class SouvenirsAjaxServ extends HttpServlet {
 				logger.warn("", e);
 				result = e.getMessage();
 			}
-			out.println(result);
+			out.println(URLEncoder.encode(result, "UTF-8"));
 		}
 
 	}

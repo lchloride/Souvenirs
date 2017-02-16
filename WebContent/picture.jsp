@@ -283,6 +283,7 @@ div.comment {
 	}
 	
 	function sendCommentCallback(result) {
+		result = decodeURIComponent(result); 
 		if (result.indexOf('{') == 0) {
 			var cobj = JSON.parse(result);
 			comment_list_obj.push(cobj);
@@ -319,7 +320,7 @@ div.comment {
 			document.getElementById("comment_username_"+ idx).innerHTML += 
 				"<span style='font-weight:normal;float:right;'>"+
 				"<button class='btn btn-link' id='reply_btn_"+(idx-1)+"' style='padding:0px;' onclick='reply("+(idx-1)+")'>Reply</button> | "+
-				"<button class='btn btn-link' style='padding:0px;' disabled>Report</button></span>";
+				"<button class='btn btn-link' style='padding:0px;' data-toggle='modal' data-target='#myModal' onclick='report_idx="+idx+"'>Report</button></span>";
 			$('#comments_count').text(comment_list_obj.length);
 			$.bootstrapGrowl("Comment successfully.", { type: 'success' , delay:2000, offset: {from: 'top', amount: MSG_OFFSET}});
 		}else
