@@ -163,6 +163,7 @@ public class SouvenirsManager {
 			personal_album_map.put("album_name", personalAlbum.getAlbumName());
 			personal_album_map.put("cover_addr",
 					ImageLoader.genAddrOfPAlbumCover(user_id, personalAlbum.getAlbumName()));
+			
 			personal_album_json = new JSONObject(personal_album_map);
 			person_album_json_list.add(personal_album_json.toString().replaceAll("'", "&apos;"));
 		}
@@ -205,20 +206,23 @@ public class SouvenirsManager {
 			List<PersonalAlbum> palbum_list = dao.getAllPAlbumInfo(parameter.get("login_user_id"), SouvenirsDAO.PERSONAL_ALBUM);
 			logger.debug("palbum_list:"+palbum_list);
 			List<String> album_name_list = new ArrayList<>();
-			JSONArray album_identifier_json = new JSONArray();
+			JSONArray palbum_identifier_json = new JSONArray();
+			JSONArray salbum_identifier_json = new JSONArray();
 			for (PersonalAlbum personalAlbum : palbum_list) {
 				album_name_list.add(personalAlbum.getAlbumName());
-				album_identifier_json.put(personalAlbum.getAlbumName());
+				palbum_identifier_json.put(personalAlbum.getAlbumName());
 			}
 			for (SharedAlbum sharedAlbum : salbum_list) {
 				album_name_list.add(sharedAlbum.getSharedAlbumName());
-				album_identifier_json.put(sharedAlbum.getGroupId());
+				salbum_identifier_json.put(sharedAlbum.getGroupId());
 			}
 
 			result.put("Album_name_list", album_name_list);
-			result.put("Album_identifier_json", album_identifier_json.toString());
+			result.put("PAlbum_identifier_json", palbum_identifier_json.toString());
+			result.put("SAlbum_identifier_json", salbum_identifier_json.toString());
 			
-			parameter.put("album_identifier", album_identifier_json.getString(0));
+			parameter.put("album_identifier", palbum_identifier_json.getString(0));
+			parameter.put("range", "personal");
 			result.put("Image_JSON", getImageAddrInAlbum(parameter));
 			String template = PropertyOper.GetValueByKey("template.properties", parameter.get("template"));
 			if (template == null || template.isEmpty())
@@ -236,7 +240,8 @@ public class SouvenirsManager {
 	 * 
 	 * @see org.json
 	 * @param parameter
-	 *            前端传来的参数，key包括login_user_id(登录的用户ID), album_identifier(相册标识名：个人相册指相册名；共享相册指小组编号)
+	 *            前端传来的参数，key包括login_user_id(登录的用户ID), album_identifier(相册标识名：个人相册指相册名；共享相册指小组编号)，
+	 *            range(查询范围，可能值有"personal":个人相册、"shred":共享相册、"all":全部相册)
 	 * @return 相册中所有图片名字和地址所组成的json字符串
 	 * 				(形如：[{UserID: "A1", AlbumName: "B1", Filename: "C1", Addr:"D1", "Username":"E1", "Description":"F1"， "UploadTime":"G1"}, 
 	 * 					{UserID: "A2", AlbumName: "B2", Filename: "C2", Addr:"D2", "Username":"E2", "Description":"F2"， "UploadTime":"G2"}, ...])
@@ -247,8 +252,18 @@ public class SouvenirsManager {
 		// image_list is unrefined result set from DB and image_addr_list is refined result set which can be used to
 		// form json string
 		List<Picture> image_list = null;
+		int range = -1;
+		if (parameter.get("range").contentEquals("personal") )
+			range = SouvenirsDAO.PERSONAL_ALBUM;
+		else if (parameter.get("range").contentEquals("shared"))
+			range = SouvenirsDAO.SHARED_ALBUM;
+		else if (parameter.get("range").contentEquals("all"))
+			range = SouvenirsDAO.ALL_ALBUM;
+		else
+			range = -1;
+		
 		try {
-			image_list = dao.getAllPictureInfo(parameter.get("login_user_id"), parameter.get("album_identifier"));
+			image_list = dao.getAllPictureInfo(parameter.get("login_user_id"), parameter.get("album_identifier"), range);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			logger.warn("There are something wrong when getting image address in album <"
@@ -293,6 +308,7 @@ public class SouvenirsManager {
 		String user_id = parameter.get("login_user_id");
 		String album_name = parameter.get("album_name");
 		parameter.put("album_identifier", album_name);
+		parameter.put("range", "personal");
 		if (user_id == null || album_name == null || user_id.isEmpty() || album_name.isEmpty())
 			throw new BadRequestException("Invalid Parameter user_id OR album_name");
 		result.put("Is_personal", true);
@@ -332,6 +348,7 @@ public class SouvenirsManager {
 		String user_id = parameter.get("login_user_id");
 		String group_id = parameter.get("group_id");
 		parameter.put("album_identifier", group_id);
+		parameter.put("range", "shared");
 		if (user_id==null||group_id==null||user_id.isEmpty()||group_id.isEmpty())
 			throw new BadRequestException("Invalid Parameter user_id OR group_id");
 		result.put("Is_personal", false);
@@ -543,6 +560,7 @@ public class SouvenirsManager {
 			Map<String, String> para = new HashMap<>();
 			para.put("login_user_id", user_id);
 			para.put("album_identifier", album_name_list.get(0));
+			para.put("range", "true");
 			logger.debug("para:"+para);
 /*			JSONArray jArray = new JSONArray(getImageAddrInAlbum(para));
 			List<String> image_json_list = new ArrayList<>();

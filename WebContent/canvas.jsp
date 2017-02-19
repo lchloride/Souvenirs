@@ -67,8 +67,11 @@
 	var making_time;
 	//Store album identifiers which match album_name in ${Album_name_list}. Album identifier is the only way to find an album.
 	//For personal album, it stands for group id while for shared album, it stands for album_name.
-	var album_json = '${Album_identifier_json}';
-	var album_obj = JSON.parse(album_json);
+	var palbum_json = '${PAlbum_identifier_json}';
+	var salbum_json = '${SAlbum_identifier_json}';
+	var palbum_obj = JSON.parse(palbum_json);
+	var salbum_obj = JSON.parse(salbum_json);
+	var album_obj = palbum_obj.concat(salbum_obj);
 	
 	var display_timer;
 	var display_idx=0;
@@ -444,7 +447,7 @@
 			assignImage();
 		}
 		//From URL and create connection
-		xmlhttp.open("GET", "AlbumAjax?album_identifier=" + album_obj[idx], true);
+		xmlhttp.open("GET", "AlbumAjax?album_identifier=" + album_obj[idx]+(idx<palbum_obj.length?"&range=personal":"&range=shared"), true);
 		xmlhttp.send();
 	}
 

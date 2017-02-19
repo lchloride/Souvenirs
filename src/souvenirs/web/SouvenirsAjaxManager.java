@@ -545,6 +545,7 @@ public class SouvenirsAjaxManager {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		logger.debug("result:"+result);
 		return result;
 	}
 	

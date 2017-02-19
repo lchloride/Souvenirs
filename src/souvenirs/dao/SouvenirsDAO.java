@@ -21,15 +21,17 @@ public class SouvenirsDAO {
 	private Logger logger = Logger.getLogger(SouvenirsDAO.class);
 	private static SouvenirsDAO souvernirs_dao = new SouvenirsDAO();
 	/**
-	 * 查询相册信息时，指定查询范围是个人相册。
+	 * 查询相册或照片信息时，指定查询范围是个人相册。
 	 */
 	final public static int PERSONAL_ALBUM = 1;
 	/**
-	 * 查询相册信息时，指定查询范围是共享相册。
+	 * 查询相册或照片信息时，指定查询范围是共享相册。
 	 */
 	final public static int SHARED_ALBUM = 0;
 	/**
-	 * 查询相册信息时，指定查询范围是全部相册。<strong>注意：查询全部相册的返回值也只能是个人相册或共享相册，其中可能有信息的丢失。</strong>
+	 * 查询相册或照片信息时，指定查询范围是全部相册。
+	 * <strong>注意：查询全部相册时的返回值只能是个人相册(PersonalAlbum类)或共享相册(SharedAlbum类)，其中可能有信息的丢失。
+	 * 查询照片信息的时候不会有信息的丢失，返回值都是Picture类。</strong>
 	 */
 	final public static int ALL_ALBUM = 2;
 	/**
@@ -181,10 +183,26 @@ public class SouvenirsDAO {
 	 * @see souvenirs.Picture
 	 * @see souvenirs.dao.PictureImplStore#format(List)
 	 */
-	public List<Picture> getAllPictureInfo(String user_id, String album) throws Exception {
-		String sql = "SELECT owner_id, owner_album_name, owner_filename, owner_format, owner_description, owner_upload_timestamp "
-				+ "FROM souvenirs.query_available_image where user_id=? and  album_identifier=?  order by album_identifier asc";
-		List<String> parameter = Arrays.asList(user_id, album);
+	public List<Picture> getAllPictureInfo(String user_id, String album, int range) throws Exception {
+		if (range != PERSONAL_ALBUM && range != SHARED_ALBUM && range != ALL_ALBUM)
+			throw new Exception("Invalid Parameter: range=<"+range+">");
+		String sql_a = "SELECT owner_id, owner_album_name, owner_filename, owner_format, owner_description, owner_upload_timestamp "
+				+ "FROM souvenirs.query_available_image where user_id=? and  album_identifier=?";
+		String sql_b = " and is_personal = ?";
+		String sql_c = " order by album_identifier asc";
+		String sql = "";
+		List<String> parameter = null;
+		if (range == ALL_ALBUM) {
+			sql = sql_a + sql_c;
+			parameter = Arrays.asList(user_id, album);
+		}
+		else {
+			sql = sql_a + sql_b + sql_c;
+			if (range == PERSONAL_ALBUM)
+				parameter =  Arrays.asList(user_id, album, "true");
+			else
+				parameter =  Arrays.asList(user_id, album, "false");
+		}
 		logger.debug("parameter:" + parameter);
 		return DB.execSQLQuery(sql, parameter, new PictureImplStore());
 	}

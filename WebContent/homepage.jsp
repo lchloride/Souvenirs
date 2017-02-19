@@ -22,23 +22,18 @@
 <link href="/Souvenirs/res/css/website.css" rel="stylesheet" type="text/css">
 <!-- <link href="/Souvenirs/res/css/homepage.css" rel="stylesheet"
 	type="text/css"> -->
-    <!-- load jquery ui css theme -->
-    <link type="text/css" href="/Souvenirs/res/css/sDashboard/jquery-ui.css" rel="stylesheet" />
 
-    <!-- load the sDashboard css -->
-    <link href="/Souvenirs/res/css/sDashboard/sDashboard.css" rel="stylesheet">
+<!--[if lt IE 9]><script language="javascript" type="text/javascript" src="excanvas.js"></script><![endif]-->
+<script language="javascript" type="text/javascript" src="/Souvenirs/res/jqplot/jquery.jqplot.min.js"></script>
+<script language="javascript" type="text/javascript" src="/Souvenirs/res/jqplot/plugins/jqplot.enhancedLegendRenderer.min.js"></script>
+<script language="javascript" type="text/javascript" src="/Souvenirs/res/jqplot/plugins/jqplot.pieRenderer.min.js"></script>
+<script type="text/javascript" src="/Souvenirs/res/jqplot/plugins/jqplot.pointLabels.min.js" ></script>
+<script type="text/javascript" src="/Souvenirs/res/jqplot/plugins/jqplot.highlighter.min.js" ></script>
+<script type="text/javascript" src="/Souvenirs/res/jqplot/plugins/jqplot.barRenderer.min.js"></script>
+<script type="text/javascript" src="/Souvenirs/res/jqplot/plugins/jqplot.categoryAxisRenderer.min.js"></script>
+<script type="text/javascript" src="/Souvenirs/res/jqplot/plugins/jqplot.pointLabels.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/Souvenirs/res/jqplot/jquery.jqplot.min.css" />
 
-    <!-- load jquery ui library -->
-    <script src="/Souvenirs/res/js/sDashboard/jquery-ui.js" type="text/javascript"></script>
-
-    <!-- load datatables library -->
-    <script src="/Souvenirs/res/js/sDashboard/jquery.dataTables.js"></script>
-
-    <!-- load flot charting library -->
-    <script src="/Souvenirs/res/js/sDashboard/flotr2.js" type="text/javascript"></script>
-
-    <!-- load sDashboard library -->
-    <script src="/Souvenirs/res/js/sDashboard/jquery-sDashboard.js" type="text/javascript"></script>
 <title>Homepage</title>
 <script type="text/javascript">
 	var palbum_count = 0;
@@ -46,6 +41,8 @@
 	
 	window.onload = function() {
 		calcSize();
+		drawAlbumPie();
+		drawPicturesBar();
 	}
 	
 	function calcSize() {
@@ -93,6 +90,65 @@
 		var filepath = $('#upload_file').val();
 		$('#filename_display').val(filepath.substring(filepath.lastIndexOf('\\') + 1));
 		
+	}
+	
+	function drawAlbumPie(){
+		 
+		palbum_count = ${PAlbum_count };
+		salbum_count = ${SAlbum_count };
+	    data1 = [[['Personal', palbum_count],['Shared', salbum_count]]];
+	    toolTip1 = ['Personal Albums', 'Shared Albums'];
+	 	dataLabel = [palbum_count+' ('+Math.round(palbum_count/(palbum_count+salbum_count)*1000)/10+'%)', 
+	 	             salbum_count+' ('+Math.round(salbum_count/(palbum_count+salbum_count)*1000)/10+'%)']
+	    var plot1 = jQuery.jqplot('album_chart', 
+	        data1,
+	        {
+	            title: 'Albums Distribution', 
+	            seriesDefaults: {
+	                shadow: false, 
+	                renderer: jQuery.jqplot.PieRenderer, 
+	                rendererOptions: { padding: 2, sliceMargin: 2, showDataLabels: true, dataLabels: dataLabel }
+	            },
+	            legend: {
+	                show: true,
+	                location: 'e',
+	                renderer: $.jqplot.EnhancedPieLegendRenderer,
+	                rendererOptions: {
+	                    numberColumns: 1,
+	                    toolTips: toolTip1
+	                }
+	            },
+	        }
+	    );
+	}
+
+	function drawPicturesBar(){
+		data = [[2,1],  [7,3], [10,4]];
+        plot1 = $.jqplot('pic_chart', [data], {
+            captureRightClick: true,
+            title: 'Personal Pictures Distribution', 
+            seriesDefaults:{
+                renderer:$.jqplot.BarRenderer,
+                shadowAngle: 135,
+                rendererOptions: {
+                    barDirection: 'horizontal',
+                    highlightMouseDown: true,
+                    varyBarColor: true
+                },
+                pointLabels: {show: true, formatString: '%d'}
+            },
+            legend: {
+                show: false,
+                location: 'e',
+                placement: 'outside'
+            },
+            axes: {
+                yaxis: {
+                    renderer: $.jqplot.CategoryAxisRenderer,
+                    ticks: ["ab\nc", null, "123", "hahaha"]
+                }
+            }
+        }); 
 	}
 </script>
 <style type="text/css">
@@ -174,7 +230,7 @@ div.album-list {
 					<li class="active"><a href="homepage">HomePage</a></li>
 					<li><a href="#">Group</a></li>
 					<li><a href="upload">Upload</a></li>
-					<li><a href="/homepage">Previous Version</a></li>
+					<li><a href="../homepage">Previous Version</a></li>
 				</ul>
 				<form class="navbar-form navbar-left" role="search">
 					<div class="form-group">
@@ -263,14 +319,18 @@ div.album-list {
 					<div class="info-part" id="dashboard">
 						<h4 class="title">Dashboard</h4>
 						<div class="body">
-							<ul>
+	<%-- 						<ul>
 								<li>Personal Albums: <span id="palbum_count">${PAlbum_count }</span></li>
 								<li>Shared Albums: <span id="salbum_count">${SAlbum_count }</span></li>
 								<div class="divider"></div>
 								<li>Pictures: <span id="picture_count">${Picture_count }</span></li>
-							</ul>
+							</ul> --%>
+							<div id="album_chart" style="height:auto;width:100%; "></div>
+							<div id="pic_chart" style="height:auto;width:100%; "></div>
 						</div>
 					</div>
+
+					
 					<!-- Dashboard part END -->
 				</div>
 				<!-- Left column END -->

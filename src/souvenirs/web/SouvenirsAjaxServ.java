@@ -79,6 +79,7 @@ public class SouvenirsAjaxServ extends HttpServlet {
 			String query_url = request.getServletPath();
 			query_url = query_url.substring(query_url.lastIndexOf('/') + 1);
 			logger.debug("query_url "+query_url);
+			response.setCharacterEncoding("UTF-8");
 			PrintWriter out = response.getWriter();
 			try {
 				if (query_url.contentEquals("updateAlbumName"))
@@ -124,7 +125,8 @@ public class SouvenirsAjaxServ extends HttpServlet {
 				logger.warn("", e);
 				result = e.getMessage();
 			}
-			out.println(URLEncoder.encode(result, "UTF-8"));
+			//out.println(URLEncoder.encode(result, "UTF-8"));
+			out.println(result);
 		}
 
 	}
