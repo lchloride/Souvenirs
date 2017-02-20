@@ -3,6 +3,7 @@ package souvenirs.dao;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -163,6 +164,7 @@ public class SouvenirsDAO {
 	 * @param album_identifier
 	 *            相册标识符；对于个人相册，它应该是相册名(album_name)；对于共享相册，它应该是小组ID(group_id)
 	 * @return 照片主键组成的二维列表(user_id, album_name, filename)
+	 * @deprecated
 	 */
 	public List<List<Object>> getPictureAddrInAlbum(String user_id, String album_identifier) {
 		String sql = "SELECT owner_id, owner_album_name, owner_filename FROM souvenirs.query_available_image where user_id=? and  album_identifier=?  order by album_identifier asc";
@@ -569,5 +571,23 @@ public class SouvenirsDAO {
 		String sql = "SELECT user_id, album_name, filename, format, description, upload_timestamp FROM souvenirs.picture where user_id = ? order by upload_timestamp desc";
 		List<String>para = Arrays.asList(user_id);
 		return DB.execSQLQuery(sql, para,  new PictureImplStore());
+	}
+	
+	public int createPAlbum(String user_id, String album_name, String description, String cover) throws Exception {
+		String sql = "insert into album(user_id, album_name, intro, album_cover) values(?,?,?,?)";
+		List<String>para = Arrays.asList(user_id, album_name, description, cover);
+		return DB.execSQLUpdate(sql, para);
+	}
+	
+	public int deletePAlbum(String user_id, String album_name) throws Exception {
+		String sql = "delete from album where user_id=? and album_name=?";
+		List<String>para = Arrays.asList(user_id, album_name);
+		return DB.execSQLUpdate(sql, para);		
+	}
+	
+	public int addPicture(String user_id, String album_name, String filename, String format, String description) throws Exception {
+		String sql = "INSERT INTO picture(user_id, album_name, filename, format, description) VALUES(?, ?, ?, ?, ?)";
+		List<String> parameter = Arrays.asList(user_id, album_name, filename, format, description);
+		return DB.execSQLUpdate(sql, parameter);
 	}
 }

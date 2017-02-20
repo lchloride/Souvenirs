@@ -69,7 +69,6 @@ public class SouvenirsAjaxServ extends HttpServlet {
 				else
 					para.put(paraName, new String(paraValue.getBytes("iso8859-1"), "UTF-8"));
 			}
-
 			// Send user_id as primary key of user to manager object
 			para.put("login_user_id",
 					session.getAttribute("user_id") == null ? "" : (String) session.getAttribute("user_id"));

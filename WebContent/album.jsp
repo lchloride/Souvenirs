@@ -158,6 +158,26 @@
 			$.bootstrapGrowl("Failed. Error:"+result, { type: 'danger' , offset: {from: 'top', amount: MSG_OFFSET}});
 		}
 	}
+	
+	function confirmDelete() {
+		  var r=confirm("Are you sure to delete this album?\n\nAll pictures and related information will be deleted and cannot be recovered!\n\nPlease confirm!")
+		  if (r==true)
+		    {
+		    	ajaxProcess(deleteAlbumCallback, "/Souvenirs/deletePAlbum?album_name="+encodeURIComponent("${Album_name}"));
+		    }
+		  else
+		    {
+			  $.bootstrapGrowl("Deletion is canceled.", { type: 'info' , delay:3000, offset: {from: 'top', amount: MSG_OFFSET}});
+		    }
+	}
+	
+	function deleteAlbumCallback(result) {
+		if (result.indexOf('{')==0) {
+			
+		} else {
+			$.bootstrapGrowl("Deletion failed. Error:"+result, { type: 'danger' , offset: {from: 'top', amount: MSG_OFFSET}});
+		}
+	}
 </script>
 <style type="text/css">
 .container {
@@ -361,6 +381,7 @@ div.album-cover img {
 					<c:if test="${Is_personal }">
 						<a href="/Souvenirs/upload?album_name=${Album_name }"><button type="button" class="btn btn-default">Upload
 								Image</button></a>
+						<button type="button" class="btn btn-warning" onclick="confirmDelete()">Delete Album</button>
 					</c:if>
 					<c:if test="${not Is_personal }">
 						<a href="/Souvenirs/share?group_id=${Group_id }"><button type="button" class="btn btn-default">Share My Picture</button></a>

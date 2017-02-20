@@ -150,6 +150,7 @@ public class UploadServ extends HttpServlet {
 							// 由于不同Java配置不同，所以对文件名统一进行一次转码，保证无乱码
 							para.put("origin_filename", new String(
 									item.getName().getBytes(System.getProperty("sun.jnu.encoding")), "UTF-8"));
+							logger.debug("origin_filename_upload:"+new String(item.getName().getBytes("GBK"), "UTF-8"));
 						}
 					}
 				}

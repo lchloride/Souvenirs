@@ -1,10 +1,13 @@
 package souvenirs.web;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -16,9 +19,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.log4j.Logger;
 
 import tool.Base64;
+import tool.PropertyOper;
 import tool.exception.BadRequestException;
 import user.web.UserManager;
 
@@ -28,6 +35,22 @@ import user.web.UserManager;
 /* @WebServlet("/SouvenirsServ") */
 public class SouvenirsServ extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+	/**
+	 * 上传内存阈值(文件缓冲区的大小)
+	 */
+	private static final int MEMORY_THRESHOLD = Integer
+			.parseInt(PropertyOper.GetValueByKey("souvenirs.properties", "MEMORY_THRESHOLD"), 16);
+	/**
+	 * 上传文件的最大大小
+	 */
+	private static final int MAX_FILE_SIZE = Integer
+			.parseInt(PropertyOper.GetValueByKey("souvenirs.properties", "MAX_FILE_SIZE"), 16);
+	/**
+	 * 可接收的二进制流的最大大小
+	 */
+	private static final int MAX_REQUEST_SIZE = Integer
+			.parseInt(PropertyOper.GetValueByKey("souvenirs.properties", "MAX_REQUEST_SIZE"), 16); // *
+
 	private static Logger logger = Logger.getLogger(SouvenirsServ.class);
 
 	/**
@@ -74,7 +97,10 @@ public class SouvenirsServ extends HttpServlet {
 				String paraName = (String) paraNames.nextElement();
 				String[] paraValues = request.getParameterValues(paraName);
 				String paraValue = paraValues[0];
-				para.put(paraName, new String(paraValue.getBytes("iso8859-1"), "UTF-8"));
+				if (request.getMethod().contentEquals("GET"))
+					para.put(paraName, URLDecoder.decode(paraValue, "UTF-8"));
+				else
+					para.put(paraName, new String(paraValue.getBytes("iso8859-1"), "UTF-8"));
 			}
 
 			// Send user_id as primary key of user to manager object
@@ -90,11 +116,11 @@ public class SouvenirsServ extends HttpServlet {
 			logger.debug("query_url:<"+query_url+">");
 			try {
 				// Select and call specific function according query_url
-				if (query_url.contentEquals("homepage")) {
+				if (query_url.contentEquals("homepageold")) {
 					
 					// Display Content when firstly open the page
 					result = sm.displayContentOld(para);
-				} else if (query_url.contentEquals("homepagenew")) {
+				} else if (query_url.contentEquals("homepage")) {
 					
 					// Display Content when firstly open the page
 					result = sm.displayContent(para);
@@ -190,7 +216,90 @@ public class SouvenirsServ extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		doGet(request, response);
+		String query_url = request.getServletPath();
+		query_url = query_url.substring(query_url.lastIndexOf('/') + 1);
+		
+		if (query_url.contentEquals("createAlbum")) {
+			
+			HttpSession session = request.getSession(true);
+			// If login information is wrong, redirect to index.jsp in order to
+			// login in again
+			logger.debug(session + " " + session.getAttribute("username") + " " + session.getAttribute("password"));
+			if (!UserManager.checkLogin(session.getAttribute("user_id"), session.getAttribute("username"),
+					session.getAttribute("password"))) {
+				session.invalidate();
+				response.sendRedirect("loginfail.jsp");
+			} else {
+				// 检测是否为多媒体上传
+				if (!ServletFileUpload.isMultipartContent(request)) {
+					// 如果不是则停止
+					PrintWriter writer = response.getWriter();
+					writer.println("Error: Form type must be 'enctype=multipart/form-data'");
+					writer.flush();
+					return;
+				}
+
+				// 配置上传参数
+				DiskFileItemFactory factory = new DiskFileItemFactory();
+				// 设置内存临界值 - 超过后将产生临时文件并存储于临时目录中
+				factory.setSizeThreshold(MEMORY_THRESHOLD);
+				// 设置临时存储目录
+				factory.setRepository(new File(System.getProperty("java.io.tmpdir")));
+
+				ServletFileUpload upload = new ServletFileUpload(factory);
+
+				// 设置最大文件上传值
+				upload.setFileSizeMax(MAX_FILE_SIZE);
+
+				// 设置最大请求值 (包含文件和表单数据)
+				upload.setSizeMax(MAX_REQUEST_SIZE);
+
+				Map<String, String> para = new HashMap<>();
+				String result = "index.jsp";
+				SouvenirsManager sm = SouvenirsManager.getInstance();
+
+				FileItem file_item = null;
+				try {
+					// 解析请求的内容提取文件数据
+					List<FileItem> formItems = upload.parseRequest(request);
+					if (formItems != null && formItems.size() > 0) {
+						// 迭代表单数据
+						for (FileItem item : formItems) {
+							if (item.isFormField()) {
+								String key = item.getFieldName();
+								String val = new String(item.getString().getBytes("ISO-8859-1"), "UTF-8");
+								para.put(key, val);
+							} else {
+								// Store file handler
+								file_item = item;
+								// 在本服务器中Java设置的默认字符编码是GBK，由于前端发来的二进制流未指定解析编码，Java会使用默认的GBK来编码
+								// 如果GBK的文件名存到文件中，中文必定会乱码，所以要将文件名转成UTF-8。
+								// 由于不同Java配置不同，所以对文件名统一进行一次转码，保证无乱码
+								para.put("origin_filename", new String(
+										item.getName().getBytes(System.getProperty("sun.jnu.encoding")), "UTF-8"));
+								logger.debug(item.getName());
+							}
+						}
+					}
+					// Send user_id as primary key of user to manager object
+					para.put("login_user_id",
+							session.getAttribute("user_id") == null ? "" : (String) session.getAttribute("user_id"));
+
+					// Send parameters and file handler to UploadManager
+					result = sm.createPAlbum(para, file_item);
+
+				} catch (Exception ex) {
+					ex.printStackTrace();
+					request.setAttribute("Upload_result", ex.getMessage());
+				}
+
+				// 跳转到 upload.jsp
+				response.sendRedirect(result);
+			}
+		} else {
+			doGet(request, response);
+		}
+		
 	}
 
 	/**
@@ -259,6 +368,7 @@ public class SouvenirsServ extends HttpServlet {
 	 * @see souvenirs.web.SouvenirsAjaxManager#queryPictureInAlbum(Map)
 	 * @deprecated
 	 */
+	@SuppressWarnings("unused")
 	private void queryAlbumAjax(HttpServletResponse response, SouvenirsManager sm, Map<String, String> para) throws Exception {
 		logger.info("User(id=<" + para.get("login_user_id") + ">) query image address in album <"
 				+ para.get("album_identifier") + ">.");

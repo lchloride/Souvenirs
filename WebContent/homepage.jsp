@@ -19,6 +19,7 @@
 
 <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
 <script src="/Souvenirs/res/bootstrap/js/bootstrap.min.js"></script>
+<script src="/Souvenirs/res/js/jquery.bootstrap-growl.min.js"></script>
 <link href="/Souvenirs/res/css/website.css" rel="stylesheet" type="text/css">
 <!-- <link href="/Souvenirs/res/css/homepage.css" rel="stylesheet"
 	type="text/css"> -->
@@ -38,11 +39,20 @@
 <script type="text/javascript">
 	var palbum_count = 0;
 	var salbum_count = 0;
+	var palbum_list_obj = new Array();
+	var salbum_list_obj = new Array();
+	var MSG_OFFSET = 50;
 	
 	window.onload = function() {
 		calcSize();
 		drawAlbumPie();
 		drawPicturesBar();
+		<c:if test="${not empty Upload_result}">
+		if ("${Upload_result}"=="true") 
+			$.bootstrapGrowl("Success.", { type: 'success' , delay:2000, offset: {from: 'top', amount: MSG_OFFSET}});
+		if ("${Upload_result}"!="true") 
+			$.bootstrapGrowl("Failed. Error description:${Upload_result}", { type: 'danger' , delay:4000, offset: {from: 'top', amount: MSG_OFFSET}});
+		</c:if>
 	}
 	
 	function calcSize() {
@@ -62,8 +72,8 @@
 		for (i = 1; i<=4; i++) {
 			$('#picture_item_img_'+i).css('width', picture_width);
 			$('#picture_item_img_'+i).css('height', picture_height);
-			$('#picture_item_text_'+i).css('width', picture_width);
 		}
+		$('#latest_picture .desc').css('width', picture_width);
 		
 		// Calculate size of templates
 		var templates_width = $('.templates').width();
@@ -83,19 +93,27 @@
 		var album_cover_width = $('#personal_albums_list').width() - 15 - image_width_margin;
 		$('#personal_albums_list img').css('width', album_cover_width);
 		$('#personal_albums_list img').css('height', album_cover_width);
-
+		$('#shared img').css('width', album_cover_width);
+		$('#shared img').css('height', album_cover_width);
+		
+		//Calculate chart of pictures height
+		$('#pic_chart').css('height', Math.round(palbum_list_obj.length*50*modify(palbum_list_obj.length)));
+	}
+	
+	function modify(x) {
+		return 8/(x+3);
 	}
 	
 	function displayFilename() {
 		var filepath = $('#upload_file').val();
 		$('#filename_display').val(filepath.substring(filepath.lastIndexOf('\\') + 1));
-		
+		$('#filename').val(filepath.substring(filepath.lastIndexOf('\\') + 1));
 	}
 	
 	function drawAlbumPie(){
 		 
-		palbum_count = ${PAlbum_count };
-		salbum_count = ${SAlbum_count };
+		palbum_count = palbum_list_obj.length;
+		salbum_count = salbum_list_obj.length;
 	    data1 = [[['Personal', palbum_count],['Shared', salbum_count]]];
 	    toolTip1 = ['Personal Albums', 'Shared Albums'];
 	 	dataLabel = [palbum_count+' ('+Math.round(palbum_count/(palbum_count+salbum_count)*1000)/10+'%)', 
@@ -103,7 +121,7 @@
 	    var plot1 = jQuery.jqplot('album_chart', 
 	        data1,
 	        {
-	            title: 'Albums Distribution', 
+	            title: 'Albums Distribution\nTotal '+(palbum_count+salbum_count)+' Albums', 
 	            seriesDefaults: {
 	                shadow: false, 
 	                renderer: jQuery.jqplot.PieRenderer, 
@@ -123,7 +141,12 @@
 	}
 
 	function drawPicturesBar(){
-		data = [[2,1],  [7,3], [10,4]];
+		data = new Array();
+		ticks = new Array();
+		for (var i=0; i<palbum_count; i++) {
+			data.push(new Array(palbum_list_obj[i].pictures_count, i+1));
+			ticks.push(palbum_list_obj[i].album_name);
+		}
         plot1 = $.jqplot('pic_chart', [data], {
             captureRightClick: true,
             title: 'Personal Pictures Distribution', 
@@ -145,10 +168,51 @@
             axes: {
                 yaxis: {
                     renderer: $.jqplot.CategoryAxisRenderer,
-                    ticks: ["ab\nc", null, "123", "hahaha"]
+                    ticks: ticks
                 }
             }
         }); 
+	}
+	
+	function useDefaultCover() {
+		if ($('#default_picture').is(':checked')) {
+			$('#upload_file').attr('disabled', 'disbaled');
+			$('#upload_file_btn').addClass('disabled');
+		} else {
+			$('#upload_file').removeAttr('disabled');
+			$('#upload_file_btn').removeClass('disabled');
+		}
+	}
+	
+	function activate(idx){
+		$("#latest_picture .img").css('height', "auto");
+		var height = $('#img_'+idx).outerHeight();
+		//alert(height);
+		var i=1;
+		$("#latest_picture .img").css('height', height);
+	}
+	function normalize(idx){
+		calcSize();
+	}
+	
+	function checkSubmit() {
+		if ($('#album_name').val().length > 60) {
+			alert("Album name should be less than 60 characters.");
+			return false;
+		}
+		if ($('#album_name').val().length == 0) {
+			alert("Album name cannot be empty.");
+			return false;
+		}
+		if ($('#description').val().length > 200) {
+			alert("Description should be less than 200 characters.");
+			return false;
+		}
+		if (($('#filename').val()=="" || $('#filename').val()==undefined || $('#filename').val()==null) && !$('#default_cover').is(':checked')) {
+			alert("You must select a cover from local OR use default cover.");
+			return false;
+		}
+		return true;
 	}
 </script>
 <style type="text/css">
@@ -230,7 +294,6 @@ div.album-list {
 					<li class="active"><a href="homepage">HomePage</a></li>
 					<li><a href="#">Group</a></li>
 					<li><a href="upload">Upload</a></li>
-					<li><a href="../homepage">Previous Version</a></li>
 				</ul>
 				<form class="navbar-form navbar-left" role="search">
 					<div class="form-group">
@@ -241,7 +304,7 @@ div.album-list {
 					</button>
 				</form>
 				<ul class="nav navbar-nav navbar-right" style="padding-right: 5%">
-					<li><img class="navbar-form" src="${empty Avatar?'/Souvenirs/res/image/default_avatar.png':Avatar}"
+					<li><img class="navbar-form" src="${Avatar}"
 						alt="avatar" width="32" height="32"></li>
 					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">${sessionScope.username} <b
 							class="caret"></b>
@@ -292,7 +355,7 @@ div.album-list {
 						<h4 class="title">Lastest Pictures</h4>
 						<div class="body" >
 							<c:forEach var="picture_item" items="${picture_json_list }" varStatus="idx">
-								<div class="img">
+								<div class="img" id="img_${idx.count }" onmouseover="activate(${idx.count})" onmouseout="normalize(${idx.count})">
 									<a id="picture_item_frame_${idx.count }" target="_self" href="#"> <img id="picture_item_img_${idx.count }" src=""
 										alt="" width="120" height="120"></a>
 									<div class="desc">
@@ -325,8 +388,8 @@ div.album-list {
 								<div class="divider"></div>
 								<li>Pictures: <span id="picture_count">${Picture_count }</span></li>
 							</ul> --%>
-							<div id="album_chart" style="height:auto;width:100%; "></div>
-							<div id="pic_chart" style="height:auto;width:100%; "></div>
+							<div id="album_chart" style="height:200px;width:100%; "></div>
+							<div id="pic_chart" style="height:240px;width:100%; "></div>
 						</div>
 					</div>
 
@@ -449,6 +512,7 @@ div.album-list {
 												idx = ${	idx.count};
 												palbum_count = Math.max(idx, palbum_count);
 												pAlbum_item_obj = JSON.parse(pAlbum_item_json);
+												palbum_list_obj.push(pAlbum_item_obj);
 												document.getElementById("pAlbum_item_img_" + idx).src = pAlbum_item_obj.cover_addr;
 												document.getElementById("pAlbum_item_img_" + idx).alt = pAlbum_item_obj.album_name;
 												document.getElementById("pAlbum_item_text_" + idx).innerHTML = pAlbum_item_obj.album_name;
@@ -479,6 +543,7 @@ div.album-list {
 											idx = ${	idx.count};
 											salbum_count = Math.max(salbum_count, idx);
 											sAlbum_item_obj = JSON.parse(sAlbum_item_json);
+											salbum_list_obj.push(sAlbum_item_obj);
 											document.getElementById("sAlbum_item_img_" + idx).src = sAlbum_item_obj.cover_addr;
 											document.getElementById("sAlbum_item_img_" + idx).alt = sAlbum_item_obj.album_name;
 											document.getElementById("sAlbum_item_text_" + idx).innerHTML = sAlbum_item_obj.album_name;
@@ -505,6 +570,7 @@ div.album-list {
 	<!-- Footer copyright information END -->
 	
 	<!-- 模态框（Modal） -->
+		<form class="form-horizontal" method="post" action="createAlbum" enctype="multipart/form-data">
 	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 	    <div class="modal-dialog">
 	        <div class="modal-content">
@@ -513,43 +579,54 @@ div.album-list {
 	                <h4 class="modal-title" id="myModalLabel">Create Album</h4>
 	            </div>
 	            <!--  -->
-	            <div class="modal-body">
+	            <div class="modal-body" style="margin-right:20px;">
 					
-					<div class="form-group padding-top">
-						<label for="firstname" class="col-sm-3 control-label narrow-grid">Album Name</label>
-						<div class="col-sm-9 narrow-grid">
-							<input type="text" class="form-control" id="firstname" placeholder="Input album name">
+						<div class="form-group padding-top">
+							<label for="album_name" class="col-sm-3 control-label narrow-grid">Album Name</label>
+							<div class="col-sm-9 narrow-grid">
+								<input type="text" class="form-control" id="album_name" name="album_name" placeholder="Input album name">
+							</div>
 						</div>
-					</div>
-					<div style="clear:both;"></div>
-					<div class="form-group padding-top">
-						<label for="firstname" class="col-sm-3 control-label narrow-grid">Description</label>
-						<div class="col-sm-9 narrow-grid">
-							<textarea class="form-control" rows="3" placeholder="Enter description, no more than 200 letters"></textarea>
+						<div style="clear:both;"></div>
+						<div class="form-group padding-top">
+							<label for="description" class="col-sm-3 control-label narrow-grid">Description</label>
+							<div class="col-sm-9 narrow-grid">
+								<textarea class="form-control" rows="3" id="description" name="description" placeholder="Enter description, no more than 200 letters"></textarea>
+							</div>
 						</div>
-					</div>
-					<div style="clear:both;"></div>
-					<div class="form-group padding-top">
-						<label for="firstname" class="col-sm-3 control-label narrow-grid">Cover</label>
-						<div class="col-sm-9 narrow-grid">
-							<input type="text" class="form-control" id="filename_display" style="width:auto;display:inline;" disabled>
-							<label class="btn btn-sm btn-default " for="upload_file">Choose
-								Local Image</label>
-							<input type="file" name="upload_file" id="upload_file" style="position: absolute; clip: rect(0, 0, 0, 0); display: inline"
-									onchange="displayFilename()" accept="image/jpg">
-							 
+						<div style="clear:both;"></div>
+						<div class="form-group padding-top">
+							<label for="upload_file" class="col-sm-3 control-label narrow-grid">Cover</label>
+							<div class="col-sm-9 narrow-grid">
+								<input type="text" class="form-control" id="filename_display" style="width:auto;display:inline;" disabled>
+								<label class="btn btn-sm btn-default " for="upload_file" id="upload_file_btn" >Choose
+									Local Image</label>
+								<input type="file" name="upload_file" id="upload_file" style="position: absolute; clip: rect(0, 0, 0, 0); display: inline"
+										onchange="displayFilename()" accept="image/jpg">
+								 <input type="hidden" class="form-control" id="filename" name="filename" style="display:none;" >
+							</div>
 						</div>
-					</div>
-
-					<div style="clear:both;"></div>
+						
+						<div style="clear:both;"></div>
+						<div class="form-group padding-top">
+							<label for="default_cover" class="col-sm-3 control-label narrow-grid"></label>
+							<div class="col-sm-9 narrow-grid">
+								<input type="checkbox" id="default_cover" name="default_cover"onclick="useDefaultCover()">Use Default Cover
+								 
+							</div>
+						</div>
+						<div style="clear:both;"></div>
+					
 				</div>
 				<!--  -->
 	            <div class="modal-footer">
-	                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-	                <button type="button" class="btn btn-primary">提交更改</button>
+	                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+	                <button type="submit" id="create_btn" class="btn btn-primary" onclick="return checkSubmit()">Create</button>
 	            </div>
 	        </div><!-- /.modal-content -->
 	    </div><!-- /.modal -->
+
 	</div>
+	</form>
 </body>
 </html>
