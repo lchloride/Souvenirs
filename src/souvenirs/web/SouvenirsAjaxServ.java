@@ -114,6 +114,9 @@ public class SouvenirsAjaxServ extends HttpServlet {
 				} else if (query_url.contentEquals("reportComment")) {
 					
 					result = sm.reportComment(para);
+				} else if (query_url.contentEquals("deletePAlbum")) {
+					
+					result = sm.deletePAlbum(para);
 				} else {
 					response.sendError(HttpServletResponse.SC_NOT_FOUND);
 					return;

@@ -581,4 +581,30 @@ public class SouvenirsAjaxManager {
 		}
 		return "true";
 	}
+	
+	public String deletePAlbum(Map<String, String>parameter) throws Exception {
+		checkValidDAO();
+		String user_id = parameter.get("login_user_id");
+		String album_name = parameter.get("album_name");
+		String result = "true";
+		try {
+			int rs = dao.deletePAlbum(user_id, album_name);
+			if (rs == DEFAULT_AFFECTED_ROW) {
+				String path = BASE_PATH + File.separator + user_id + File.separator + album_name;
+				if (FileOper.deleteFile(path))
+					logger.info("Delete personal album successfully! Parameters:<"+parameter+">");
+				else {
+					logger.error("Album data in database has been deleted, BUT files on the disk failed to delete. Please delete them manually. Parameter:<"+parameter+">");
+					
+				}
+			} else {
+				throw new Exception("Operation with no effect");
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+			logger.info("Cannot delete personal album since "+e.getMessage()+". Parameters:<"+parameter+">");
+			throw e;
+		}
+		return result;
+	}
 }

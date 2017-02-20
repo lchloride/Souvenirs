@@ -186,7 +186,10 @@
     <servlet-name>SouvenirsAjax</servlet-name>
     <url-pattern>/reportComment</url-pattern>
   </servlet-mapping>   
-  
+  <servlet-mapping>
+    <servlet-name>SouvenirsAjax</servlet-name>
+    <url-pattern>/deletePAlbum</url-pattern>
+  </servlet-mapping>     
    
   <error-page>
     <error-code>400</error-code>

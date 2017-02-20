@@ -172,8 +172,8 @@
 	}
 	
 	function deleteAlbumCallback(result) {
-		if (result.indexOf('{')==0) {
-			
+		if (result.trim()=="true") {
+			location.href="/Souvenirs/homepage?Upload_result=true";
 		} else {
 			$.bootstrapGrowl("Deletion failed. Error:"+result, { type: 'danger' , offset: {from: 'top', amount: MSG_OFFSET}});
 		}
