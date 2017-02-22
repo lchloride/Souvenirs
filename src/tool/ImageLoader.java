@@ -160,7 +160,7 @@ public class ImageLoader extends HttpServlet {
 			content = para.get(0) + "/" + para.get(1) + "/" + para.get(2);
 
 		query += "&content=" + Base64.encode(content);
-		query = query.trim();
+		query = query.replaceAll("\r\n", "");
 		Logger logger = Logger.getLogger(ImageLoader.class);
 		logger.debug("Image Query URL: " + query);
 		return query;

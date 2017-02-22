@@ -786,8 +786,7 @@ public class SouvenirsManager {
 		if (default_cover == null || !default_cover.contentEquals("on"))
 			cover = File.separator + user_id + File.separator + album_name + File.separator + origin_filename;
 		else
-			cover = "\\\\res\\\\default_cover.png";
-		
+			cover = "\\res\\default_cover.png";		
 		try {
 			// Add a row of image into DB
 			int sql_exec_result = dao.createPAlbum(user_id, album_name, description, cover.replaceAll("\\\\", "\\\\\\\\"));

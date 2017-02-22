@@ -59,7 +59,7 @@
 	//This indicates the position where user clicked (in other words, the index of active part in templete)
 	var proc_position = 0;
 	//Flags
-	var isError = false;
+	//var isError = false;
 	var isDrawing = true;
 	var isFinished = false;
 	//Use to set interval
@@ -73,9 +73,9 @@
 	var salbum_obj = JSON.parse(salbum_json);
 	var album_obj = palbum_obj.concat(salbum_obj);
 	
-	var display_timer;
-	var display_idx=0;
-	var last_display_idx = 0;
+	var display_timer = new Array(souvenir_obj.length);
+	var load_times = new Array(souvenir_obj.length);
+	var image_list = new Array(souvenir_obj.length);
 	var MSG_OFFSET = 50;
 	
 	var move_step_ratio = 0.05;
@@ -122,21 +122,27 @@
 		//Processing first part of templete
 		var idx = 1;
 		isFinished = false;
-		last_display_idx = 0;
-		display_idx = 1;
 		//Loading background image
 		bg = new Image();
 		bg.src = "res/image/template/" + souvenir_obj[0].background;
 		bg.onload = function() {
-			display_timer = setInterval(function(){checkDisplay()},5000);
+			
 			//Drawing bavkground image
 			ctx.drawImage(bg, 0, 0, c.width, c.height);
 			//Creating displaying parts
 			drawClip(ctx);
-			//Drawing content
+/*			//Drawing content
 			drawContent(ctx, idx);
 			if (callback != null && callback != "")
 				callback();
+			*/
+			for (var i=1; i<souvenir_obj.length; i++) {
+				load_times[i] = 1;
+				display_timer[i] = setInterval("checkDisplay("+i+")",5000);
+				drawContent(ctx, i);
+			}
+			isFinished = true;
+			//clearInterval(display_timer);
 		}
 
 	}
@@ -147,7 +153,7 @@
 		//Transparent filling color
 		ctx.strokeStyle = "rgba(255,255,255,0)";
 		//Clipping to obtain displaying areas based on parameters in templete 
-		for (i = 1; i < souvenir_obj.length; i++) {
+		for (var i = 1; i < souvenir_obj.length; i++) {
 			if (souvenir_obj[i].type == "image") {
 				if (souvenir_obj[i].clipShape == "rect")
 					createRectClip(ctx, R(souvenir_obj[i].startX),
@@ -184,14 +190,14 @@
 	//本函数根据idx决定要调用的绘图方法
 	function drawContent(ctx, idx) {
 		//If idx points to an invalid item in templete, just return
-		document.getElementById("size").innerHTML += idx+", ";
+		//document.getElementById("size").innerHTML += idx;
 		
-		if (isError || souvenir_obj[idx] == undefined
-				|| souvenir_obj[idx] == null
+		if (//isError || souvenir_obj[idx] == undefined
+				 souvenir_obj[idx] == null
 				|| souvenir_obj[idx].type == undefined
 				|| souvenir_obj[idx].type == null) {
-			isFinished = true;
-			clearInterval(display_timer);
+			//isFinished = true;
+			//clearInterval(display_timer);
 			return;
 		} else {
 			display_idx = idx;
@@ -212,13 +218,15 @@
 	//Draw an assigned image
 	//绘制制定的图片
 	function drawImg(ctx, idx) {
-		if (isError)
-			return;
+		//if (isError)
+			//return;
 		//Create image and load it
-		image = new Image();
-		image.src = souvenir_obj[idx].url;//+"&random="+Math.random();
-
-		image.onload = (function(ctx, idx) {
+		var image = new Image();
+		image_list[idx] = image;
+		//alert("before onload"+idx);
+		image.onload = (function () {
+			//alert("onload "+idx+" "+ctx);
+			var image = this;
 			var dx = souvenir_obj[idx].zoom*image.width;
 			var dy = souvenir_obj[idx].zoom*image.height;
 			if (2*dx >= image.width*0.99 || 2*dy >= image.height*0.99) {
@@ -254,27 +262,32 @@
 			ctx.transform(souvenir_obj[idx].t11, souvenir_obj[idx].t12,
 					souvenir_obj[idx].t21, souvenir_obj[idx].t22,
 					souvenir_obj[idx].t13, souvenir_obj[idx].t23);
+			//document.getElementById("size").innerHTML += "("+idx+","+(souvenir_obj[idx].type)+", "+image.complete+","+image.width+", "+image.height+"), ";
 			//Draw image under the control of zoom pixels, horizontal translating pixels and verticle translating pixels
 			ctx.drawImage(image, 0 + dx - moveX, 0 + dy - moveY, image.width - 2
 					* dx, image.height - 2 * dy,
 					R(souvenir_obj[idx].startX), R(souvenir_obj[idx].startY),
 					R(souvenir_obj[idx].drawW), R(souvenir_obj[idx].drawH));
-			idx++;
+			//idx++;
 			//Draw the next image/text
-			drawContent(ctx, idx);
-		})(ctx, idx);
-
+			//drawContent(ctx, idx);
+		})
+		//alert("after onload"+idx);
+		image.src = souvenir_obj[idx].url;//+souvenir_obj[idx].url.indexOf("default")>=0?"":"&random="+encodeURIComponent(Math.random());
+		//document.getElementById("size").innerHTML += "-"+image.src+",";
+		
 		image.onerror = function() {
-			isError = true;
-			alert("Cannot load image!");
+			//isError = true;
+			$.bootstrapGrowl("Displaying "+idx+" failed. ", { type: 'danger' , delay:4000, offset: {from: 'top', amount: MSG_OFFSET}});
 		}
 	}
 
+	
 	//Draw text
 	//绘制文字
 	function drawText(ctx, idx) {
-		if (isError)
-			return;
+		//if (isError)
+			//return;
 		//Form style string
 		var font_style = '';
 		if (souvenir_obj[idx].italic)
@@ -299,8 +312,8 @@
 				R(souvenir_obj[idx].maxW), (isDrawing ? souvenir_obj[idx].size
 						: Math.round(souvenir_obj[idx].size / ratio
 								* download_ratio)), souvenir_obj[idx].lineH);
-		idx++;
-		drawContent(ctx, idx);
+		//idx++;
+		//drawContent(ctx, idx);
 	}
 
 	//Auxiliary function of auto-wrap, without considering of vertical out-of-range condition
@@ -309,7 +322,7 @@
 			line_height) {
 		var line_text = new String();
 		var lineno = 1;
-		for (i = 0; i < longtext.length; i++) {
+		for (var i = 0; i < longtext.length; i++) {
 			//letters in line_text doesn't take line full width  
 			if (ctx.measureText(line_text).width < max_width)
 				line_text += longtext[i];
@@ -353,13 +366,18 @@
 		//ctx.clip();
 	}
 
-	function checkDisplay() {
-		if (display_idx == last_display_idx) {
-			$.bootstrapGrowl("Displaying "+display_idx+" failed.", { type: 'danger' , delay:4000, offset: {from: 'top', amount: MSG_OFFSET}});
-			clearInterval(display_timer);
-			setTimeout(drawSouvenir("myCanvas"), 1000);
-		}else {
-			last_display_idx = display_idx;
+	function checkDisplay(idx) {
+		document.getElementById("size").innerHTML += idx + ", "
+		if (image_list[idx] != undefined && !image_list[idx].complete) {
+			if (load_times[idx] <= 3) {
+				load_times[idx]++;
+				$.bootstrapGrowl("Loading picture "+idx+" failed. Trying to load it with longer time.", { type: 'danger' , delay:4000, offset: {from: 'top', amount: MSG_OFFSET}});
+			} else {
+				$.bootstrapGrowl("Displaying "+idx+" failed. ", { type: 'danger' , delay:4000, offset: {from: 'top', amount: MSG_OFFSET}});
+				clearInterval(display_timer[idx]);
+			}
+		} else {
+			clearInterval(display_timer[idx]);
 		}
 	}
 	
@@ -376,7 +394,7 @@
 		var margin_left = jQuery("#myCanvas").offset().left;
 		var margin_top = jQuery("#myCanvas").offset().top;
 
-		for (i = 1; i < souvenir_obj.length; i++) {
+		for (var i = 1; i < souvenir_obj.length; i++) {
 			if (souvenir_obj[i].type == "image")
 				div_str += '<a><div class="border-rect" id="border_rect_' + i
 						+ '" style="left:'
@@ -457,7 +475,7 @@
 		var img_content = new String();
 		if (obj.length == 0)
 			img_content = "<h4>There is no picture in the album.</h4>";
-		for (i = 0; i < obj.length; i++) {
+		for (var i = 0; i < obj.length; i++) {
 			img_content += '<div class="img" id="select_img_'
 					+ (i + 1)
 					+ '"><a onclick="selectImage('
@@ -986,7 +1004,7 @@ div.border-rect-active {
 				<!-- Download Button -->
 				<div>
 					<input type="button" class="btn btn-primary " value="Make Souvenir" id="submit_btn" data-toggle="modal"
-						data-target="#myModal" />
+						data-target="#myModal" style="display:block"/>
 					<!-- onclick="checkSubmit()" -->
 				</div>
 			</div>
