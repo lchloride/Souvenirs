@@ -172,11 +172,11 @@ public class SouvenirsServ extends HttpServlet {
 					result = sm.showPicture(para);
 				} else if (query_url.contentEquals("share")) {
 					
-					//Show picture in original size 
+					//Display sharing pictures into a specific shared album 
 					result = sm.displaySharePicture(para);
 				} else if (query_url.contentEquals("updatePictureInfo")) {
 					
-					//Show picture in original size 
+					//Update pictures information(picture name, description, shared status)
 					result = sm.updatePictureInfo(para);
 				} else {
 					

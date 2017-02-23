@@ -126,27 +126,21 @@
 		isFinished = false;
 		//Loading background image
 		bg = new Image();
-		bg.src = "res/image/template/" + souvenir_obj[0].background;
+		
 		bg.onload = function() {
-			
-			//Drawing bavkground image
+			//Drawing background image
 			ctx.drawImage(bg, 0, 0, c.width, c.height);
 			//Creating displaying parts
 			drawClip(ctx);
-/*			//Drawing content
-			drawContent(ctx, idx);
-			if (callback != null && callback != "")
-				callback();
-			*/
-			for (var i=1; i<souvenir_obj.length; i++) {
-				load_times[i] = 1;
-				display_timer[i] = setInterval("checkDisplay("+i+")",Math.round(load_timeout*1000));
-				drawContent(ctx, i);
+			for (var idx=1; idx<souvenir_obj.length; idx++) {
+				load_times[idx] = 1;
+				display_timer[idx] = setInterval("checkDisplay("+idx+")",Math.round(load_timeout*1000));
+				drawContent(ctx, idx);
 			}
 			isFinished = true;
 			//clearInterval(display_timer);
 		}
-
+		bg.src = "res/image/template/" + souvenir_obj[0].background;
 	}
 
 	//本函数用来绘制要显示的区域。只有在这个区域中的内容才会被显示，其他位置的内容会被隐藏
@@ -192,17 +186,13 @@
 	//本函数根据idx决定要调用的绘图方法
 	function drawContent(ctx, idx) {
 		//If idx points to an invalid item in templete, just return
-		//document.getElementById("size").innerHTML += idx;
 		
-		if (//isError || souvenir_obj[idx] == undefined
-				 souvenir_obj[idx] == null
+		if ( souvenir_obj[idx] == null
 				|| souvenir_obj[idx].type == undefined
 				|| souvenir_obj[idx].type == null) {
-			//isFinished = true;
-			//clearInterval(display_timer);
 			return;
 		} else {
-			display_idx = idx;
+			//display_idx = idx;
 			//Call specific function to finish drawing 
 			if (souvenir_obj[idx].type == "image")
 				drawImg(ctx, idx);
@@ -227,7 +217,6 @@
 		image_list[idx] = image;
 		//alert("before onload"+idx);
 		image.onload = (function () {
-			//alert("onload "+idx+" "+ctx);
 			var image = this;
 			var dx = souvenir_obj[idx].zoom*image.width;
 			var dy = souvenir_obj[idx].zoom*image.height;
@@ -264,19 +253,13 @@
 			ctx.transform(souvenir_obj[idx].t11, souvenir_obj[idx].t12,
 					souvenir_obj[idx].t21, souvenir_obj[idx].t22,
 					souvenir_obj[idx].t13, souvenir_obj[idx].t23);
-			//document.getElementById("size").innerHTML += "("+idx+","+(souvenir_obj[idx].type)+", "+image.complete+","+image.width+", "+image.height+"), ";
 			//Draw image under the control of zoom pixels, horizontal translating pixels and verticle translating pixels
 			ctx.drawImage(image, 0 + dx - moveX, 0 + dy - moveY, image.width - 2
 					* dx, image.height - 2 * dy,
 					R(souvenir_obj[idx].startX), R(souvenir_obj[idx].startY),
 					R(souvenir_obj[idx].drawW), R(souvenir_obj[idx].drawH));
-			//idx++;
-			//Draw the next image/text
-			//drawContent(ctx, idx);
 		})
-		//alert("after onload"+idx);
 		image.src = souvenir_obj[idx].url;//+souvenir_obj[idx].url.indexOf("default")>=0?"":"&random="+encodeURIComponent(Math.random());
-		//document.getElementById("size").innerHTML += "-"+image.src+",";
 		
 		image.onerror = function() {
 			//isError = true;
@@ -288,8 +271,6 @@
 	//Draw text
 	//绘制文字
 	function drawText(ctx, idx) {
-		//if (isError)
-			//return;
 		//Form style string
 		var font_style = '';
 		if (souvenir_obj[idx].italic)
@@ -314,8 +295,6 @@
 				R(souvenir_obj[idx].maxW), (isDrawing ? souvenir_obj[idx].size
 						: Math.round(souvenir_obj[idx].size / ratio
 								* download_ratio)), souvenir_obj[idx].lineH);
-		//idx++;
-		//drawContent(ctx, idx);
 	}
 
 	//Auxiliary function of auto-wrap, without considering of vertical out-of-range condition

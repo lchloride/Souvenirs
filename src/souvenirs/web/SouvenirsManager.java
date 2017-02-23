@@ -658,6 +658,9 @@ public class SouvenirsManager {
 			// result.put("result_list", URLEncoder.encode((new JSONArray(update_result)).toString(), "UTF-8"));
 			throw e;
 		}
+		
+		// Update picture name if needed
+		// Updating can be divided into 2 parts: update record in database and change filename of file system
 		try {
 			if (!picture_name.contentEquals(origin_picture_name)) {
 				String album_path = BASE_PATH + File.separator + user_id + File.separator + album_name;
@@ -707,6 +710,7 @@ public class SouvenirsManager {
 					+ ">", e);
 		}
 
+		// Update description of picture if needed
 		try {
 			if (!description.contentEquals(original_description)) {
 				int rs = dao.updatePictureDescription(user_id, album_name, picture_name, description);
@@ -731,6 +735,8 @@ public class SouvenirsManager {
 					+ original_description + ">, current description=<" + description + ">", e);
 		}
 
+		// Update share status of picture if needed
+		// For each group, if previous share status differs from current status, change this status to current status  
 		try {
 			List<String> original_shared_group = dao.getPictureBelongGroup(user_id, album_name, picture_name);
 			JSONArray salbum_share_list = new JSONArray(salbum_json);
@@ -810,13 +816,13 @@ public class SouvenirsManager {
 		String description = parameter.get("description");
 		String default_cover = parameter.get("default_cover");
 		String cover = "";
-		if (default_cover == null || !default_cover.contentEquals("on"))
+		if (default_cover == null || !default_cover.contentEquals("on")) // Specific cover
 			cover = File.separator + user_id + File.separator + album_name + File.separator + origin_filename;
-		else
+		else //Default cover
 			cover = "\\res\\default_cover.png";		
 		try {
 			// Add a row of image into DB
-			int sql_exec_result = dao.createPAlbum(user_id, album_name, description, cover.replaceAll("\\\\", "\\\\\\\\"));
+			int sql_exec_result = dao.createPAlbum(user_id, album_name, description, cover);
 			
 			if (sql_exec_result != 1)
 				throw new Exception("Uploading failed. Cannot insert new record into database.");
