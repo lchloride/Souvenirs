@@ -582,6 +582,14 @@ public class SouvenirsAjaxManager {
 		return "true";
 	}
 	
+	/**
+	 * 删除一个个人相册
+	 * @param parameter 前端发来的参数，key包括album_name(欲删除的相册名)
+	 * @return 操作结果字符串，只要数据库删除操作成功返回“true”，否则无返回值。
+	 * 
+	 * <strong>注意：如果数据库删除成功而硬盘上的文件未删除成功也会返回"true"，但是会写入一条error日志，管理员日后需要手动删除掉磁盘上的文件</strong>
+	 * @throws Exception 数据库操作失败或者删除操作失败会抛出异常
+	 */
 	public String deletePAlbum(Map<String, String>parameter) throws Exception {
 		checkValidDAO();
 		String user_id = parameter.get("login_user_id");

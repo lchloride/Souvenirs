@@ -76,6 +76,8 @@
 	var display_timer = new Array(souvenir_obj.length);
 	var load_times = new Array(souvenir_obj.length);
 	var image_list = new Array(souvenir_obj.length);
+	var reload_times_max = ${not empty Reload_times_max?Reload_times_max:3};
+	var load_timeout = ${not empty Load_timeout?Load_timeout:5};
 	var MSG_OFFSET = 50;
 	
 	var move_step_ratio = 0.05;
@@ -138,7 +140,7 @@
 			*/
 			for (var i=1; i<souvenir_obj.length; i++) {
 				load_times[i] = 1;
-				display_timer[i] = setInterval("checkDisplay("+i+")",5000);
+				display_timer[i] = setInterval("checkDisplay("+i+")",Math.round(load_timeout*1000));
 				drawContent(ctx, i);
 			}
 			isFinished = true;
@@ -369,7 +371,7 @@
 	function checkDisplay(idx) {
 		document.getElementById("size").innerHTML += idx + ", "
 		if (image_list[idx] != undefined && !image_list[idx].complete) {
-			if (load_times[idx] <= 3) {
+			if (load_times[idx] <= reload_times_max) {
 				load_times[idx]++;
 				$.bootstrapGrowl("Loading picture "+idx+" failed. Trying to load it with longer time.", { type: 'danger' , delay:4000, offset: {from: 'top', amount: MSG_OFFSET}});
 			} else {

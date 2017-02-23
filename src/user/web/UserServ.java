@@ -111,6 +111,7 @@ public class UserServ extends HttpServlet {
 			session.setAttribute("username", result.get("login_username"));
 			session.setAttribute("password", result.get("login_password"));
 			session.setAttribute("user_id", result.get("login_user_id"));
+			session.setAttribute("user", result.get("login_user"));
 		}
 
 		// Store verify code in session

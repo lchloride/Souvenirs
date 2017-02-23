@@ -202,5 +202,36 @@ public class DB {
 		}
 		return affect_row_count;
 	}
-
+	
+	/**
+	 * 试验用DB获取方法，参数均为object类型
+	 * @param sql 变量是要执行的SQL语句模板
+	 * @param para 按照模板中出现的顺序，存储参数的一个List，类型是Object
+	 * @return 一个整数，操作影响的行数
+	 * @throws Exception 数据库执行失败时抛出异常
+	 */
+	public static int execSQLUpdateO(String sql, List<Object> para) throws Exception {
+		Connection conn = null;
+		PreparedStatement ps = null;
+		int affect_row_count = 0;
+		try {
+			conn = getConn();
+			ps = conn.prepareStatement(sql);
+			for (int i = 1; para != null && i <= para.size(); i++)
+				ps.setObject(i, para.get(i - 1));
+			affect_row_count = ps.executeUpdate();
+			logger.debug(affect_row_count);
+		} catch (Exception e) {
+			logger.warn("exec SQL failed! SQL:<" + sql + "> Msg:<" + e.getMessage() + ">", e);
+			throw e;
+		} finally {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				logger.warn("Cannot close connection of sql", e);
+			}
+		}
+		return affect_row_count;
+	}
 }

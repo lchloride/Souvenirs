@@ -1,7 +1,6 @@
 package souvenirs.web;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.DateFormat;
@@ -28,7 +27,7 @@ import tool.ImageLoader;
 import tool.PropertyOper;
 import tool.exception.BadRequestException;
 import tool.exception.RenameFolderErrorException;
-import upload.dao.UploadDAO;
+import user.User;
 import user.web.UserManager;
 
 /**
@@ -77,6 +76,7 @@ public class SouvenirsManager {
 	 *             获取Album信息失败会抛出异常
 	 * @see souvenirs.dao.SouvenirsDAO#getAllPAlbumInfo(String, int)
 	 * @see souvenirs.dao.SouvenirsDAO#getAllSAlbumInfo(String, int)
+	 * @deprecated
 	 */
 	public Map<String, Object> displayContentOld(Map<String, String> parameter) throws Exception {
 		checkValidDAO();
@@ -127,13 +127,13 @@ public class SouvenirsManager {
 	 * @see souvenirs.dao.SouvenirsDAO#getAllPAlbumInfo(String, int)
 	 * @see souvenirs.dao.SouvenirsDAO#getAllSAlbumInfo(String, int)
 	 */
-	public Map<String, Object> displayContent(Map<String, String> parameter) throws Exception {
+	public Map<String, Object> displayContent(Map<String, String> parameter, User login_user) throws Exception {
 		checkValidDAO();
-		String user_id = parameter.get("login_user_id");
+		String user_id = login_user.getUserId();//parameter.get("login_user_id");
 		Map<String, Object> result = new HashMap<>();
 		result.put("Avatar", ImageLoader.genAddrOfAvatar(user_id));
 		result.put("Upload_result", parameter.get("Upload_result"));
-		
+
 		// Get information of latest uploaded pictures
 		List<Picture> latest_picture_list = dao.getLatestPictures(user_id);
 		List<String> picture_json_list = new ArrayList<>();
@@ -196,6 +196,8 @@ public class SouvenirsManager {
 		result.put("SAlbum_count", rSAlbums.size());
 		// logger.debug("personal_album_json=<"+person_album_json_list+">");
 		result.put("DispatchURL", "homepage.jsp");
+		int rs = dao.setReloadTimesMax(user_id, 100);
+		logger.debug("test db object result "+rs);
 		return result;
 	}
 
@@ -208,15 +210,17 @@ public class SouvenirsManager {
 	 * @throws Exception
 	 *             获取数据库信息失败或store接口执行失败会抛出异常
 	 */
-	public Map<String, Object> displayMakingSouvenirs(Map<String, String> parameter) throws Exception {
+	public Map<String, Object> displayMakingSouvenirs(Map<String, String> parameter, User login_user) throws Exception {
 		checkValidDAO();
 		Map<String, Object> result = new HashMap<>();
-		result.put("Avatar", ImageLoader.genAddrOfAvatar(parameter.get("login_user_id")));
+		String user_id = login_user.getUserId();
+		result.put("Avatar", ImageLoader.genAddrOfAvatar(user_id));
+		result.put("Reload_times_max", login_user.getReloadTimesMax());
+		result.put("Load_timeout", login_user.getLoadTimeout());
+		
 		if (!parameter.containsKey("query_type")) {
-			List<SharedAlbum> salbum_list = dao.getAllSAlbumInfo(parameter.get("login_user_id"),
-					SouvenirsDAO.SHARED_ALBUM); // dao.getAlbumName(parameter.get("login_user_id"));
-			List<PersonalAlbum> palbum_list = dao.getAllPAlbumInfo(parameter.get("login_user_id"),
-					SouvenirsDAO.PERSONAL_ALBUM);
+			List<SharedAlbum> salbum_list = dao.getAllSAlbumInfo(user_id, SouvenirsDAO.SHARED_ALBUM); // dao.getAlbumName(parameter.get("login_user_id"));
+			List<PersonalAlbum> palbum_list = dao.getAllPAlbumInfo(user_id, SouvenirsDAO.PERSONAL_ALBUM);
 			logger.debug("palbum_list:" + palbum_list);
 			List<String> album_name_list = new ArrayList<>();
 			JSONArray palbum_identifier_json = new JSONArray();
@@ -244,6 +248,7 @@ public class SouvenirsManager {
 			result.put("DispatchURL", "canvas.jsp");
 		} else {
 			result.put("DispatchURL", "canvas.jsp");
+			
 		}
 		return result;
 	}
@@ -570,6 +575,15 @@ public class SouvenirsManager {
 		return result;
 	}
 
+	/**
+	 * 显示分享照片到某个共享小组的页面
+	 * @param parameter 前端发来的参数，key包括group_id(欲分享的小组ID)
+	 * @return 发回前端的参数，包括转向页面(key=DispatchURL)、用户头像地址(Avatar)、个人相册列表(key=Album_name_list)、
+	 * 			第一个个人相册(即一开始显示在屏幕上的相册)的全部图片信息组成的json(key=image_list_json)、欲分享的小组ID(key=Group_id)、
+	 * 			共享相册名(key=SAlbum_name)
+	 * @throws BadRequestException group_id不存在时抛出异常
+	 * @throws Exception 数据库执行失败时抛出异常
+	 */
 	public Map<String, Object> displaySharePicture(Map<String, String> parameter)
 			throws BadRequestException, Exception {
 		checkValidDAO();
@@ -594,8 +608,7 @@ public class SouvenirsManager {
 			Map<String, String> para = new HashMap<>();
 			para.put("login_user_id", user_id);
 			para.put("album_identifier", album_name_list.get(0));
-			para.put("range", "true");
-			logger.debug("para:" + para);
+			para.put("range", "shared");
 			/*
 			 * JSONArray jArray = new JSONArray(getImageAddrInAlbum(para)); List<String> image_json_list = new
 			 * ArrayList<>(); for (int i = 0; i < jArray.length(); i++) {
@@ -614,9 +627,15 @@ public class SouvenirsManager {
 		return result;
 	}
 
+	/**
+	 * 更新（个人）照片信息
+	 * @param parameter 前端传来的参数，key包括format(图片格式)、original_picture_name(原始图片名)、picture_name(新的图片名)、
+	 * 			album_name(相册名)、original_description(原始的照片简介)、description(新的照片简介)、salbum_json(照片分享情况的json字符串)
+	 * @return 一个Map，包括重定向页面的标记(key=Is_redirect)、重定向地址(key=DispatchURL)
+	 * @throws Exception 更新失败或数据库操作异常时会抛出异常
+	 */
 	public Map<String, Object> updatePictureInfo(Map<String, String> parameter) throws Exception {
 		checkValidDAO();
-		logger.debug("parameters:" + parameter);
 		String user_id = parameter.get("login_user_id");
 		String format = parameter.get("format");
 		String origin_picture_name = parameter.get("original_picture_name") + "." + format;
@@ -771,6 +790,14 @@ public class SouvenirsManager {
 		return result;
 	}
 
+	/**
+	 * 创建个人相册
+	 * @param parameter 前端发来的参数，key包括album_name(新相册的相册名)、filename(新相册个性化封面的文件名)、
+	 * 			description(新相册的描述)、default_cover(使用默认封面的标签)
+	 * @param file_handle 保存文件的句柄
+	 * @return 重定向页面的URL地址
+	 * @throws Exception 数据库执行错误或创建失败或无法写入个性化封面时抛出异常
+	 */
 	public String createPAlbum(Map<String, String> parameter, FileItem file_handle) throws Exception {
 		checkValidDAO();
 		String result = "";

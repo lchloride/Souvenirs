@@ -591,4 +591,9 @@ public class SouvenirsDAO {
 		return DB.execSQLUpdate(sql, parameter);
 	}
 	
+	public int setReloadTimesMax(String user_id, int new_value) throws Exception {
+		String sql = "update user set reload_times_max = ? where user_id = ?";
+		List<Object> parameter = Arrays.asList(new_value, user_id);
+		return DB.execSQLUpdateO(sql, parameter);
+	}
 }

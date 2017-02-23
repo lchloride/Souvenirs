@@ -5,6 +5,7 @@ import java.util.*;
 import org.apache.log4j.Logger;
 
 import tool.DB;
+import user.User;
 
 /**
  * 用户操作的数据访问对象，
@@ -122,4 +123,39 @@ public class UserDAO {
 				return (String)result.get(0).get(0);
 		}		
 	}
+	
+	/**
+	 * 通过用户的ID和password获取该用户的信息(无密码字段)
+	 * @param user_id 用户ID
+	 * @param password 该用户对应的密码
+	 * @return User对象，保存了用户的信息(无密码字段)
+	 * @throws Exception 数据库执行失败会抛出异常
+	 */
+	public User getUserInfoById(String user_id, String password) throws Exception {
+		String sql = "select user_id, username, avatar, create_timestamp, reload_times_max, load_timeout from user where user_id=? and password=?";
+		List<String> para = Arrays.asList(user_id, password);
+		List<User> rs = DB.execSQLQuery(sql, para, new UserImplStore());
+		if (rs.size() > 0) {
+			return rs.get(0);
+		} else
+			throw new Exception("Invalid SQL Result with sql:<"+sql+">, parameters:<"+para+">");
+	}
+	
+	/**
+	 * 通过用户的ID和password获取该用户的信息(无密码字段)
+	 * @param username 用户名
+	 * @param password 该用户对应的密码
+	 * @return User对象，保存了用户的信息(无密码字段)
+	 * @throws Exception 数据库执行失败会抛出异常
+	 */
+	public User getUserInfoByUsername(String username, String password) throws Exception {
+		String sql = "select user_id, username, avatar, create_timestamp, reload_times_max, load_timeout from user where username=? and password=?";
+		List<String> para = Arrays.asList(username, password);
+		List<User> rs = DB.execSQLQuery(sql, para, new UserImplStore());
+		if (rs.size() > 0) {
+			return rs.get(0);
+		} else
+			throw new Exception("Invalid SQL Result with sql:<"+sql+">, parameters:<"+para+">");
+	}
+	
 }

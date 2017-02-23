@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import tool.Base64;
 import tool.PropertyOper;
 import tool.exception.BadRequestException;
+import user.User;
 import user.web.UserManager;
 
 /**
@@ -73,16 +74,17 @@ public class SouvenirsServ extends HttpServlet {
 	 * 
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
+	@SuppressWarnings("deprecation")
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		HttpSession session = request.getSession(true);
+		User login_user = (User) session.getAttribute("user");
 		// If login information is wrong, redirect to index.jsp in order to login in again
-		if (!UserManager.checkLogin(session.getAttribute("user_id"), session.getAttribute("username"),
-				session.getAttribute("password"))) {
-			if (!session.isNew())
+		if (login_user == null || !UserManager.checkLogin(login_user.getUserId(), login_user.getUsername(), session.getAttribute("password"))) {
+			if (login_user!=null&&!session.isNew() )
 				logger.warn("User_id, username and password in one session does not match. id=<"
-						+ session.getAttribute("user_id") + ">,username=<" + session.getAttribute("username")
+						+ login_user.getUserId() + ">,username=<" + login_user.getUsername()
 						+ ">,password=<" + Base64.encode((String) session.getAttribute("password")) + ">");
 			session.invalidate();
 			response.sendRedirect("loginfail.jsp");
@@ -123,7 +125,7 @@ public class SouvenirsServ extends HttpServlet {
 				} else if (query_url.contentEquals("homepage")) {
 					
 					// Display Content when firstly open the page
-					result = sm.displayContent(para);
+					result = sm.displayContent(para, login_user);
 				} else if (query_url.contentEquals("formPicture")) {
 					
 					// Covert base64 code of image to bit flow and send it back to front side as an attachment
@@ -133,7 +135,7 @@ public class SouvenirsServ extends HttpServlet {
 				} else if (query_url.contentEquals("making")) {
 					
 					// Display making page when firstly open making page
-					result = sm.displayMakingSouvenirs(para);
+					result = sm.displayMakingSouvenirs(para, login_user);
 				} else if (query_url.contains("AlbumAjax")) {
 					
 					// Send json string of album info when front side open an Ajax query
