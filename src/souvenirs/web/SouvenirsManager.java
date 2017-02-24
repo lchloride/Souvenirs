@@ -738,14 +738,21 @@ public class SouvenirsManager {
 		// Update share status of picture if needed
 		// For each group, if previous share status differs from current status, change this status to current status  
 		try {
+			// Get previous share status
 			List<String> original_shared_group = dao.getPictureBelongGroup(user_id, album_name, picture_name);
 			JSONArray salbum_share_list = new JSONArray(salbum_json);
+			// For each group that this user joined in
 			for (int i = 0; i < salbum_share_list.length(); i++) {
 				JSONObject salbum_item = salbum_share_list.getJSONObject(i);
+				// salbum_item.getBoolean("is_shared") means the previous status
+				// original_shared_group.contains(salbum_item.getString("group_id")) means the new status
+				// If these two values are different, shared status of it should be updated 
 				if (salbum_item.getBoolean("is_shared") != original_shared_group
 						.contains(salbum_item.getString("group_id"))) {
+					// If salbum_item.getBoolean("is_shared") is true, it means operation is share, otherwise means unshare
 					if (salbum_item.getBoolean("is_shared")) {
 						int rs = dao.sharePicture(user_id, album_name, picture_name, salbum_item.getString("group_id"));
+						// Check sharing result: Success, failure or duplicate which is a non-fatal error
 						if (rs == SouvenirsDAO.SHARE_PICTURE_SUCCESS) {
 							success_result.add("sharing state of " + salbum_item.getString("salbum_name"));
 							logger.info("Sharing picture succeed. Parameters: user_id=<" + user_id + ">, album_name=<"
@@ -766,6 +773,7 @@ public class SouvenirsManager {
 					} else {
 						int rs = dao.unsharePicture(user_id, album_name, picture_name,
 								salbum_item.getString("group_id"));
+						// Check unsharing result
 						if (rs == DEFAULT_AFFECTED_ROW) {
 							success_result.add("unsharing state of " + salbum_item.getString("salbum_name"));
 							logger.info("Unsharing picture succeed. Parameters: user_id=<" + user_id + ">, album_name=<"
@@ -800,7 +808,7 @@ public class SouvenirsManager {
 	 * 创建个人相册
 	 * @param parameter 前端发来的参数，key包括album_name(新相册的相册名)、filename(新相册个性化封面的文件名)、
 	 * 			description(新相册的描述)、default_cover(使用默认封面的标签)
-	 * @param file_handle 保存文件的句柄
+	 * @param file_handle 保存封面图片的句柄
 	 * @return 重定向页面的URL地址
 	 * @throws Exception 数据库执行错误或创建失败或无法写入个性化封面时抛出异常
 	 */
@@ -818,7 +826,7 @@ public class SouvenirsManager {
 		String cover = "";
 		if (default_cover == null || !default_cover.contentEquals("on")) // Specific cover
 			cover = File.separator + user_id + File.separator + album_name + File.separator + origin_filename;
-		else //Default cover
+		else // Default cover
 			cover = "\\res\\default_cover.png";		
 		try {
 			// Add a row of image into DB
@@ -839,7 +847,6 @@ public class SouvenirsManager {
 					logger.debug(uploadDir.mkdirs());
 				}
 
-				// System.getProperties().list(System.out);
 				// Create new file
 				File storeFile = new File(uploadPath+File.separator+origin_filename);
 				logger.debug(uploadPath);
@@ -858,8 +865,6 @@ public class SouvenirsManager {
 								+ "although there are something wrong when writing cover, which leads to inconsistency in database!");
 					}
 					// Set error message and quit
-					//result = displayContent(parameter);
-					//result.put("Upload_result", e.getMessage());
 					result = "/Souvenirs/homepage?Upload_result="+URLEncoder.encode(e.getMessage(), "UTF-8").substring(0, Math.min(e.getMessage().length(), 800));
 					logger.info("User failed to create a personal album, error:<" + e.getMessage()
 							+ "> with parameters:<" + parameter + ">");
@@ -872,16 +877,12 @@ public class SouvenirsManager {
 					throw new Exception("Cannot insert cover image record into database as the first image in the album. Parameters:<"+parameter+">");
 				} else {
 					// Set success message (Cover assigned)
-					//result = displayContent(parameter);
-					//result.put("Upload_result", "true");
 					result = "/Souvenirs/homepage?Upload_result=true";
 					logger.info("User(id=" + parameter.get("login_user_id") + ") created a personal album. Parameters:<"
 							+ parameter + ">");
 				}
 			} else {
 				// Set success message (Default cover)
-				//result = displayContent(parameter);
-				//result.put("Upload_result", "true");
 				result = "/Souvenirs/homepage?Upload_result=true";
 				logger.info("User(id=" + parameter.get("login_user_id") + ") created a personal album. Parameters:<"
 						+ parameter + ">");
@@ -889,8 +890,6 @@ public class SouvenirsManager {
 		} catch (Exception e) {
 			// TODO: handle exception
 			// Adding failed
-			//result = displayContent(parameter);
-			//result.put("Upload_result", e.getMessage());
 			result = "/Souvenirs/homepage?Upload_result="+URLEncoder.encode(e.getMessage(), "UTF-8").substring(0, Math.min(e.getMessage().length(), 800));
 			logger.info("User failed to create a personal album, error:<" + e.getMessage() + "> with parameters:<" + parameter
 					+ ">");

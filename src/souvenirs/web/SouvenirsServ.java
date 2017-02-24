@@ -210,7 +210,7 @@ public class SouvenirsServ extends HttpServlet {
 	}
 
 	/**
-	 * 调用doGet方法
+	 * doPost方法：如果访问URL为createAlbum(创建个人相册)，则直接处理该query(因为有文件上传)；其他情况调用doGet方法
 	 * 
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 * @see #doGet(HttpServletRequest, HttpServletResponse)
