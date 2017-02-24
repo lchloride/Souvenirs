@@ -179,10 +179,14 @@ public class SouvenirsDAO {
 	 *            用户ID
 	 * @param album
 	 *            相册名
+	 * @param range 指定获取图片的范围，其值可能是PERSONAL_ALBUM(个人相册)、 SHARED_ALBUM(共享相册)、ALL_ALBUM(全部相册)    
 	 * @return 一个Picture对象的List，存放了该相册中所有照片的信息
 	 * @throws Exception
 	 *             数据库查询执行失败，PictureImplStore的format方法执行失败都会抛出异常
 	 * @see souvenirs.Picture
+	 * @see souvenirs.dao.SouvenirsDAO#SHARED_ALBUM
+	 * @see souvenirs.dao.SouvenirsDAO#PERSONAL_ALBUM
+	 * @see souvenirs.dao.SouvenirsDAO#ALL_ALBUM
 	 * @see souvenirs.dao.PictureImplStore#format(List)
 	 */
 	public List<Picture> getAllPictureInfo(String user_id, String album, int range) throws Exception {
@@ -336,7 +340,7 @@ public class SouvenirsDAO {
 	 * 更新个人相册的简介
 	 * @param user_id 用户名
 	 * @param album_name 待更改相册的名称
-	 * @param new_descritpion 新的简介
+	 * @param new_description 新的简介
 	 * @return sql操作所影响的行数，操作成功的话应为1
 	 * @throws Exception 数据库语句执行失败会抛出异常
 	 */

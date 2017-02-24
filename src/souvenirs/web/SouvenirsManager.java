@@ -120,6 +120,8 @@ public class SouvenirsManager {
 	 * 
 	 * @param parameter
 	 *            前端传来的参数，key包括login_user_id(用户ID)
+	 * @param login_user
+	 * 				已登录的用户信息
 	 * @return 发回前端的显示参数，包括用户头像(key=Avatar)、个人相册json字符串列表(key=PAlbum_json_list)、
 	 *         共享相册json字符串列表(key=SAlbum_json_list)、待转向的页面(key=DispatchURL)
 	 * @throws Exception
@@ -206,6 +208,8 @@ public class SouvenirsManager {
 	 * 
 	 * @param parameter
 	 *            前端传来的参数，key包括login_user_id(登录用户user_id)，template(用户选择的模板名称)
+	 *	@param login_user
+	 * 				已登录的用户信息
 	 * @return 操作完成发送给前端的参数，包括album名称列表、默认显示的album内全部图片地址的json字符串
 	 * @throws Exception
 	 *             获取数据库信息失败或store接口执行失败会抛出异常
