@@ -69,6 +69,8 @@ public class UploadManager {
 			//Add a row of image into DB 
 			int sql_exec_result = dao.addPicture(para);
 			
+			if (sql_exec_result != 1)
+				throw new Exception("Uploading failed. Cannot insert new record into database.");
 			// Adding succeeded
 			// Form absolute file path 
 			String uploadPath = PropertyOper.GetValueByKey("souvenirs.properties", "data_path") + File.separator

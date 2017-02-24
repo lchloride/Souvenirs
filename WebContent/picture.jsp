@@ -2,7 +2,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ page import="java.util.*"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html>
+<html lang="en_US">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
@@ -283,6 +283,8 @@ div.comment {
 	}
 	
 	function sendCommentCallback(result) {
+		//result = decodeURIComponent(result); 
+		alert(result);
 		if (result.indexOf('{') == 0) {
 			var cobj = JSON.parse(result);
 			comment_list_obj.push(cobj);
@@ -319,7 +321,7 @@ div.comment {
 			document.getElementById("comment_username_"+ idx).innerHTML += 
 				"<span style='font-weight:normal;float:right;'>"+
 				"<button class='btn btn-link' id='reply_btn_"+(idx-1)+"' style='padding:0px;' onclick='reply("+(idx-1)+")'>Reply</button> | "+
-				"<button class='btn btn-link' style='padding:0px;' disabled>Report</button></span>";
+				"<button class='btn btn-link' style='padding:0px;' data-toggle='modal' data-target='#myModal' onclick='report_idx="+idx+"'>Report</button></span>";
 			$('#comments_count').text(comment_list_obj.length);
 			$.bootstrapGrowl("Comment successfully.", { type: 'success' , delay:2000, offset: {from: 'top', amount: MSG_OFFSET}});
 		}else

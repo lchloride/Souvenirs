@@ -4,7 +4,6 @@ import java.util.*;
 
 import org.apache.log4j.Logger;
 
-import souvenirs.dao.SouvenirsDAO;
 import tool.VerifyCode;
 import user.dao.UserDAO;
 
@@ -53,43 +52,51 @@ public class UserManager {
 	public Map<String, Object> register(Map<String, String> parameter) {
 		checkValidDAO();
 		Map<String, Object> result = new HashMap<>();
-		// User has already login the system, he/she cannot register
-		if (checkLogin(parameter.get("login_username"), parameter.get("login_password"))) {
-			result.put("DispatchURL", "register.jsp");
-			result.put("Result", true);
-			result.put("Msg", "Already login");
-			logger.info("Register failed: <" + parameter.get("login_username") + "> has already login.");
-		} else {
-			if (parameter.size() > REGISTER_DEFAULT_PARA) {
-				// Large than REGISTER_DEFAULT_PARA means there are valid
-				// parameters for creating a new user
-				// Check whether username is duplicated or not
-				if (checkUsername(parameter.get("Text_username"))) {
-					result.put("DispatchURL", "register.jsp");
-					result.put("Result", false);
-					result.put("Msg", "Duplicate Username");
-					logger.info("Register failed: <" + parameter.get("Text_username") + "> existed.");
-				} else {
-					// Key operation of register
-					int rs = dao.register(parameter);
-					if (rs == 0) {
-						// Register succeeded.
-						result.put("DispatchURL", "register.jsp");
-						// Insert successfully
-						result.put("Result", true);
-						logger.info("Register succeeded:Username <" + parameter.get("Text_username") + ">");
-					} else {
-						// Register failed.
-						result.put("DispatchURL", "register.jsp");
-						// Insert failed
-						result.put("Result", false);
-						result.put("Msg", "Database Error occured, please try again");
-						logger.info("Register failed: Database internal error");
-					}
-				}
-			} else { // The first time to display register page
+		try {
+			// User has already login the system, he/she cannot register
+			if (checkLogin(parameter.get("login_username"), parameter.get("login_password"))) {
 				result.put("DispatchURL", "register.jsp");
+				result.put("Result", true);
+				result.put("Msg", "Already login");
+				logger.info("Register failed: <" + parameter.get("login_username") + "> has already login.");
+			} else {
+				if (parameter.size() > REGISTER_DEFAULT_PARA) {
+					// Large than REGISTER_DEFAULT_PARA means there are valid
+					// parameters for creating a new user
+					// Check whether username is duplicated or not
+					if (checkUsername(parameter.get("Text_username"))) {
+						result.put("DispatchURL", "register.jsp");
+						result.put("Result", false);
+						result.put("Msg", "Duplicate Username");
+						logger.info("Register failed: <" + parameter.get("Text_username") + "> existed.");
+					} else {
+						// Key operation of register
+						int rs = dao.register(parameter);
+						if (rs == 0) {
+							// Register succeeded.
+							result.put("DispatchURL", "register.jsp");
+							// Insert successfully
+							result.put("Result", true);
+							logger.info("Register succeeded:Username <" + parameter.get("Text_username") + ">");
+						} else {
+							// Register failed.
+							result.put("DispatchURL", "register.jsp");
+							// Insert failed
+							result.put("Result", false);
+							result.put("Msg", "Database Error occured, please try again");
+							logger.info("Register failed: Database internal error");
+						}
+					}
+				} else { // The first time to display register page
+					result.put("DispatchURL", "register.jsp");
+				}
 			}
+		} catch (Exception e) {
+			// An error occurred when executing query
+			result.put("DispatchURL", "index.jsp");
+			result.put("Result", false);
+			result.put("Msg", "Sorry! An internal error occurred.");
+			logger.error("Internal error with login! Error:<"+e.getMessage()+">");
 		}
 		return result;
 	}
@@ -114,71 +121,83 @@ public class UserManager {
 		Map<String, Object> result = new HashMap<>();
 		String text_username = null;
 		String text_password = null;
-		// Check invalidation of username and password in parameters
-		if (parameter.get("Text_username") == null || parameter.get("Text_password") == null) {
-			result.put("DispatchURL", "index.jsp");
-			result.put("Redirect", true);
-		} else if (!parameter.get("Text_username").isEmpty() || !parameter.get("Text_password").isEmpty()) {
-			// Check whether username and password in parameters are empty
-			// If not empty
-			text_username = parameter.get("Text_username");
-			text_password = parameter.get("Text_password");
-			if (parameter.get("login_verifycode_name") == null) {
-				// verify code name in session does not exist, load it again.
-				// This is probably caused by expired session
+		try {
+			// Check invalidation of username and password in parameters
+			if (parameter.get("Text_username") == null || parameter.get("Text_password") == null) {
 				result.put("DispatchURL", "index.jsp");
-				result.put("Msg", "Verify Code is expired!");
-				result.put("Firsttime", false);
-				result.put("VerifyCode", VerifyCode.getVerifyCode());
-				logger.info("User Login Failed: Username <" + text_username + "> with expired verify code.");
-			} else {
-				// Check verify code input by user
-				if (VerifyCode.checkVerifyCodeAns(parameter.get("login_verifycode_name"),
-						parameter.get("Text_verifycode")))
-					// Verify code is valid, then check username and password
-					if (checkLogin(text_username, text_password)) {
-						// Checking(login) succeeded
-						result.put("DispatchURL", "homepage");
-						result.put("Redirect", true);
-						result.put("login_username", text_username);
-						result.put("login_password", text_password);
-						result.put("login_user_id", getUserIDByName(text_username));
-						logger.info("User Login Succeeded: Username <" + text_username + ">");
-					} else {
-						// Login failed, username/password is wrong
-						result.put("DispatchURL", "index.jsp");
-						result.put("Msg", "Username(ID) or password is wrong");
-						result.put("Firsttime", false);
-						result.put("VerifyCode", VerifyCode.getVerifyCode());
-						logger.info("User Login Failed: Username <" + text_username
-								+ "> with wrong username(ID) or password.");
-					}
-				else {
-					// verify code is wrong
+				result.put("Redirect", true);
+			} else if (!parameter.get("Text_username").isEmpty() || !parameter.get("Text_password").isEmpty()) {
+				// Check whether username and password in parameters are empty
+				// If not empty
+				text_username = parameter.get("Text_username");
+				text_password = parameter.get("Text_password");
+				if (parameter.get("login_verifycode_name") == null) {
+					// verify code name in session does not exist, load it again.
+					// This is probably caused by expired session
 					result.put("DispatchURL", "index.jsp");
-					result.put("Msg", "Verify code is wrong");
+					result.put("Msg", "Verify Code is expired!");
 					result.put("Firsttime", false);
 					result.put("VerifyCode", VerifyCode.getVerifyCode());
-					logger.info("User Login Failed: Username <" + text_username + "> with wrong verify code.");
+					logger.info("User Login Failed: Username <" + text_username + "> with expired verify code.");
+				} else {
+					// Check verify code input by user
+					if (VerifyCode.checkVerifyCodeAns(parameter.get("login_verifycode_name"),
+							parameter.get("Text_verifycode")))
+						// Verify code is valid, then check username and password
+						if (checkLogin(text_username, text_password)) {
+							// Checking(login) succeeded
+							result.put("DispatchURL", "homepage");
+							result.put("Redirect", true);
+							// Obtain user information and store in session(in UserServ)
+							result.put("login_user", dao.getUserInfoByUsername(text_username, text_password));
+							result.put("login_username", text_username);
+							result.put("login_password", text_password);
+							result.put("login_user_id", getUserIDByName(text_username));
+							logger.info("User Login Succeeded: Username <" + text_username + ">");
+						} else {
+							// Login failed, username/password is wrong
+							result.put("DispatchURL", "index.jsp");
+							result.put("Msg", "Username(ID) or password is wrong");
+							result.put("Firsttime", false);
+							result.put("VerifyCode", VerifyCode.getVerifyCode());
+							logger.info("User Login Failed: Username <" + text_username
+									+ "> with wrong username(ID) or password.");
+						}
+					else {
+						// verify code is wrong
+						result.put("DispatchURL", "index.jsp");
+						result.put("Msg", "Verify code is wrong");
+						result.put("Firsttime", false);
+						result.put("VerifyCode", VerifyCode.getVerifyCode());
+						logger.info("User Login Failed: Username <" + text_username + "> with wrong verify code.");
+					}
+				}
+			} else {
+				// the first time load index page, check username and
+				// password stored in session
+				if (checkLogin(parameter.get("login_user_id"), parameter.get("login_username"),
+						parameter.get("login_password"))) {
+					// Checking succeed, then automatically login
+					result.put("DispatchURL", "homepage");
+					result.put("Redirect", true);
+					// Obtain user information and store in session(in UserServ)
+					result.put("login_user", dao.getUserInfoByUsername(parameter.get("login_username"), parameter.get("login_password")));
+					logger.info("User Session Login: Username <" + parameter.get("login_username") + ">");
+				} else {
+					result.put("DispatchURL", "index.jsp");
+					result.put("Firsttime", false);
+					result.put("VerifyCode", VerifyCode.getVerifyCode());
+					logger.info("User Session Login Failed: Username <" + parameter.get("login_username") + ">");
 				}
 			}
-		} else {
-			// the first time load index page, check username and
-			// password stored in session
-			if (checkLogin(parameter.get("login_user_id"), parameter.get("login_username"),
-					parameter.get("login_password"))) {
-				// Checking succeed, then automatically login
-				result.put("DispatchURL", "homepage");
-				result.put("Redirect", true);
-				logger.info("User Session Login: Username <" + parameter.get("login_username") + ">");
-			} else {
-				result.put("DispatchURL", "index.jsp");
-				result.put("Firsttime", false);
-				result.put("VerifyCode", VerifyCode.getVerifyCode());
-				logger.info("User Session Login Failed: Username <" + parameter.get("login_username") + ">");
-			}
+		} catch (Exception e) {
+			// An error occurred when executing query
+			result.put("DispatchURL", "index.jsp");
+			result.put("Firsttime", false);
+			result.put("VerifyCode", VerifyCode.getVerifyCode());
+			result.put("Msg", "Sorry! An internal error occurred.");
+			logger.error("Internal error with login! Error:<"+e.getMessage()+">");
 		}
-
 		return result;
 	}
 
@@ -191,8 +210,9 @@ public class UserManager {
 	 * @param password
 	 *            待检查的密码
 	 * @return 验证结果，true代表验证成功，false代表验证失败
+	 * @throws Exception 数据库执行失败时抛出异常
 	 */
-	private boolean checkLogin(String username, String password) {
+	private boolean checkLogin(String username, String password) throws Exception {
 		checkValidDAO();
 		Map<String, String> para = new HashMap<>();
 		para.put("Text_username", username);
@@ -204,7 +224,7 @@ public class UserManager {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			logger.error("", e);
-			return false;
+			throw e;
 		}
 		if ((long) query_result.get(0) == 1)
 			return true;

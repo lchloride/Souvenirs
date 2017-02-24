@@ -66,7 +66,7 @@
 	}
 	
 	function queryPictureInAlbum(album_name) {
-		ajaxProcess(drawImageList, "/Souvenirs/AlbumAjax?album_identifier="+album_name);
+		ajaxProcess(drawImageList, "/Souvenirs/AlbumAjax?album_identifier="+album_name+"&range=personal");
 	}
 	
 /* 	function queryPictureCallback(result) {

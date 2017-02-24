@@ -2,14 +2,16 @@ package tool;
 
 import java.io.UnsupportedEncodingException;
 
+import org.apache.log4j.Logger;
+
 import sun.misc.*;
 
 /**
  * Base64编码解码工具类
- * @author Chenghong Li
  */
 public class Base64 {
-    /**
+    static Logger logger = Logger.getLogger(Base64.class);
+	/**
      * 对传入的字符串进行Base64编码
      * @param str 待编码的字符串，<strong>传入的字符串需按照utf-8编码</strong>
      * @return 编码好的Base64字符串
