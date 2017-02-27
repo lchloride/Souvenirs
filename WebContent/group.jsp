@@ -18,6 +18,74 @@
 <script src="/Souvenirs/res/js/jquery.bootstrap-growl.min.js"></script>
 
 <link href="/Souvenirs/res/css/website.css" rel="stylesheet" type="text/css">
+<script type="text/javascript">
+	var my_group_total_page = 1//{My_page_total_page};
+	var my_group_active_page = 1//{My_group_active_group};
+	window.onload= function() {
+		pagination('my_group_pagination', my_group_active_page, my_group_total_page);
+	}
+	
+	function pagination(id, active_idx, total_page) {
+		for (var i=0; i<7; i++) {
+			$('#'+id+' li:eq('+i+') a').text(i+1);
+			$('#'+id+' li:eq('+i+')').removeClass('active');
+			$('#'+id+' li:eq('+i+')').removeClass('disabled');
+			$('#'+id+' li:eq('+i+')').removeClass('active');
+			$('#'+id+' li:eq('+i+')').css('display', 'inline');
+			$('#'+id+' li:eq('+i+') a').css('border-top-right-radius','0px');
+			$('#'+id+' li:eq('+i+') a').css('border-bottom-right-radius','0px');
+		}
+		if (total_page <= 7) {
+			for (var i=0; i<total_page; i++) {
+				$('#'+id+' li:eq('+i+') a').text(i+1);
+			}
+			for (var i=total_page; i<7; i++) {
+				$('#'+id+' li:eq('+i+')').css('display', 'none');
+			}
+			$('#'+id+' li:eq('+(total_page-1)+') a').css('border-top-right-radius','4px');
+			$('#'+id+' li:eq('+(total_page-1)+') a').css('border-bottom-right-radius','4px');
+			$('#'+id+' li:eq('+(active_idx-1)+')').addClass('active');
+		} else {
+			if (active_idx >=1 && active_idx <= 4) {
+				$('#'+id+' li:eq(0) a').text('1');
+				$('#'+id+' li:eq(1) a').text('2');
+				$('#'+id+' li:eq(2) a').text('3');
+				$('#'+id+' li:eq(3) a').text('4');
+				$('#'+id+' li:eq(4) a').text('5');
+				$('#'+id+' li:eq(5) a').text('...');
+				$('#'+id+' li:eq(5) a').addClass('disabled');
+				$('#'+id+' li:eq(6) a').text(total_page);
+				$('#'+id+' li:eq('+(active_idx-1)+')').addClass('active');
+			} else if (active_idx >=total_page-3 && active_idx <= total_page) {
+				$('#'+id+' li:eq(0) a').text('1');
+				$('#'+id+' li:eq(1) a').text('...');
+				$('#'+id+' li:eq(1) a').addClass('disabled');
+				$('#'+id+' li:eq(2) a').text(total_page-4);
+				$('#'+id+' li:eq(3) a').text(total_page-3);
+				$('#'+id+' li:eq(4) a').text(total_page-2);
+				$('#'+id+' li:eq(5) a').text(total_page-1);
+				$('#'+id+' li:eq(6) a').text(total_page);
+				$('#'+id+' li:eq('+(6-total_page+active_idx)+')').addClass('active');
+			} else {
+				$('#'+id+' li:eq(0) a').text('1');
+				$('#'+id+' li:eq(1) a').text('...');
+				$('#'+id+' li:eq(1) a').addClass('disabled');
+				$('#'+id+' li:eq(2) a').text(active_idx-1);
+				$('#'+id+' li:eq(3) a').text(active_idx);
+				$('#'+id+' li:eq(4) a').text(active_idx+1);
+				$('#'+id+' li:eq(5) a').text('...');
+				$('#'+id+' li:eq(5) a').addClass('disabled');
+				$('#'+id+' li:eq(6) a').text(total_page);
+				$('#'+id+' li:eq(3)').addClass('active');
+			}
+			
+			$('#'+id+' li:eq(6) a').css('border-top-right-radius','4px');
+			$('#'+id+' li:eq(6) a').css('border-bottom-right-radius','4px');
+		}
+	}
+</script>
+<style type="text/css">
+</style>
 </head>
 <body>
 	<!-- mainbody is the content part except footer of website infomation -->
@@ -117,16 +185,16 @@
 											</tr>
 										</tbody>
 									</table>
-									<ul class="pagination">
-										<li class="active"><a href="#">1</a></li>
-										<li class="disabled"><a href="#">...</a></li>
+									<ul class="pagination" id="my_group_pagination">
+										<li class="active"><a href="#" >1</a></li>
+										<li ><a href="#">...</a></li>
 										<li ><a href="#">2</a></li>
 										<li><a href="#">3</a></li>
 										<li><a href="#">4</a></li>
-										<li  class="disabled"><a href="#">...</a></li>
-										<li><a style="border-top-right-radius: 4px;border-bottom-right-radius: 4px;margin-right:5px;">5</a></li>
+										<li ><a href="#">...</a></li>
+										<li><a style="">5</a></li>
 										<li class="disabled">
-											<a style="border-right-color:transparent;padding-right:0px;border-top-left-radius: 4px;border-bottom-left-radius: 4px;">
+											<a style="margin-left:5px;border-right-color:transparent;padding-right:0px;border-top-left-radius: 4px;border-bottom-left-radius: 4px;">
 												Page <input type="text" style="width:30px;height:18px;"> 
 											</a>
 										</li>
