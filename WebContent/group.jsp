@@ -157,13 +157,6 @@
 											</tr>
 										</thead>
 										<tbody id="my_group_table_body">
-											<c:foreach var="groups_row" items="${_json_list }" varStatus="idx">
-												<tr>
-													<c:foreach>
-														<td></td>
-													</c:foreach>
-												</tr>
-											</c:foreach>
 											<tr>
 												<td>Tanmay</td>
 												<td>Bangalore</td>
@@ -186,7 +179,72 @@
 										</tbody>
 									</table>
 									<ul class="pagination" id="my_group_pagination">
-										<li class="active"><a href="#" >1</a></li>
+										<li ><a href="#" >1</a></li>
+										<li ><a href="#">...</a></li>
+										<li ><a href="#">2</a></li>
+										<li><a href="#">3</a></li>
+										<li><a href="#">4</a></li>
+										<li ><a href="#">...</a></li>
+										<li><a style="">5</a></li>
+										<li class="disabled">
+											<a style="margin-left:5px;border-right-color:transparent;padding-right:0px;border-top-left-radius: 4px;border-bottom-left-radius: 4px;">
+												Page <input type="text" style="width:30px;height:18px;"> 
+											</a>
+										</li>
+										<li ><a style="border-left-color:transparent;text-decoration:underline;cursor:pointer;margin-left:0px;">Jump</a></li>
+										<li><a style="height:33px;">
+											<select style="height:18px;">
+												<option>10</option>
+												<option>20</option>
+												<option>50</option>
+											</select>
+											records per page
+										</a></li>
+									</ul>
+								</div>
+								<!-- Manage Group END-->
+								<!-- Join In Group -->
+								<div class="tab-pane fade" id="joinin_group">
+									<div >
+										<div class="form-group" style="display:inline;">
+											<input type="text" class="form-control" placeholder="Search group ID" style="display:inline;width:auto">
+										</div>
+										<button type="submit" class="btn btn-default " style="font-size: 1.45em; text-shadow: #aaa 1px 2px 3px;">
+											<span class="glyphicon glyphicon-search" style="color: #999"></span>
+										</button>
+									</div>
+									<table class="table table-bordered table-hover">
+										<caption>Available Group</caption>
+										<thead>
+											<tr>
+												<th>Group ID</th>
+												<th>Group Name</th>
+												<th>Brief Description</th>
+												<th>Operation</th>
+											</tr>
+										</thead>
+										<tbody id="my_group_table_body">
+											<tr>
+												<td>Tanmay</td>
+												<td>Bangalore</td>
+												<td>560001</td>
+												<td><button type="button" class="btn btn-link " style="padding: 0px" >Join In</button>
+												</td>
+											</tr>
+											<tr>
+												<td>Sachin</td>
+												<td>Mumbai</td>
+												<td>400003</td>
+											</tr>
+											<tr>
+												<td>Uma</td>
+												<td>Pune</td>
+												<td>411027</td>
+											</tr>
+										</tbody>
+									</table>
+									<ul class="pagination" id="my_group_pagination">
+										<li ><a href="#" >1</a></li>
 										<li ><a href="#">...</a></li>
 										<li ><a href="#">2</a></li>
 										<li><a href="#">3</a></li>
@@ -207,12 +265,57 @@
 											</select>
 											records per page
 										</a></li>
-									</ul>
+									</ul>								
 								</div>
-
-								<div class="tab-pane fade" id="joinin_group"></div>
-
-								<div class="tab-pane fade" id="create_group"></div>
+								<!-- Join In END -->
+								<!-- Create Group -->
+								<div class="tab-pane fade" id="create_group">
+									<form>
+										<div class="form-group padding-top">
+											<label for="album_name" class="col-sm-3 control-label narrow-grid">Group Name</label>
+											<div class="col-sm-9 narrow-grid">
+												<input type="text" class="form-control" id="album_name" name="album_name" placeholder="Input album name">
+											</div>
+										</div>
+										<div style="clear:both;"></div>
+										<div class="form-group padding-top">
+											<label for="description" class="col-sm-3 control-label narrow-grid">Description</label>
+											<div class="col-sm-9 narrow-grid">
+												<textarea class="form-control" rows="3" id="description" name="description" placeholder="Enter description, no more than 200 letters"></textarea>
+											</div>
+										</div>
+										<div style="clear:both;"></div>
+										<div class="form-group padding-top">
+											<label for="album_name" class="col-sm-3 control-label narrow-grid">Attached Shared Album Name</label>
+											<div class="col-sm-9 narrow-grid">
+												<input type="text" class="form-control" id="album_name" name="album_name" placeholder="Input album name">
+											</div>
+										</div>
+										<div style="clear:both;"></div>
+										<div class="form-group padding-top">
+											<label for="upload_file" class="col-sm-3 control-label narrow-grid">Cover</label>
+											<div class="col-sm-9 narrow-grid">
+												<input type="text" class="form-control" id="filename_display" style="width:auto;display:inline;" disabled>
+												<label class="btn btn-sm btn-default " for="upload_file" id="upload_file_btn" >Choose
+													Local Image</label>
+												<input type="file" name="upload_file" id="upload_file" style="position: absolute; clip: rect(0, 0, 0, 0); display: inline"
+														onchange="displayFilename()" accept="image/jpg">
+												 <input type="hidden" class="form-control" id="filename" name="filename" style="display:none;" >
+											</div>
+										</div>
+										
+										<div style="clear:both;"></div>
+										<div class="form-group padding-top">
+											<label for="default_cover" class="col-sm-3 control-label narrow-grid"></label>
+											<div class="col-sm-9 narrow-grid">
+												<input type="checkbox" id="default_cover" name="default_cover"onclick="useDefaultCover()">Use Default Cover
+												 
+											</div>
+										</div>
+										<div style="clear:both;"></div>
+									</form>
+								</div>
+								<!-- Create Group END -->
 								<script>
 									$(function() {
 										$('#myTab li:eq(0) a').tab('show');
