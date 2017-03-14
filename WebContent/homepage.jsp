@@ -292,7 +292,7 @@ div.album-list {
 			<div>
 				<ul class="nav navbar-nav">
 					<li class="active"><a href="homepage">HomePage</a></li>
-					<li><a href="#">Group</a></li>
+					<li><a href="group">Group</a></li>
 					<li><a href="upload">Upload</a></li>
 				</ul>
 				<form class="navbar-form navbar-left" role="search">

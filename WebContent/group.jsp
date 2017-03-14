@@ -19,10 +19,14 @@
 
 <link href="/Souvenirs/res/css/website.css" rel="stylesheet" type="text/css">
 <script type="text/javascript">
-	var my_group_total_page = 1//{My_page_total_page};
-	var my_group_active_page = 1//{My_group_active_group};
+	var my_group_total_items = ${My_group_total_items};
+	var my_group_total_page = Math.ceil(my_group_total_items/10);
+	var my_group_active_page = ${My_group_page_number};
+	var previous_length = 10; // Default value, updated after each change
+	
 	window.onload= function() {
 		pagination('my_group_pagination', my_group_active_page, my_group_total_page);
+		displayMyGroupTable('${My_group_list_json}');
 	}
 	
 	function pagination(id, active_idx, total_page) {
@@ -82,6 +86,72 @@
 			$('#'+id+' li:eq(6) a').css('border-top-right-radius','4px');
 			$('#'+id+' li:eq(6) a').css('border-bottom-right-radius','4px');
 		}
+	}
+	
+	function displayMyGroupTable(json) {
+		var str="";
+		var line;
+		var my_group_list_json = json;
+		var my_group_list_obj = JSON.parse(my_group_list_json);
+		var line = "";
+		for (var i=0; i<my_group_list_obj.length; i++) {
+			line = '<tr><td>'+my_group_list_obj[i].group_id+'</td><td>'+my_group_list_obj[i].group_name+'</td><td>'+my_group_list_obj[i].intro+'</td>'+
+			'<td><button type="button" class="btn btn-link " style="padding: 0px" >Edit</button> | '+ 
+			'<button type="button" class="btn btn-link " style="padding: 0px" >Leave</button> | '+
+			'<button type="button" class="btn btn-link " style="padding: 0px" >Show Attached Album</button>'+
+			'</td>	</tr>';
+			str += line;
+		}
+		$('#my_group_table_body').html(str);
+		
+	}
+	function ajaxProcess(callback, URL)
+	{
+	  var xmlhttp;    
+	  if (window.XMLHttpRequest)
+	  {
+	    // IE7+, Firefox, Chrome, Opera, Safari 浏览器执行代码
+	    xmlhttp=new XMLHttpRequest();
+	  }
+	  else
+	  {
+	    // IE6, IE5 浏览器执行代码
+	    xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+	  }
+	  xmlhttp.onreadystatechange=function()
+	  {
+	    if (xmlhttp.readyState==4 && xmlhttp.status==200)
+	    {
+	      callback(xmlhttp.responseText);
+	    }
+	  }
+	  xmlhttp.open("GET",URL, true);
+	  xmlhttp.send();
+	}
+	
+	function changeMGContentLength(length) {
+		ajaxProcess(changeMGContentLengthCallback, "/Souvenirs/showMyGroup?page_number="+my_group_active_page+"&content_length="+length);
+	}
+	
+	function changeMGContentLengthCallback(result) {
+		displayMyGroupTable(result);
+		var current_length = document.getElementById("MG_content_length").value;
+		my_group_active_page = Math.round((my_group_active_page-1) * previous_length / current_length)+1; 
+		my_group_total_page = Math.ceil(my_group_total_items / current_length);
+		previous_length = current_length;
+		pagination('my_group_pagination', my_group_active_page, my_group_total_page);
+	}
+	
+	function changeMGPage(page) {
+		my_group_active_page = page;
+		ajaxProcess(changeMGPageCallback, "/Souvenirs/showMyGroup?page_number="+page+"&content_length="+document.getElementById("MG_content_length").value);
+	}
+	
+	function changeMGPageCallback(result) {
+		displayMyGroupTable(result);
+		var current_length = document.getElementById("MG_content_length").value;
+		my_group_total_page = Math.ceil(my_group_total_items / current_length);
+		pagination('my_group_pagination', my_group_active_page, my_group_total_page);
 	}
 </script>
 <style type="text/css">
@@ -157,35 +227,16 @@
 											</tr>
 										</thead>
 										<tbody id="my_group_table_body">
-											<tr>
-												<td>Tanmay</td>
-												<td>Bangalore</td>
-												<td>560001</td>
-												<td><button type="button" class="btn btn-link " style="padding: 0px" >Edit</button> | 
-														<button type="button" class="btn btn-link " style="padding: 0px" >Leave</button> |
-														<button type="button" class="btn btn-link " style="padding: 0px" >Show Attached Album</button>
-												</td>
-											</tr>
-											<tr>
-												<td>Sachin</td>
-												<td>Mumbai</td>
-												<td>400003</td>
-											</tr>
-											<tr>
-												<td>Uma</td>
-												<td>Pune</td>
-												<td>411027</td>
-											</tr>
 										</tbody>
 									</table>
 									<ul class="pagination" id="my_group_pagination">
-										<li ><a href="#" >1</a></li>
-										<li ><a href="#">...</a></li>
-										<li ><a href="#">2</a></li>
-										<li><a href="#">3</a></li>
-										<li><a href="#">4</a></li>
-										<li ><a href="#">...</a></li>
-										<li><a style="">5</a></li>
+										<li ><a href="#" onclick="changeMGPage(this.innerHTML)">1</a></li>
+										<li ><a href="#" onclick="changeMGPage(this.innerHTML)">...</a></li>
+										<li ><a href="#" onclick="changeMGPage(this.innerHTML)">2</a></li>
+										<li><a href="#" onclick="changeMGPage(this.innerHTML)">3</a></li>
+										<li><a href="#" onclick="changeMGPage(this.innerHTML)">4</a></li>
+										<li ><a href="#" onclick="changeMGPage(this.innerHTML)">...</a></li>
+										<li><a style="" onclick="changeMGPage(this.innerHTML)">5</a></li>
 										<li class="disabled">
 											<a style="margin-left:5px;border-right-color:transparent;padding-right:0px;border-top-left-radius: 4px;border-bottom-left-radius: 4px;">
 												Page <input type="text" style="width:30px;height:18px;"> 
@@ -193,10 +244,10 @@
 										</li>
 										<li ><a style="border-left-color:transparent;text-decoration:underline;cursor:pointer;margin-left:0px;">Jump</a></li>
 										<li><a style="height:33px;">
-											<select style="height:18px;">
+											<select id="MG_content_length" style="height:18px;" onchange="changeMGContentLength(this.value)">
 												<option>10</option>
 												<option>20</option>
-												<option>50</option>
+												<option>1</option>
 											</select>
 											records per page
 										</a></li>
@@ -244,13 +295,13 @@
 										</tbody>
 									</table>
 									<ul class="pagination" id="my_group_pagination">
-										<li ><a href="#" >1</a></li>
-										<li ><a href="#">...</a></li>
-										<li ><a href="#">2</a></li>
-										<li><a href="#">3</a></li>
-										<li><a href="#">4</a></li>
-										<li ><a href="#">...</a></li>
-										<li><a style="">5</a></li>
+										<li ><a href="#"  onclick="changeMGPage(this.value)">1</a></li>
+										<li ><a href="#" onclick="changeMGPage(this.value)">...</a></li>
+										<li ><a href="#" onclick="changeMGPage(this.value)">2</a></li>
+										<li><a href="#" onclick="changeMGPage(this.value)">3</a></li>
+										<li><a href="#" onclick="changeMGPage(this.value)">4</a></li>
+										<li ><a href="#" onclick="changeMGPage(this.value)">...</a></li>
+										<li><a style="" onclick="changeMGPage(this.value)">5</a></li>
 										<li class="disabled">
 											<a style="margin-left:5px;border-right-color:transparent;padding-right:0px;border-top-left-radius: 4px;border-bottom-left-radius: 4px;">
 												Page <input type="text" style="width:30px;height:18px;"> 
@@ -258,7 +309,7 @@
 										</li>
 										<li ><a style="border-left-color:transparent;text-decoration:underline;cursor:point;">Jump</a></li>
 										<li><a style="height:33px;">
-											<select style="height:18px;">
+											<select style="height:18px;" onchange="changeMGContentLength(this.value)">
 												<option>10</option>
 												<option>20</option>
 												<option>50</option>

@@ -119,6 +119,75 @@ public class DB {
 	}
 
 	/**
+	 * This method executes a SQL sentence and generates a list of query result
+	 * of object with parameter list of Object type
+	 * 
+	 * @param sql query sentence template
+	 * 
+	 * @param para parameters for template, with appearance order
+	 * 
+	 * @param method indicating the method of Store interface
+	 * 
+	 * @param <T> template type, usually referring to a Bean class
+	 *  
+	 * @return a set of column names, result content
+	 * 
+	 * @throws Exception exception from database operation or from method.format() method
+	 * 
+	 * @see tool.Store#format(List)
+	 */
+	public static <T> List<T> execSQLQueryO (String sql, List<Object> para, Store<T> method) throws Exception {
+		List<T> form = new ArrayList<T>();
+		List<String> col_name = new ArrayList<>();
+
+		Connection conn = null;
+		ResultSet rs = null;
+		PreparedStatement ps = null;
+
+		try {
+			if (method == null)
+				throw new Exception("Invalid Format Method in DB.java");
+			conn = getConn();
+			ps = conn.prepareStatement(sql);
+			for (int i = 1; para != null && i <= para.size(); i++)
+				ps.setObject(i, para.get(i - 1));
+			rs = ps.executeQuery();
+
+			ResultSetMetaData rsmd = rs.getMetaData();
+			for (int i = 1; i <= rsmd.getColumnCount(); i++)
+				col_name.add(rsmd.getColumnName(i));
+
+			while (rs.next()) {
+				List<Object> item = new ArrayList<>();
+				T item_obj;
+				for (int i = 1; i <= rsmd.getColumnCount(); i++)
+					item.add(rs.getObject(i));
+				item_obj = method.format(item);
+				form.add(item_obj);
+			}
+		} catch (Exception e) {
+			logger.warn("exec SQL failed! SQL:<" + sql + "> Msg:<" + e.getMessage() + ">", e);
+			throw e;
+		} finally {
+			// TODO: handle finally clause
+			try {
+				if (rs != null)
+					rs.close();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return form;
+	}
+	
+	/**
 	 * 执行普通sql查询(select)
 	 * 
 	 * @param sql 查询语句模板
@@ -167,6 +236,54 @@ public class DB {
 		return result;
 	}
 
+	/**
+	 * 执行普通sql查询(select)
+	 * 
+	 * @param sql 查询语句模板
+	 * 
+	 * @param para 模板参数，依出现序，每个元素的类型为Object
+	 * 
+	 * @return 查询结果，以二维List的形式
+	 */
+	public static List<List<Object>> execSQLQueryO(String sql, List<Object> para) {
+		List<List<Object>> result = new ArrayList<List<Object>>();
+		List<Object> result_entry = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		PreparedStatement ps = null;
+		try {
+			conn = getConn();
+			ps = conn.prepareStatement(sql);
+			for (int i = 1; para != null && i <= para.size(); i++)
+				ps.setObject(i, para.get(i - 1));
+			rs = ps.executeQuery();
+			ResultSetMetaData rsmd = rs.getMetaData();
+			while (rs.next()) {
+				result_entry = new ArrayList<>();
+				for (int i = 1; i <= rsmd.getColumnCount(); i++)
+					result_entry.add(rs.getObject(i));
+				result.add(result_entry);
+			}
+		} catch (Exception e) {
+			logger.warn("exec SQL failed! SQL:<" + sql + "> Msg:<" + e.getMessage() + ">", e);
+		} finally {
+			// TODO: handle finally clause
+			try {
+				rs.close();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return result;
+	}
+	
 	/**
 	 * 执行更新表操作(insert/delete/update)
 	 * 
