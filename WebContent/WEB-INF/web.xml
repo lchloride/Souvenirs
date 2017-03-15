@@ -206,8 +206,14 @@
     <servlet-name>GroupAjaxServ</servlet-name>
     <url-pattern>/showMyGroup</url-pattern>
   </servlet-mapping>  
-  
-  
+  <servlet-mapping>
+    <servlet-name>GroupAjaxServ</servlet-name>
+    <url-pattern>/updateGroup</url-pattern>
+  </servlet-mapping>    
+  <servlet-mapping>
+    <servlet-name>GroupAjaxServ</servlet-name>
+    <url-pattern>/leaveGroup</url-pattern>
+  </servlet-mapping>   
   
   <error-page>
     <error-code>400</error-code>

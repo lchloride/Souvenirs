@@ -23,7 +23,7 @@
 	var my_group_total_page = Math.ceil(my_group_total_items/10);
 	var my_group_active_page = ${My_group_page_number};
 	var previous_length = 10; // Default value, updated after each change
-	
+	var my_group_list_obj; // JSON object storing group information
 	window.onload= function() {
 		pagination('my_group_pagination', my_group_active_page, my_group_total_page);
 		displayMyGroupTable('${My_group_list_json}');
@@ -92,13 +92,13 @@
 		var str="";
 		var line;
 		var my_group_list_json = json;
-		var my_group_list_obj = JSON.parse(my_group_list_json);
+		my_group_list_obj = JSON.parse(my_group_list_json);
 		var line = "";
 		for (var i=0; i<my_group_list_obj.length; i++) {
 			line = '<tr><td>'+my_group_list_obj[i].group_id+'</td><td>'+my_group_list_obj[i].group_name+'</td><td>'+my_group_list_obj[i].intro+'</td>'+
-			'<td><button type="button" class="btn btn-link " style="padding: 0px" >Edit</button> | '+ 
-			'<button type="button" class="btn btn-link " style="padding: 0px" >Leave</button> | '+
-			'<button type="button" class="btn btn-link " style="padding: 0px" >Show Attached Album</button>'+
+			'<td><button type="button" class="btn btn-link " style="padding: 0px" onclick="editGroup('+i+')">Edit</button> | '+
+			'<button type="button" class="btn btn-link " style="padding: 0px" onclick="leaveGroup('+i+')">Leave</button> | '+
+			'<button type="button" class="btn btn-link " style="padding: 0px" ><a href="/Souvenirs/sharedAlbum?group_id='+my_group_list_obj[i].group_id+'">Show Attached Album<a></button>'+
 			'</td>	</tr>';
 			str += line;
 		}
@@ -152,6 +152,61 @@
 		var current_length = document.getElementById("MG_content_length").value;
 		my_group_total_page = Math.ceil(my_group_total_items / current_length);
 		pagination('my_group_pagination', my_group_active_page, my_group_total_page);
+	}
+	
+	function editGroup(idx) {
+		$('#edit_group_id').val(my_group_list_obj[idx].group_id );
+		$('#edit_group_name').val(my_group_list_obj[idx].group_name.replace(/&apos;/g, "'"));
+		$('#edit_intro').html(my_group_list_obj[idx].intro);
+		$('#editModal').modal('show');
+	}
+	
+	function submitEdit() {
+		var group_id = encodeURIComponent($("#edit_group_id").val());
+		var group_name = encodeURIComponent($("#edit_group_name").val());
+		var intro = encodeURIComponent($("#edit_intro").val());
+		ajaxProcess(editCallback, "/Souvenirs/updateGroup?group_id="+group_id+"&group_name="+group_name+"&intro="+intro)		
+	}
+	
+	function editCallback(result) {
+		$('#editModal').modal('toggle');
+		var result_obj = JSON.parse(result);
+		if (result_obj.length == 1) {
+			if (result_obj[0].result == "no item changed") 
+				$.bootstrapGrowl("No item changed.", { type: 'info' , offset: {from: 'top', amount: 50}});
+			else
+				$.bootstrapGrowl("Error: "+result_obj[i].item+", "+result_obj[i].result, { type: 'danger' , offset: {from: 'top', amount: 50}});
+		}else {
+			for (var i=0; i<result_obj.length-1; i++) {
+				if (result_obj[i].result == "true") {
+					$.bootstrapGrowl("Update "+result_obj[i].item+" succeeded.", { type: 'success' , offset: {from: 'top', amount: 50}});
+				} else {
+					$.bootstrapGrowl("Error: "+result_obj[i].item+", "+result_obj[i].result, { type: 'danger' , offset: {from: 'top', amount: 50}});
+				}
+			}
+			displayMyGroupTable(result_obj[result_obj.length-1]);
+		}
+	}
+	
+	function leaveGroup(idx) {
+		var r=confirm("Are you sure to leave this group? You will not be able to see any shared pictures after leaving.");
+		if (r==true)
+		{
+			var group_id = encodeURIComponent(my_group_list_obj[idx].group_id);
+			ajaxProcess(leaveGroupCallback, "/Souvenirs/leaveGroup?group_id="+group_id);
+		}else
+		{
+			$.bootstrapGrowl("Operation canceled.", { type: 'info' , offset: {from: 'top', amount: 50}});
+		}
+	}
+	
+	function leaveGroupCallback(result) {
+		if (result.trim() == "true") {
+			ajaxProcess(changeMGPageCallback, "/Souvenirs/showMyGroup");
+			$.bootstrapGrowl("Success.", { type: 'success' , offset: {from: 'top', amount: 50}});
+		}else
+			$.bootstrapGrowl("Error: "+result, { type: 'danger' , offset: {from: 'top', amount: 50}});
+		
 	}
 </script>
 <style type="text/css">
@@ -383,5 +438,52 @@
 
 	<!-- Mainbody END -->
 	<div class="footer">Copyright &copy; 2016-2017 Souvenirs, All Rights Reserved.</div>
+	
+	<!-- 模态框（Modal） -->
+	<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	    <div class="modal-dialog">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+	                <h4 class="modal-title" id="myModalLabel">Edit Group</h4>
+	            </div>
+	            <div class="modal-body">
+	            	<form id="editGroup" class="form-horizontal" role="form" action="updateGroup" methoid ="GET">
+					  <div class="form-group">
+					    <label for="edit_group_id" class="col-sm-2 control-label">ID</label>
+					    <div class="col-sm-10">
+					      <input type="text" class="form-control " id="edit_group_id" placeholder="Group ID"  disabled>
+					      <input type="hidden" class="form-control " id="edit_group_id" placeholder=""  >
+					    </div>
+					  </div>
+					  <div class="form-group">
+					    <label for="edit_group_name" class="col-sm-2 control-label">Name</label>
+					    <div class="col-sm-10">
+					      <input type="text" class="form-control" id="edit_group_name" placeholder="Group Name">
+					    </div>
+					  </div>
+					  <div class="form-group">
+					  	<label for="edit_group_name" class="col-sm-2 control-label">Introduction</label>
+					    <div class="col-sm-10">
+							<textarea class="form-control" rows="3" id="edit_intro"></textarea>
+					    </div>
+					  </div>
+					</form>
+	            </div>
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+	                <button type="button" class="btn btn-primary" onclick="submitEdit()">提交更改</button>
+	            </div>
+	        </div><!-- /.modal-content -->
+	    </div><!-- /.modal-dialog -->
+	</div>
+	<!-- /.modal -->
+	<script>
+	$(function() {
+	    $('#myModal').modal({
+	        keyboard: true
+	    })
+	});
+	</script>
 </body>
 </html>

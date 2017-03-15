@@ -50,24 +50,10 @@ public class GroupManager {
 		if (parameter.containsKey("content_length"))
 			content_leng = Integer.parseInt(parameter.get("content_length"));
 		
-		//start_pos = (page_number-1)*content_leng;
-		
 		Map<String, Object> result = new HashMap<>();
 		int total_number = content_leng;
 		
 		try {
-			/*List<Group> belong_group = dao.queryGroupByUserID(user_id, start_pos, content_leng);
-			JSONObject group_object = null;
-			for (Group group : belong_group) {
-				group_object = new JSONObject();
-				group_object.put("group_id", group.getGroupId());
-				group_object.put("group_name", group.getGroupName());
-				group_object.put("salbum_name", group.getSharedAlbumName());
-				group_object.put("intro", group.getIntro());
-				group_object.put("album_cover", group.getAlbumCover());
-				group_object.putOnce("create_timestamp", group.getCreateTimestamp());
-				group_list_json.put(group_object);
-			}*/
 			result.put("My_group_list_json", gam.showMyGroup(parameter));
 			total_number = dao.getGroupNumberByUserID(user_id);
 		} catch (Exception e) {
@@ -82,4 +68,5 @@ public class GroupManager {
 		
 		return result;
 	}
+	
 }

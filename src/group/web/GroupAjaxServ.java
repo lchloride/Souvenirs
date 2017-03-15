@@ -85,10 +85,14 @@ public class GroupAjaxServ extends HttpServlet {
 			PrintWriter out = response.getWriter();
 			try {
 				if (query_url.contentEquals("showMyGroup"))
-					
 					result = gam.showMyGroup(para);
 
-				else {
+				else if (query_url.contentEquals("updateGroup"))
+					result = gam.updateGroupInfo(para);
+
+				else  if (query_url.contentEquals("leaveGroup"))
+					result = gam.leaveGroup(para);
+				else{
 					response.sendError(HttpServletResponse.SC_NOT_FOUND);
 					return;
 				}
