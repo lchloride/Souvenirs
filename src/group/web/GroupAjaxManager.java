@@ -168,4 +168,57 @@ public class GroupAjaxManager {
 		}
 		return result;
 	}
+	
+	public String searchGroup(Map<String, String>parameter) {
+		checkValidDAO();
+		String user_id = parameter.get("login_user_id");
+		String keyword = parameter.get("keyword");
+		String is_fuzzy_str = parameter.get("is_fuzzy");
+		boolean is_fuzzy = false;
+		if (is_fuzzy_str != null && is_fuzzy_str.contentEquals("true"))
+			is_fuzzy = true;
+		JSONArray result_json = new JSONArray();
+		try {
+			List<Group> search_result = dao.searchGroup(keyword, is_fuzzy);
+			logger.info("User searched group(s). Parameters: user_id=<"+user_id+">, keyword=<"+keyword+">, is_fuzzy=<"+is_fuzzy+">");
+			JSONObject group_object = new JSONObject();
+			for (Group group : search_result) {
+				group_object = new JSONObject();
+				group_object.put("group_id", group.getGroupId());
+				group_object.put("group_name", group.getGroupName());
+				group_object.put("salbum_name", group.getSharedAlbumName());
+				group_object.put("intro", group.getIntro());
+				group_object.put("album_cover", group.getAlbumCover());
+				group_object.putOnce("create_timestamp", group.getCreateTimestamp());
+				result_json.put(group_object);
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+			return "[]";
+		}
+		return result_json.toString();
+	}
+	
+	public String joinInGroup(Map<String, String> parameters) {
+		checkValidDAO();
+		String user_id = parameters.get("login_user_id");
+		String group_id = parameters.get("group_id");
+		String result = "";
+		
+		try {
+			int rs = dao.joininGroup(user_id, group_id);
+			if (rs == DEFAULT_AFFECTED_ROW) {
+				logger.info("User joined in a group successfully. Parameters: user_id=<"+user_id+">, group_id=<"+group_id+">");
+				result = "true";
+			} else {
+				logger.warn("User failed to join in a group since invalid result set. Parameters: user_id=<"+user_id+">, group_id=<"+group_id+">");
+				result = "Invalid result set";
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			logger.error("User failed to join in a group since "+e.getMessage()+". Parameters: user_id=<"+user_id+">, group_id=<"+group_id+">");
+			result = e.getMessage();
+		}
+		return result;
+	}
 }

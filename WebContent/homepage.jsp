@@ -426,7 +426,8 @@ div.album-list {
 								</div>
 								<!-- A template -->
 								<div class="img">
-									<a target="_self" href="#"><img id="template3" src="/Souvenirs/res/image/prepare.png" alt="prepare" width="120"
+									<a target="_self" href="/Souvenirs/making?template=template3"><img id="template3" 
+									src="/Souvenirs/res/image/template/postcard.jpg" alt="template3" width="120"
 										height="160"></a>
 									<div class="desc">
 										<a target="_blank" href="#">Template3</a>
@@ -434,7 +435,8 @@ div.album-list {
 								</div>
 								<!-- A template -->
 								<div class="img">
-									<a target="_self" href="#"><img id="template4" src="/Souvenirs/res/image/prepare.png" alt="prepare" width="120"
+									<a target="_self" href="/Souvenirs/making?template=template4"><img id="template4" 
+									src="/Souvenirs/res/image/template/timeline.jpg" alt="template4" width="120"
 										height="160"></a>
 									<div class="desc">
 										<a target="_blank" href="#">Template4</a>
@@ -442,7 +444,8 @@ div.album-list {
 								</div>
 								<!-- A template -->
 								<div class="img">
-									<a target="_self" href="#"><img id="template5" src="/Souvenirs/res/image/prepare.png" alt="prepare" width="120"
+									<a target="_self" href="/Souvenirs/making?template=template5"><img id="template5" 
+									src="/Souvenirs/res/image/template/2222.jpg" alt="template5" width="120"
 										height="160"></a>
 									<div class="desc">
 										<a target="_blank" href="#">Template5</a>

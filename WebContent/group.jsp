@@ -24,6 +24,8 @@
 	var my_group_active_page = ${My_group_page_number};
 	var previous_length = 10; // Default value, updated after each change
 	var my_group_list_obj; // JSON object storing group information
+	
+	var search_result_obj;
 	window.onload= function() {
 		pagination('my_group_pagination', my_group_active_page, my_group_total_page);
 		displayMyGroupTable('${My_group_list_json}');
@@ -90,7 +92,6 @@
 	
 	function displayMyGroupTable(json) {
 		var str="";
-		var line;
 		var my_group_list_json = json;
 		my_group_list_obj = JSON.parse(my_group_list_json);
 		var line = "";
@@ -205,8 +206,47 @@
 			ajaxProcess(changeMGPageCallback, "/Souvenirs/showMyGroup");
 			$.bootstrapGrowl("Success.", { type: 'success' , offset: {from: 'top', amount: 50}});
 		}else
-			$.bootstrapGrowl("Error: "+result, { type: 'danger' , offset: {from: 'top', amount: 50}});
-		
+			$.bootstrapGrowl("Error: "+result, { type: 'danger' , offset: {from: 'top', amount: 50}});	
+	}
+	
+	function searchGroup() {
+		var keyword = $('#search_id').val();
+		var method = $('#search_method').val()=="Fuzzy Search"?"true":"false";
+		ajaxProcess(searchGroupCallback, "/Souvenirs/searchGroup?keyword="+keyword+"&is_fuzzy="+method);
+	}
+	
+	function searchGroupCallback(result)  {
+		displaySearchResult(result);
+	}
+	
+	function displaySearchResult(json) {
+		search_result_obj = JSON.parse(json);
+		if (search_result_obj.length == 0)
+			$('#search_table_body').html("No matched group is found.");
+		else {
+			var str = "";
+			var line = "";
+			for (var i=0; i<search_result_obj.length; i++) {
+				line = '<tr><td>'+search_result_obj[i].group_id+'</td><td>'+search_result_obj[i].group_name+'</td><td>'+search_result_obj[i].intro+'</td>'+
+				'<td><button type="button" class="btn btn-link " style="padding: 0px" onclick="joininGroup('+i+')">Join in</button> '+
+				'</td>	</tr>';
+				str += line;
+			}
+			$('#search_table_body').html(str);
+		}
+	}
+	
+	function joininGroup(idx) {
+		ajaxProcess(joininGroupCallback, "/Souvenirs/joininGroup?group_id="+search_result_obj[idx].group_id);
+	}
+	
+	function joininGroupCallback(result) {
+		if (result.trim() == "true") {
+			$.bootstrapGrowl("Join In Success.", { type: 'success' , offset: {from: 'top', amount: 50}});
+		} else {
+			$.bootstrapGrowl(result, { type: 'danger' , offset: {from: 'top', amount: 50}});
+		}
+			
 	}
 </script>
 <style type="text/css">
@@ -313,14 +353,19 @@
 								<div class="tab-pane fade" id="joinin_group">
 									<div >
 										<div class="form-group" style="display:inline;">
-											<input type="text" class="form-control" placeholder="Search group ID" style="display:inline;width:auto">
+											<input id="search_id" type="text" class="form-control" placeholder="Search group ID" style="display:inline;width:auto">
+											<button type="button" class="btn btn-default " style="font-size: 1.45em; text-shadow: #aaa 1px 2px 3px;"onclick="searchGroup()">
+												<span class="glyphicon glyphicon-search" style="color: #999"></span>
+											</button>
+											<select id="search_method" class="form-control" style="display:inline;width:auto;">
+												<option>Fuzzy Search</option>
+												<option>Exact Search</option>
+											</select>
 										</div>
-										<button type="submit" class="btn btn-default " style="font-size: 1.45em; text-shadow: #aaa 1px 2px 3px;">
-											<span class="glyphicon glyphicon-search" style="color: #999"></span>
-										</button>
+
 									</div>
 									<table class="table table-bordered table-hover">
-										<caption>Available Group</caption>
+										<caption>Search Result</caption>
 										<thead>
 											<tr>
 												<th>Group ID</th>
@@ -329,49 +374,11 @@
 												<th>Operation</th>
 											</tr>
 										</thead>
-										<tbody id="my_group_table_body">
-											<tr>
-												<td>Tanmay</td>
-												<td>Bangalore</td>
-												<td>560001</td>
-												<td><button type="button" class="btn btn-link " style="padding: 0px" >Join In</button>
-												</td>
-											</tr>
-											<tr>
-												<td>Sachin</td>
-												<td>Mumbai</td>
-												<td>400003</td>
-											</tr>
-											<tr>
-												<td>Uma</td>
-												<td>Pune</td>
-												<td>411027</td>
-											</tr>
+										<tbody id="search_table_body">
+
 										</tbody>
 									</table>
-									<ul class="pagination" id="my_group_pagination">
-										<li ><a href="#"  onclick="changeMGPage(this.value)">1</a></li>
-										<li ><a href="#" onclick="changeMGPage(this.value)">...</a></li>
-										<li ><a href="#" onclick="changeMGPage(this.value)">2</a></li>
-										<li><a href="#" onclick="changeMGPage(this.value)">3</a></li>
-										<li><a href="#" onclick="changeMGPage(this.value)">4</a></li>
-										<li ><a href="#" onclick="changeMGPage(this.value)">...</a></li>
-										<li><a style="" onclick="changeMGPage(this.value)">5</a></li>
-										<li class="disabled">
-											<a style="margin-left:5px;border-right-color:transparent;padding-right:0px;border-top-left-radius: 4px;border-bottom-left-radius: 4px;">
-												Page <input type="text" style="width:30px;height:18px;"> 
-											</a>
-										</li>
-										<li ><a style="border-left-color:transparent;text-decoration:underline;cursor:point;">Jump</a></li>
-										<li><a style="height:33px;">
-											<select style="height:18px;" onchange="changeMGContentLength(this.value)">
-												<option>10</option>
-												<option>20</option>
-												<option>50</option>
-											</select>
-											records per page
-										</a></li>
-									</ul>								
+							
 								</div>
 								<!-- Join In END -->
 								<!-- Create Group -->
@@ -423,8 +430,16 @@
 								</div>
 								<!-- Create Group END -->
 								<script>
-									$(function() {
+									$(function(e) {
 										$('#myTab li:eq(0) a').tab('show');
+									});
+									$(function(){
+										$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+											// 获取已激活的标签页的名称
+											var activeTab = $(e.target).text(); 
+											if (activeTab == "Manage")
+												ajaxProcess(changeMGPageCallback, "/Souvenirs/showMyGroup");
+										});
 									});
 								</script>
 

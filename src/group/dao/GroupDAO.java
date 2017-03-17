@@ -61,4 +61,22 @@ public class GroupDAO {
 		List<Object> para = Arrays.asList(user_id, group_id);
 		return DB.execSQLUpdateO(sql, para);
 	}
+	
+	public List<Group> searchGroup(String group_id, boolean is_fuzzy) throws Exception {
+		String sql = "";
+		if (is_fuzzy) {
+			sql = "select group_id, group_name, intro, shared_album_name, album_cover, create_timestamp from `group`"
+				+ "where group_id like ?";
+			group_id = "%"+group_id+"%";
+		} else
+			sql = "select group_id, group_name, intro, shared_album_name, album_cover, create_timestamp from `group` where group_id=?";
+		List<Object> para = Arrays.asList(group_id);
+		return DB.execSQLQueryO(sql, para, new GroupImplStore());
+	}
+	
+	public int joininGroup(String user_id, String group_id) throws Exception {
+		String sql = "insert into user_belong_group values(?, ?)";
+		List<String> para = Arrays.asList(user_id, group_id);
+		return DB.execSQLUpdate(sql, para);
+	}
 }

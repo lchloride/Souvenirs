@@ -92,6 +92,10 @@ public class GroupAjaxServ extends HttpServlet {
 
 				else  if (query_url.contentEquals("leaveGroup"))
 					result = gam.leaveGroup(para);
+				else if (query_url.contentEquals("searchGroup"))
+					result = gam.searchGroup(para);
+				else if (query_url.contentEquals("joininGroup"))
+					result = gam.joinInGroup(para);
 				else{
 					response.sendError(HttpServletResponse.SC_NOT_FOUND);
 					return;
