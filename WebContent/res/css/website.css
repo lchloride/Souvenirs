@@ -1,0 +1,210 @@
+body {
+	background: #2d3b36 url(/Souvenirs/res/image/bg1.jpg) no-repeat bottom
+		center fixed;
+	background-size: cover;
+}
+
+.footer {
+	margin-top: 20px;
+	text-align: center;
+/* 	margin-right: 10%;
+	margin-left: 10%; */
+	font-family: Tahoma, "Microsoft YaHei", sans-serif;
+	background: #E8FFFF;
+	padding-top:10px;
+	padding-bottom:10px;
+}
+
+@media ( min-width :768px) {
+	.mainbody {
+		margin-top: auto;
+		margin-bottom: auto;
+		margin-right: 5%;
+		margin-left: 5%;
+		font-family: Tahoma, "Microsoft YaHei", sans-serif;
+		background: hsla(180, 22%, 92%, .9);/*rgba(232,255,255,.8);*/
+		padding-bottom: 20px;
+	}
+	.footer {
+		margin-right: 5%;
+		margin-left: 5%;
+	}
+}
+
+@media ( min-width :1367px) {
+	.mainbody {
+		margin-top: auto;
+		margin-bottom: auto;
+		margin-right: 10%;
+		margin-left: 10%;
+		font-family: Tahoma, "Microsoft YaHei", sans-serif;
+		background: hsla(180, 22%, 92%, .9);
+		padding-bottom: 20px;
+	}
+	.footer {
+		margin-right: 10%;
+		margin-left: 10%;
+	}
+}
+
+@media ( max-width : 767px) {
+	.mainbody {
+		margin-top: auto;
+		margin-bottom: auto;
+		margin-right: 5px;
+		margin-left: 5px;
+		font-family: Tahoma, "Microsoft YaHei", sans-serif;
+		background: hsla(180, 22%, 92%, .9);
+		padding-bottom: 20px;
+	}
+	.footer {
+		margin-right: 5px;
+		margin-left: 5px;
+	}
+}
+
+div.images {
+
+}
+
+div.img {
+	margin: 5px;
+	padding: 3px;
+	border: 2px solid #ffffff;
+	border-radius: 5px;
+	height: auto;
+	width: auto;
+	float: left;
+	text-align: center;
+	height: auto;
+	border: 2px solid #ffffff;
+}
+
+div.img img {
+	display: inline;
+	margin: 3px;
+	border: 1px solid #ffffff;
+}
+
+div.img:hover {
+	background-color: rgba(232, 232, 232, .8);
+	border: 2px solid #cccccc;
+}
+
+div.desc {
+	text-align: center;
+	font-weight: normal;
+	margin: 5px auto;
+ 	margin-top: 5px; 
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	width:120px;
+}
+
+div.desc:hover {
+	white-space: normal;
+	text-overflow: clip;
+	 word-wrap: break-word;
+	/*overflow: visible;  */
+}
+
+div.desc a:link {
+	color: #000000;
+} /* 未访问链接*/
+div.desc a:visited {
+	color: #000000;
+} /* 已访问链接 */
+div.desc a:hover {
+	color: #000000;
+} /* 鼠标移动到链接上 */
+div.desc a:active {
+	color: #000000;
+} /* 鼠标点击时 */
+
+.testswitch {
+    position: relative;
+    float: left; 
+    width: 110px;
+    margin: 0;
+    -webkit-user-select:none; 
+    -moz-user-select:none; 
+    -ms-user-select: none;
+}
+
+.testswitch-checkbox {
+    display: none;
+}
+
+.testswitch-label {
+    display: block; 
+    overflow: hidden; 
+    cursor: pointer;
+    border: 2px solid #999999; 
+    border-radius: 20px;
+}
+
+.testswitch-inner {
+    display: block; 
+    width: 200%; 
+    margin-left: -100%;
+    transition: margin 0.3s ease-in 0s;
+}
+
+.testswitch-inner::before, .testswitch-inner::after {
+    display: block; 
+    float: right; 
+    width: 50%; 
+    height: 30px; 
+    padding: 0; 
+    line-height: 30px;
+    font-size: 14px; 
+    color: white; 
+    font-family: 
+    Trebuchet, Arial, sans-serif; 
+    font-weight: bold;
+    box-sizing: border-box;
+}
+
+.testswitch-inner::after {
+    content: attr(data-on);
+    padding-left: 10px;
+    background-color: #4ca84c; 
+    color: #FFFFFF;
+}
+
+.testswitch-inner::before {
+    content: attr(data-off);
+    padding-right: 10px;
+    background-color: #ac2925; 
+    color: #FFFFFF;
+    text-align: right;
+}
+
+.testswitch-switch {
+    position: absolute; 
+    display: block; 
+    width: 22px;
+    height: 22px;
+    margin: 4px;
+    background: #FFFFFF;
+    top: 1px; 
+    bottom: 0;
+    right: 79px;
+    border: 2px solid #999999; 
+    border-radius: 20px;
+    transition: all 0.3s ease-in 0s;
+}
+
+.testswitch-checkbox:checked + .testswitch-label .testswitch-inner {
+    margin-left: 0;
+}
+
+.testswitch-checkbox:checked + .testswitch-label .testswitch-switch {
+    right: 0px; 
+}
+
+div.narrow-grid {
+	padding-left:10px;
+	padding-right:10px;
+}

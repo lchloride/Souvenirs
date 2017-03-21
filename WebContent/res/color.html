@@ -1,0 +1,46 @@
+<html>
+<<head>
+<style type="text/css">
+.color-rect {
+   width:60px;
+   height:60px;
+   margin:5px;
+   border:solid;
+   border-width: 1px;
+   border-color: #777;
+   background-color: #ffffff;
+}
+
+.color-desc {
+   width: 60px;
+   color:black;
+   margin:5px;
+}
+
+.color-block {
+   float: left;
+   border:solid;
+   border-width: 1px;
+   border-color: #ffffff;
+   margin: 10px;
+}
+body {
+   background-color: hsla(180, 50%, 90%, 0.8);
+}
+
+
+</style>
+</head>
+<body>
+   <input type="input" onchange="document.body.style.backgroundColor=this.value;" value="hsla(180, 50%, 90%, 0.8)">
+<div class="color-block" style="border-color: #ffffff"><div class="color-rect" style="background-color: #ffffff"></div><div class="color-desc"></div></div>
+<div id="panel"></div>
+<script type="text/javascript">
+   var color = ["#EBE3E0", "#EDD5D1", "#E3D6C6", "#DDEDCD", "#F9A646", "#DDEDFB", "#0099cc", "#c7d0d5", "#a6d8de", "#b6dedc", "#337ab7", "#bca39b"];
+   for (i=0; i<color.length; i++) {
+      document.getElementById("panel").innerHTML += '<div class="color-block" style="border-color: '+color[i]+'"><div class="color-rect" style="background-color: '+color[i]+'"></div><div class="color-desc">'+color[i]+'</div></div>';
+   }
+</script>
+
+</body>
+</html>

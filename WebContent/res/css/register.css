@@ -1,0 +1,26 @@
+@media ( min-width :768px) {
+	.mainbody {
+		min-height: 400px;
+	}
+}
+
+div.register {
+	margin-left: 5%;
+	margin-right: 5%;
+	margin-top: 50px;
+}
+
+.title {
+	border-bottom-style: solid;
+	border-width: 2px;
+	padding-bottom: 10px;
+	border-bottom-color: rgba(80, 80, 80, .8)
+}
+
+.bar {
+	padding: 5px;
+	border-radius: 4px;
+	color: white;
+	float: left;
+	/* border-style:solid; */
+}
