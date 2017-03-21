@@ -118,9 +118,10 @@
 	function drawSouvenir(canvas_id, callback) {
 		var c = document.getElementById(canvas_id);
 		var ctx = c.getContext("2d");
-
-/* 		document.getElementById("size").innerHTML = JSON
-				.stringify(souvenir_obj); */
+		
+		for (var i=0; i<souvenir_json.length; i++)
+			clearInterval(display_timer[i]);
+		
 		//Processing first part of templete
 		var idx = 1;
 		isFinished = false;
@@ -359,6 +360,7 @@
 			}
 		} else {
 			clearInterval(display_timer[idx]);
+
 		}
 	}
 	
@@ -950,7 +952,7 @@ div.border-rect-active {
 				<ul class="nav navbar-nav">
 					<li class="active"><a href="homepage">HomePage</a></li>
 					<li><a href="#">Group</a></li>
-					<li><a href="#">Upload</a></li>
+					<li><a href="upload">Upload</a></li>
 				</ul>
 
 				<ul class="nav navbar-nav navbar-right" style="padding-right: 5%">
@@ -1015,7 +1017,7 @@ div.border-rect-active {
 					<div class="img-content" id="img_content" style="float:left;"></div>
 
 					<!-- Modify position and Zoom -->
-					<div id="modify_panel" style="width:100px;margin-left:10px; margin-right:10px;float:left;display:none;">
+					<div id="modify_panel" style="width:100px;margin-left:10px; margin-right:10px;float:left;display:block;">
 						<h4>Move</h4>
 						<img src="/Souvenirs/res/image/arrow.png" width="100" height="100" alt="Move Panel" usemap="#MoveMap"style="margin-top:5px;">
 

@@ -12,7 +12,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.catalina.User;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
