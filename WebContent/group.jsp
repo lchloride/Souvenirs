@@ -1,4 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -19,16 +20,37 @@
 
 <link href="/Souvenirs/res/css/website.css" rel="stylesheet" type="text/css">
 <script type="text/javascript">
-	var my_group_total_items = ${My_group_total_items};
+	var my_group_total_items = ${not empty My_group_total_items?My_group_total_items:0};
 	var my_group_total_page = Math.ceil(my_group_total_items/10);
-	var my_group_active_page = ${My_group_page_number};
+	var my_group_active_page = ${not empty My_group_page_number?My_group_page_number:0};
 	var previous_length = 10; // Default value, updated after each change
 	var my_group_list_obj; // JSON object storing group information
+	var page = '${Page}';
 	
 	var search_result_obj;
 	window.onload= function() {
 		pagination('my_group_pagination', my_group_active_page, my_group_total_page);
-		displayMyGroupTable('${My_group_list_json}');
+		displayMyGroupTable('${not empty My_group_list_json?My_group_list_json:"[]"}');
+		<c:if test="${not empty Error}">
+			$.bootstrapGrowl("Error: "+'${Error}', { type: 'danger' , offset: {from: 'top', amount: 50}});
+		</c:if>
+		
+		<c:if test="${not empty Success}">
+			$.bootstrapGrowl("Success", { type: 'success' , offset: {from: 'top', amount: 50}});
+			alert("New Group ID: ${Group_id}. \nPlease remeber it for join in.");
+		</c:if>
+		
+		<c:if test="${not empty Group_name}">
+			$('#group_name').val('${Group_name}');
+		</c:if>
+		
+		<c:if test="${not empty Description}">
+			$('#description').val('${Description}');
+		</c:if>	
+		
+		<c:if test="${not empty SAlbum_name}">
+			$('#salbum_name').val('${SAlbum_name}');
+		</c:if>
 	}
 	
 	function pagination(id, active_idx, total_page) {
@@ -248,6 +270,26 @@
 		}
 			
 	}
+	
+	function createGroup() {
+		$('#create_form').submit();		
+	}
+	
+	function useDefaultCover() {
+		if ($('#default_cover').is(':checked')) {
+			$('#upload_file').attr('disabled', 'disbaled');
+			$('#upload_file_btn').addClass('disabled');
+		} else {
+			$('#upload_file').removeAttr('disabled');
+			$('#upload_file_btn').removeClass('disabled');
+		}
+	}
+	
+	function displayFilename() {
+		var filepath = $('#upload_file').val();
+		$('#filename_display').val(filepath.substring(filepath.lastIndexOf('\\') + 1));
+		$('#filename').val(filepath.substring(filepath.lastIndexOf('\\') + 1));
+	}
 </script>
 <style type="text/css">
 </style>
@@ -308,7 +350,6 @@
 					</div>
 
 					<div class=" col-lg-10 col-md-10 col-sm-10 col-xs-10" >
-						<form>
 							<div id="TabContent" class="tab-content">
 								<div class="tab-pane fade" id="manage_group">
 									<table class="table table-bordered table-hover">
@@ -382,12 +423,13 @@
 								</div>
 								<!-- Join In END -->
 								<!-- Create Group -->
+								
 								<div class="tab-pane fade" id="create_group">
-									<form>
+									<form id="create_form" action="createGroup" method="POST" enctype="multipart/form-data">
 										<div class="form-group padding-top">
-											<label for="album_name" class="col-sm-3 control-label narrow-grid">Group Name</label>
+											<label for="group_name" class="col-sm-3 control-label narrow-grid">Group Name</label>
 											<div class="col-sm-9 narrow-grid">
-												<input type="text" class="form-control" id="album_name" name="album_name" placeholder="Input album name">
+												<input type="text" class="form-control" id="group_name" name="group_name" placeholder="Input group name">
 											</div>
 										</div>
 										<div style="clear:both;"></div>
@@ -399,9 +441,9 @@
 										</div>
 										<div style="clear:both;"></div>
 										<div class="form-group padding-top">
-											<label for="album_name" class="col-sm-3 control-label narrow-grid">Attached Shared Album Name</label>
+											<label for="salbum_name" class="col-sm-3 control-label narrow-grid">Attached Shared Album Name</label>
 											<div class="col-sm-9 narrow-grid">
-												<input type="text" class="form-control" id="album_name" name="album_name" placeholder="Input album name">
+												<input type="text" class="form-control" id="salbum_name" name="salbum_name" placeholder="Input shared album name">
 											</div>
 										</div>
 										<div style="clear:both;"></div>
@@ -426,12 +468,20 @@
 											</div>
 										</div>
 										<div style="clear:both;"></div>
+										<button class="btn btn-primary" onclick="createGroup()">Create</button>
 									</form>
 								</div>
+								
 								<!-- Create Group END -->
 								<script>
 									$(function(e) {
-										$('#myTab li:eq(0) a').tab('show');
+										if (page == "create")
+											$('#myTab li:eq(2) a').tab('show');
+										else if (page == "join")
+											$('#myTab li:eq(1) a').tab('show');
+										else
+											$('#myTab li:eq(0) a').tab('show');
+										
 									});
 									$(function(){
 										$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
@@ -444,7 +494,6 @@
 								</script>
 
 							</div>
-						</form>
 					</div>
 				</div>
 			</div>
