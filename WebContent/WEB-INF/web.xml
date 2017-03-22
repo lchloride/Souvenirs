@@ -199,6 +199,11 @@
     <url-pattern>/deletePAlbum</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
+    <servlet-name>SouvenirsAjax</servlet-name>
+    <url-pattern>/searchPictures</url-pattern>
+  </servlet-mapping>
+  
+  <servlet-mapping>
     <servlet-name>GroupServ</servlet-name>
     <url-pattern>/group</url-pattern>
   </servlet-mapping>

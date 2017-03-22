@@ -98,7 +98,7 @@
 		}
 		//query display image of selected album on the panel of selecting image
 		//为照片操作面板获取要显示的album中照片
-		assignImage();
+		assignImage(true);
 		//set height and width of canvas that fits the displaying area
 		//设置能够匹配窗口大小的canvas宽度和高度
 		changeContentSize();
@@ -111,6 +111,7 @@
 		//drawing outer border of each part
 		//为每个区域绘制外框
 		drawBorderRect();
+
 	}
 
 	//This function is the main function of drawing which will call the spcific sub-function to draw shapes
@@ -422,42 +423,52 @@
 		return (isDrawing ? ratio : download_ratio) * val;
 	}
 
+	function ajaxProcess(callback, URL)
+	{
+	  var xmlhttp;    
+	  if (window.XMLHttpRequest)
+	  {
+	    // IE7+, Firefox, Chrome, Opera, Safari 浏览器执行代码
+	    xmlhttp=new XMLHttpRequest();
+	  }
+	  else
+	  {
+	    // IE6, IE5 浏览器执行代码
+	    xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+	  }
+	  xmlhttp.onreadystatechange=function()
+	  {
+	    if (xmlhttp.readyState==4 && xmlhttp.status==200)
+	    {
+	      callback(xmlhttp.responseText);
+	    }
+	  }
+	  xmlhttp.open("GET",URL, true);
+	  xmlhttp.send();
+	}
+	
 	//本函数通过Ajax从服务器获取选定的album中的照片，idx指的是选中的option的序号
 	function queryImageInAlbum(idx) {
-		var xmlhttp;
-
-		selected_image = 0;//set selected image index to 0 when changine another album 
-/* 		if (str == "") {
-			image_json = "[]";
-			return;
-		} */
-		if (window.XMLHttpRequest) {
-			// For IE7+, Firefox, Chrome, Opera, Safari 
-			xmlhttp = new XMLHttpRequest();
-		} else {
-			// For IE6, IE5 
-			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-		}
-		//Having a response
-		xmlhttp.onreadystatechange = function() {
-			//Check response status 
-			if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-				image_json = xmlhttp.responseText;
-			}
-			//Assign displaying image using image_json 
-			assignImage();
-		}
-		//From URL and create connection
-		xmlhttp.open("GET", "AlbumAjax?album_identifier=" + album_obj[idx]+(idx<palbum_obj.length?"&range=personal":"&range=shared"), true);
-		xmlhttp.send();
+		selected_image = 0;//set selected image index to 0 when changing another album 
+		ajaxProcess(queryImageInAlbumCallback, "AlbumAjax?album_identifier=" + album_obj[idx]+(idx<palbum_obj.length?"&range=personal":"&range=shared"));
 	}
 
+	function queryImageInAlbumCallback(result) {
+		image_json = result;
+		//Assign displaying image using image_json 
+		assignImage(true);
+	}
+	
 	//此函数通过js完成Ajax获取的album中的照片在页面中的显示
-	function assignImage() {
+	function assignImage(album_flag) {
+		
 		var obj = JSON.parse(image_json);
 		var img_content = new String();
 		if (obj.length == 0)
-			img_content = "<h4>There is no picture in the album.</h4>";
+			if (album_flag)
+				img_content = "<h4>There is no picture in the album.</h4>";
+			else
+				img_content = "<h4>Cannot find any proper picture.</h4>";
 		for (var i = 0; i < obj.length; i++) {
 			img_content += '<div class="img" id="select_img_'
 					+ (i + 1)
@@ -469,17 +480,19 @@
 					+ obj[i].Addr
 					+ '" alt="'
 					+ obj[i].Filename
-					+ '" width="120" height="120"></a><div class="desc" ><a style="color:black">'
+					+ '" width="120" height="120"></a><div class="desc" ><a style="color:black" href="#" data-placement="bottom" data-toggle="tooltip"'
+					+ ' title="'+'User: '+obj[i].Username+' | Album: '+obj[i].AlbumName+'">'
 					+ obj[i].Filename + '</a></div></div>';
 		}
 		document.getElementById("img_content").innerHTML = img_content;
 		document.getElementById("img_content").style.width = $('#choose_album').width()-$('#modify_panel').outerWidth(true)+"px";
+		$("[data-toggle='tooltip']").tooltip();
 	}
 
 	//更换操作面板时的响应函数，完成旧面板的隐藏与新面板的显示，同时进行相关变量的销毁与初始化
 	function changeOperContent(new_content_id, idx) {
 		selected_image = 0;
-		assignImage();
+		assignImage(true);
 
 		document.getElementById(onshowContentId).style.display = "none";
 		if (proc_position >= 1)
@@ -527,6 +540,7 @@
 				document.getElementById("italic_btn").className = "btn btn-default";
 		} else if (new_content_id == "choose_album") {
 			document.getElementById("img_content").style.width = $('#choose_album').width()-$('#modify_panel').outerWidth(true)+"px";
+			document.getElementById("select_album_name").style.width = document.getElementById("img_content").style.width;
 		}
 	}
 
@@ -683,44 +697,32 @@
 	}
 
 	function checkMakingDone() {
-		var xmlhttp;
-		if (window.XMLHttpRequest) {
-			// IE7+, Firefox, Chrome, Opera, Safari 浏览器执行代码
-			xmlhttp = new XMLHttpRequest();
-		} else {
-			// IE6, IE5 浏览器执行代码
-			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-		}
-		//Having a response
-		xmlhttp.onreadystatechange = function() {
-			//Check response status 
-			if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-				if (xmlhttp.responseText == "true") {
-					clearInterval(making_time);
-					isDrawing = true;
-					$('#myModal').modal('toggle');
-					document.getElementById("loading_content").style.display = "none";
-					document.getElementById("select_size_content").style.display = "block";
-					document.getElementById("modal_dialog").style.cssText = "";
-				} else if (xmlhttp.responseText.indexOf("true") >= 0
-						&& xmlhttp.responseText.length > 4) {
-					clearInterval(making_time);
-					isDrawing = true;
-					$('#myModal').modal('toggle');
-					document.getElementById("loading_content").style.display = "none";
-					document.getElementById("select_size_content").style.display = "block";
-					document.getElementById("modal_dialog").style.cssText = "";
-					alert("Sorry, making souvenir failed! Error: "
-							+ xmlhttp.responseText.substring(5));
-				} else {
-					return;
-				}
-			}
-		}
-		//From URL and create connection
-		xmlhttp.open("GET", "checkMakingDone", true);
-		xmlhttp.send();
+		ajaxProcess(checkMakingDoneCallback, "checkMakingDone");
 	}
+	
+	function checkMakingDoneCallback(result) {
+		if (result == "true") {
+			clearInterval(making_time);
+			isDrawing = true;
+			$('#myModal').modal('toggle');
+			document.getElementById("loading_content").style.display = "none";
+			document.getElementById("select_size_content").style.display = "block";
+			document.getElementById("modal_dialog").style.cssText = "";
+		} else if (result.indexOf("true") >= 0
+				&& xmlhttp.responseText.length > 4) {
+			clearInterval(making_time);
+			isDrawing = true;
+			$('#myModal').modal('toggle');
+			document.getElementById("loading_content").style.display = "none";
+			document.getElementById("select_size_content").style.display = "block";
+			document.getElementById("modal_dialog").style.cssText = "";
+			alert("Sorry, making souvenir failed! Error: "
+					+ result.substring(5));
+		} else {
+			return;
+		}
+	}
+	
 	//This function calculates several size of downloading which would be displayed on the modal
 	//Calculate width of downloading image based on its height
 	//There are six kinds of resolution: template-original, Super High Definition(verticle 1080px), 
@@ -807,6 +809,20 @@
 		}else {
 			$.bootstrapGrowl("Cannot move text.", { type: 'danger' , delay:4000, offset: {from: 'top', amount: MSG_OFFSET}});
 			return;
+		}
+	}
+	
+	function searchPictures() {
+		var keyword = $('#search_input').val();
+		ajaxProcess(searchPicturesCallback, "/Souvenirs/searchPictures?keyword="+encodeURIComponent(keyword));
+	}
+	
+	function searchPicturesCallback(result) {
+		if (result.indexOf('[') == 0) {
+			image_json = result;
+			assignImage(false);
+		} else {
+			$.bootstrapGrowl("An error occurred. "+result, { type: 'danger' , delay:4000, offset: {from: 'top', amount: MSG_OFFSET}});
 		}
 	}
 </script>
@@ -1004,12 +1020,17 @@ div.border-rect-active {
 					<h4>Select Pictures from Album</h4>
 
 					<div class="form-group">
-						<label for="name">Album</label> <select class="form-control" name="Select_album_name"
-							onchange="queryImageInAlbum(this.options.selectedIndex)" id="select_album_name">
+						<label for="name" style="display:block;">Album</label> <select class="form-control" name="Select_album_name"
+							onchange="queryImageInAlbum(this.options.selectedIndex)" id="select_album_name" style="display:inline;">
 							<c:forEach var="album_name" items="${Album_name_list}">
 								<option>${album_name }</option>
 							</c:forEach>
 						</select>
+						<input type="text" class="form-control" placeholder="Search your pictures" style="width:150px;display:inline;"id="search_input">
+						<button type="button" class="btn btn-default " style="font-size: 1.45em; text-shadow: #aaa 1px 2px 3px;width:46px;"
+							onclick="searchPictures()">
+							<span class="glyphicon glyphicon-search" style="color: #999"></span>
+						</button>
 					</div>
 
 
@@ -1017,19 +1038,20 @@ div.border-rect-active {
 					<div class="img-content" id="img_content" style="float:left;"></div>
 
 					<!-- Modify position and Zoom -->
-					<div id="modify_panel" style="width:100px;margin-left:10px; margin-right:10px;float:left;display:block;">
-						<h4>Move</h4>
+					<div id="modify_panel" style="width:200px;margin-left:10px; margin-right:10px;float:left;display:block;padding:0px 48px;
+						border-right-style:solid;border-right-color:white; border-right-width:2px;">
+						<h4 >Move</h4>
 						<img src="/Souvenirs/res/image/arrow.png" width="100" height="100" alt="Move Panel" usemap="#MoveMap"style="margin-top:5px;">
 
 							<map name="MoveMap">
 							  <area shape="circle" coords="63,22,22" alt="up"  onclick="moveUp()">
-							  <area shape="circle" coords="63,98,22" alt="down" onclick="moveDown()">
-							  <area shape="circle" coords="22,62,22" alt="left"  onclick="moveLeft()">
-							  <area shape="circle" coords="104,62,22" alt="right"  onclick="moveRight()">
+							  <area shape="circle" coords="63,80,22" alt="down" onclick="moveDown()">
+							  <area shape="circle" coords="22,56,22" alt="left"  onclick="moveLeft()">
+							  <area shape="circle" coords="104,56,22" alt="right"  onclick="moveRight()">
 							</map>
 						<h4 style="padding-top:10px;">Zoom</h4>
-						<img src="/Souvenirs/res/image/zoom_in.png" width="40" alt="Zoom In" style="margin:4px;" onclick="zoomIn()">
-						<img alt="Zoom Out" src="/Souvenirs/res/image/zoom_out.png" width="40" style="margin:4px;" onclick="zoomOut()">
+						<img src="/Souvenirs/res/image/zoom_in.png" width="40" alt="Zoom In" style="margin:4px;cursor:pointer;" onclick="zoomIn()">
+						<img alt="Zoom Out" src="/Souvenirs/res/image/zoom_out.png" width="40" style="margin:4px; cursor:pointer;" onclick="zoomOut()">
 					</div>
 
 					<!-- Add button -->
@@ -1156,7 +1178,7 @@ div.border-rect-active {
 		</form>
 	</div>
 
-	<div id="size" style="display: block"></div>
+	<div id="size" style="display: none"></div>
 	<div class="footer">Copyright &copy; 2016-2017 Souvenirs, All Rights Reserved.</div>
 
 	<!-- 模态框（Modal） -->

@@ -5,10 +5,12 @@ package souvenirs.web;
 
 import java.io.File;
 import java.net.URLDecoder;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +22,7 @@ import org.json.JSONObject;
 import group.Group;
 import souvenirs.Comment;
 import souvenirs.PersonalAlbum;
+import souvenirs.Picture;
 import souvenirs.dao.SouvenirsDAO;
 import tool.FileOper;
 import tool.ImageLoader;
@@ -613,5 +616,37 @@ public class SouvenirsAjaxManager {
 			throw e;
 		}
 		return result;
+	}
+	
+	public String searchPictures(Map<String, String> parameters) {
+		checkValidDAO();
+		String user_id = parameters.get("login_user_id");
+		String keyword = parameters.get("keyword");
+		
+		JSONArray result = new JSONArray();
+		Map<String, String> image_content;
+		DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		try {
+			List<List<Object>> group = dao.searchPictures(user_id, keyword);
+			for (List<Object> image_item : group) {
+				image_content = new HashMap<>();
+				image_content.put("UserID", (String)image_item.get(0));
+				image_content.put("AlbumName", (String)image_item.get(1));
+				image_content.put("Filename", (String)image_item.get(3));
+				image_content.put("Addr", ImageLoader.genAddrOfPicture((String)image_item.get(0), (String)image_item.get(2),
+						(String)image_item.get(3)));
+				image_content.put("Username", UserManager.getUsernameByID((String)image_item.get(0)));
+				image_content.put("Description", (String)image_item.get(5));
+				image_content.put("UploadTime", sdf.format((Timestamp)image_item.get(6)));
+				result.put(image_content);
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			logger.warn("User  failed to search picture since "+e.getMessage()+". Parameters: user_id=<"+user_id+">, "
+					+ "keyword=<"+keyword+">");
+			return e.getMessage();
+		}
+		logger.info("User searched pictures. Parameters: user_id=<"+user_id+">, keyword=<"+keyword+">");
+		return result.toString();
 	}
 }
