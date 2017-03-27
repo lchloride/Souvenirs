@@ -50,7 +50,7 @@ public class GroupServ extends HttpServlet {
 	 * 可接收的二进制流的最大大小
 	 */
 	private static final int MAX_REQUEST_SIZE = Integer
-			.parseInt(PropertyOper.GetValueByKey("souvenirs.properties", "MAX_REQUEST_SIZE"), 16); // *
+			.parseInt(PropertyOper.GetValueByKey("souvenirs.properties", "MAX_REQUEST_SIZE"), 16); 
        
     /**
      * @see HttpServlet#HttpServlet()

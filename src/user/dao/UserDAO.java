@@ -158,4 +158,33 @@ public class UserDAO {
 			throw new Exception("Invalid SQL Result with sql:<"+sql+">, parameters:<"+para+">");
 	}
 	
+	public int updateUsername(String user_id, String new_username) throws Exception {
+		String sql = "update user set username = ? where user_id = ?";
+		List<String> para = Arrays.asList(new_username, user_id);
+		return DB.execSQLUpdate(sql, para);
+	}
+	
+	public int updatePassword(String user_id, String new_password) throws Exception {
+		String sql = "update user set password = ? where user_id = ?";
+		List<String> para = Arrays.asList(new_password, user_id);
+		return DB.execSQLUpdate(sql, para);
+	}
+	
+	public int updateMRT(String user_id, int new_MRT) throws Exception {
+		String sql = "update user set reload_times_max = ? where user_id = ?";
+		List<Object> para = Arrays.asList(new_MRT, user_id);
+		return DB.execSQLUpdateO(sql, para);
+	}
+	
+	public int updateLT(String user_id, int new_LT) throws Exception {
+		String sql = "update user set load_timeout = ? where user_id = ?";
+		List<Object> para = Arrays.asList(new_LT, user_id);
+		return DB.execSQLUpdateO(sql, para);
+	}
+	
+	public int updateAvatar(String user_id, String avatar) throws Exception {
+		String sql = "update user set avatar = ? where user_id = ?";
+		List<String> para = Arrays.asList(avatar, user_id);
+		return DB.execSQLUpdate(sql, para);
+	}
 }

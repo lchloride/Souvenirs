@@ -1,0 +1,41 @@
+@CHARSET "UTF-8";
+.container {
+	width: 100%
+}
+
+.border-right {
+	border-right: solid;
+	border-width: 2px;
+	border-color: rgba(96, 96, 96, .8);
+}
+
+.border-left {
+	border-left: solid;
+	border-width: 2px;
+	border-color: rgba(96, 96, 96, 0.8);
+}
+
+div.album-cover {
+	margin: 0 auto;
+	width: 122px;
+}
+
+div.album-cover img {
+	border: solid;
+	border-width: 1px;
+	border-color: rgba(96, 96, 96, 0.8);
+	border-radius: 5px;
+}
+
+.operation-btn {
+	display: none;
+	margin-top: 2px;
+	margin-bottom: 2px;
+}
+
+.cover_selection {
+	border-top:solid;
+	border-bottom:solid;
+	border-width:1px;
+	border-color: #dbdbdb;
+}

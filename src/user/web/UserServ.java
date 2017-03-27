@@ -1,8 +1,11 @@
 package user.web;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -15,7 +18,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.log4j.Logger;
+
+import tool.PropertyOper;
+import user.User;
 
 /**
  * User
@@ -27,7 +36,21 @@ import org.apache.log4j.Logger;
 public class UserServ extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private static Logger logger = Logger.getLogger(UserServ.class);
-
+	/**
+	 * 上传内存阈值(文件缓冲区的大小)
+	 */
+	private static final int MEMORY_THRESHOLD = Integer
+			.parseInt(PropertyOper.GetValueByKey("souvenirs.properties", "MEMORY_THRESHOLD"), 16);
+	/**
+	 * 上传文件的最大大小
+	 */
+	private static final int MAX_FILE_SIZE = Integer
+			.parseInt(PropertyOper.GetValueByKey("souvenirs.properties", "MAX_FILE_SIZE"), 16);
+	/**
+	 * 可接收的二进制流的最大大小
+	 */
+	private static final int MAX_REQUEST_SIZE = Integer
+			.parseInt(PropertyOper.GetValueByKey("souvenirs.properties", "MAX_REQUEST_SIZE"), 16); 
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
@@ -90,7 +113,10 @@ public class UserServ extends HttpServlet {
 		} else if (query_url.contentEquals("login")) {
 			// Check validation of user login information
 			result = um.login(para);
-		} else if (query_url.contentEquals("logout")) {
+		} else if (query_url.contentEquals("setting")) {
+			// Check validation of user login information
+			result = um.displaySetting(para);
+		}  else if (query_url.contentEquals("logout")) {
 			// Let session invalidate
 			session.invalidate();
 			logger.info("User(id=<" + para.get("login_user_id") + ">) logout.");
@@ -137,7 +163,100 @@ public class UserServ extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		doGet(request, response);
+		// Obtain operation url
+		String query_url = request.getServletPath();
+		query_url = query_url.substring(query_url.lastIndexOf('/') + 1);
+		if (query_url.contentEquals("updateSettings")){
+			
+			HttpSession session = request.getSession(true);
+			// If login information is wrong, redirect to index.jsp in order to
+			// login in again
+			logger.debug(session + " " + session.getAttribute("username") + " " + session.getAttribute("password"));
+			if (!UserManager.checkLogin(session.getAttribute("user_id"), session.getAttribute("username"),
+					session.getAttribute("password"))) {
+				session.invalidate();
+				response.sendRedirect("loginfail.jsp");
+			} else {
+				// 检测是否为多媒体上传
+				if (!ServletFileUpload.isMultipartContent(request)) {
+					// 如果不是则停止
+					PrintWriter writer = response.getWriter();
+					writer.println("Error: Form type must be 'enctype=multipart/form-data'");
+					writer.flush();
+					return;
+				}
+
+				// 配置上传参数
+				DiskFileItemFactory factory = new DiskFileItemFactory();
+				// 设置内存临界值 - 超过后将产生临时文件并存储于临时目录中
+				factory.setSizeThreshold(MEMORY_THRESHOLD);
+				// 设置临时存储目录
+				factory.setRepository(new File(System.getProperty("java.io.tmpdir")));
+
+				ServletFileUpload upload = new ServletFileUpload(factory);
+
+				// 设置最大文件上传值
+				upload.setFileSizeMax(MAX_FILE_SIZE);
+
+				// 设置最大请求值 (包含文件和表单数据)
+				upload.setSizeMax(MAX_REQUEST_SIZE);
+
+				Map<String, String> para = new HashMap<>();
+				Map<String, Object> result = null;
+				UserManager um = UserManager.getInstance();
+
+				FileItem file_item = null;
+				try {
+					// 解析请求的内容提取文件数据
+					List<FileItem> formItems = upload.parseRequest(request);
+					if (formItems != null && formItems.size() > 0) {
+						// 迭代表单数据
+						for (FileItem item : formItems) {
+							if (item.isFormField()) {
+								String key = item.getFieldName();
+								String val = new String(item.getString().getBytes("ISO-8859-1"), "UTF-8");
+								para.put(key, val);
+							} else {
+								// Store file handler
+								file_item = item;
+							}
+						}
+					}
+					// Send user_id as primary key of user to manager object
+					para.put("login_user_id",
+							session.getAttribute("user_id") == null ? "" : (String) session.getAttribute("user_id"));
+					para.put("login_password",
+							session.getAttribute("password") == null ? "" : (String) session.getAttribute("password"));
+					// Send parameters and file handler to UploadManager
+					result =um.updateSettings(para, file_item);
+					
+					if (result.containsKey("new_password")) {
+						session.setAttribute("password", result.get("new_password"));
+					}
+					
+					if (result.containsKey("new_username")) {
+						session.setAttribute("username", result.get("new_username"));
+						((User)session.getAttribute("user")).setUsername((String)result.get("new_username"));
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+					request.setAttribute("Error", ex.getMessage());
+				}
+
+				for (Entry<String, Object> entry : result.entrySet()) {
+					request.setAttribute(entry.getKey(), entry.getValue());
+				}
+				// Forward or redirect to assigned page
+				String dispatchURL = result.containsKey("DispatchURL") ? (String) result.get("DispatchURL") : "index.jsp";
+				if (result.containsKey("Is_redirect"))
+					response.sendRedirect(dispatchURL);
+				else {
+					RequestDispatcher dispatcher = request.getRequestDispatcher(dispatchURL);
+					dispatcher.forward(request, response);
+				}
+			}
+		} else
+			doGet(request, response);
 	}
 
 }

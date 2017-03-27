@@ -49,7 +49,7 @@
 			alert("Please choose a file!");
 			return false;
 		}
-		var filepath = document.getElementById('upload_file').value;
+		var filepath = document.getElementById('upload_file').value.toLowerCase();
 		if (filepath.substring(filepath.lastIndexOf('.') + 1)!="jpg" 
 				&& filepath.substring(filepath.lastIndexOf('.') + 1)!="png" 
 				&& filepath.substring(filepath.lastIndexOf('.') + 1)!="gif")	{
@@ -85,21 +85,21 @@
 			</div>
 			<div>
 				<ul class="nav navbar-nav">
-					<li class="active"><a href="homepage">HomePage</a></li>
-					<li><a href="#">Group</a></li>
-					<li><a href="upload">Upload</a></li>
+					<li ><a href="homepage">HomePage</a></li>
+					<li><a href="group">Group</a></li>
+					<li class="active"><a href="upload">Upload</a></li>
 				</ul>
 
 				<ul class="nav navbar-nav navbar-right" style="padding-right: 5%">
 					<li><img class="navbar-form"
 						src="${empty Avatar?'/Souvenirs/res/image/default_avatar.png':Avatar}"
-						alt="avatar" width="32" height="32"></li>
+						alt="avatar" width="32" height="32" style="width:62px;"></li>
 					<li class="dropdown"><a href="#" class="dropdown-toggle"
 						data-toggle="dropdown">${sessionScope.username} <b
 							class="caret"></b>
 					</a>
 						<ul class="dropdown-menu">
-							<li><a href="account.jsp">Account</a></li>
+							<li><a href="setting">Account</a></li>
 							<li class="divider"></li>
 							<li><a href="logout">Logout</a></li>
 						</ul></li>

@@ -34,6 +34,8 @@
 <script type="text/javascript" src="/Souvenirs/res/jqplot/plugins/jqplot.categoryAxisRenderer.min.js"></script>
 <script type="text/javascript" src="/Souvenirs/res/jqplot/plugins/jqplot.pointLabels.min.js"></script>
 <link rel="stylesheet" type="text/css" href="/Souvenirs/res/jqplot/jquery.jqplot.min.css" />
+<script type="text/javascript" src="/Souvenirs/res/js/homepage.js"></script>
+<link rel="stylesheet" type="text/css" href="/Souvenirs/res/css/homepage.css" />
 
 <title>Homepage</title>
 <script type="text/javascript">
@@ -54,230 +56,7 @@
 			$.bootstrapGrowl("Failed. Error description:${Upload_result}", { type: 'danger' , delay:4000, offset: {from: 'top', amount: MSG_OFFSET}});
 		</c:if>
 	}
-	
-	function calcSize() {
-		//display_width is the width(px) of active and available for showing contnet window 
-		var display_width = window.innerWidth
-				|| document.documentElement.clientWidth
-				|| document.body.clientWidth;
-		var r = (display_width >= 1367 ? display_width * 0.8
-				: (display_width >= 768 ? display_width * 0.9
-						: display_width - 10));
-		var mainbody_width = r - 50 * 2;
-		// Calculate size of latest pictures
-		var latest_panel_width = $('#latest_picture').width() - 20;
-		var image_width_margin = $('div.img').outerWidth(true)-$('div.img a img').width();
-		var picture_width = Math.round(latest_panel_width / 2 - image_width_margin)-1;
-		var picture_height = picture_width;
-		for (i = 1; i<=4; i++) {
-			$('#picture_item_img_'+i).css('width', picture_width);
-			$('#picture_item_img_'+i).css('height', picture_height);
-		}
-		$('#latest_picture .desc').css('width', picture_width);
-		
-		// Calculate size of templates
-		var templates_width = $('.templates').width();
-		var template_width = Math.round(templates_width / 3 - image_width_margin);
-		var template_height = template_width * 4 / 3;
-		for (i = 1; i <= 8; i++) {
-			document.getElementById("template" + i).width = template_width;
-			document.getElementById("template" + i).height = template_height;
-		}	
-		
-		// Calculate size of albums list
-		var albums_info = Math.max($('#left_col').outerHeight(true), $('#center_col').outerHeight(true));
-		var col_margin_top = $('#albums_info').outerHeight(true) - $('#albums_info').height() + 20;
-		$('#albums_info').css('height', albums_info-col_margin_top);
-		$('#personal_albums_list').css('height', (albums_info - $('h4.title').outerHeight(true) - $('#myTab').outerHeight(true)-$('#create_btn').outerHeight(true)-col_margin_top));
-		$('#shared').css('height', (albums_info - $('h4.title').outerHeight(true) - $('#myTab').outerHeight(true)));
-		var album_cover_width = $('#personal_albums_list').width() - 15 - image_width_margin;
-		$('#personal_albums_list img').css('width', album_cover_width);
-		$('#personal_albums_list img').css('height', album_cover_width);
-		$('#shared img').css('width', album_cover_width);
-		$('#shared img').css('height', album_cover_width);
-		
-		//Calculate chart of pictures height
-		$('#pic_chart').css('height', Math.round(palbum_list_obj.length*50*modify(palbum_list_obj.length)));
-	}
-	
-	function modify(x) {
-		return 8/(x+3);
-	}
-	
-	function displayFilename() {
-		var filepath = $('#upload_file').val();
-		$('#filename_display').val(filepath.substring(filepath.lastIndexOf('\\') + 1));
-		$('#filename').val(filepath.substring(filepath.lastIndexOf('\\') + 1));
-	}
-	
-	function drawAlbumPie(){
-		 
-		palbum_count = palbum_list_obj.length;
-		salbum_count = salbum_list_obj.length;
-	    data1 = [[['Personal', palbum_count],['Shared', salbum_count]]];
-	    toolTip1 = ['Personal Albums', 'Shared Albums'];
-	 	dataLabel = [palbum_count+' ('+Math.round(palbum_count/(palbum_count+salbum_count)*1000)/10+'%)', 
-	 	             salbum_count+' ('+Math.round(salbum_count/(palbum_count+salbum_count)*1000)/10+'%)']
-	    var plot1 = jQuery.jqplot('album_chart', 
-	        data1,
-	        {
-	            title: 'Albums Distribution\nTotal '+(palbum_count+salbum_count)+' Albums', 
-	            seriesDefaults: {
-	                shadow: false, 
-	                renderer: jQuery.jqplot.PieRenderer, 
-	                rendererOptions: { padding: 2, sliceMargin: 2, showDataLabels: true, dataLabels: dataLabel }
-	            },
-	            legend: {
-	                show: true,
-	                location: 'e',
-	                renderer: $.jqplot.EnhancedPieLegendRenderer,
-	                rendererOptions: {
-	                    numberColumns: 1,
-	                    toolTips: toolTip1
-	                }
-	            },
-	        }
-	    );
-	}
-
-	function drawPicturesBar(){
-		data = new Array();
-		ticks = new Array();
-		for (var i=0; i<palbum_count; i++) {
-			data.push(new Array(palbum_list_obj[i].pictures_count, i+1));
-			ticks.push(palbum_list_obj[i].album_name);
-		}
-        plot1 = $.jqplot('pic_chart', [data], {
-            captureRightClick: true,
-            title: 'Personal Pictures Distribution', 
-            seriesDefaults:{
-                renderer:$.jqplot.BarRenderer,
-                shadowAngle: 135,
-                rendererOptions: {
-                    barDirection: 'horizontal',
-                    highlightMouseDown: true,
-                    varyBarColor: true
-                },
-                pointLabels: {show: true, formatString: '%d'}
-            },
-            legend: {
-                show: false,
-                location: 'e',
-                placement: 'outside'
-            },
-            axes: {
-                yaxis: {
-                    renderer: $.jqplot.CategoryAxisRenderer,
-                    ticks: ticks
-                }
-            }
-        }); 
-	}
-	
-	function useDefaultCover() {
-		if ($('#default_picture').is(':checked')) {
-			$('#upload_file').attr('disabled', 'disbaled');
-			$('#upload_file_btn').addClass('disabled');
-		} else {
-			$('#upload_file').removeAttr('disabled');
-			$('#upload_file_btn').removeClass('disabled');
-		}
-	}
-	
-	function activate(idx){
-		$("#latest_picture .img").css('height', "auto");
-		var height = $('#img_'+idx).outerHeight();
-		//alert(height);
-		var i=1;
-		$("#latest_picture .img").css('height', height);
-	}
-	function normalize(idx){
-		calcSize();
-	}
-	
-	function checkSubmit() {
-		if ($('#album_name').val().length > 60) {
-			alert("Album name should be less than 60 characters.");
-			return false;
-		}
-		if ($('#album_name').val().length == 0) {
-			alert("Album name cannot be empty.");
-			return false;
-		}
-		if ($('#description').val().length > 200) {
-			alert("Description should be less than 200 characters.");
-			return false;
-		}
-		if (($('#filename').val()=="" || $('#filename').val()==undefined || $('#filename').val()==null) && !$('#default_cover').is(':checked')) {
-			alert("You must select a cover from local OR use default cover.");
-			return false;
-		}
-		return true;
-	}
 </script>
-<style type="text/css">
-div.operation-content {
-	margin-left:20px;
-	margin-right:20px;
-}
-
-div.info-part {
-	border-style:solid;
-	border-width:1px;
-	border-color: #ccc;
-	border-radius:5px;
-	margin-top:10px;
-	background-color: hsla(200, 10%, 93%, 1)
-}
-
-div.info-part h4.title {
-	background-color: hsla(210, 32%, 92%, 1);/*rgba(148, 209, 179, 0.8)*/;
-	margin-top: 0px;
-    padding-top: 10px;
-	border-top: solid 1px;
-	border-left: solid 2px;
-	border-right: solid 2px;
-	border-top-left-radius: 5px;
-	border-top-right-radius: 5px;
-	border-color: #faf0e6;
-    border-bottom-style: solid;
-    border-bottom-width: 1px;
-    border-bottom-color: #ccc;
-    padding-left: 10px;
-    padding-right: 10px;
-    padding-bottom: 10px;
-	color: black;
-	font-size: 16px;
-}
-div.info-part div.body{
-	padding:5px 10px;
-}
-div.info-part div.body img {
-	width:120px;
-	height:120px;
-	margin-left:5px;
-	border-radius:2px;
-	border:solid transparent 1px;
-}
-.divider {
-    margin-top: 5px;
-    margin-bottom: 5px;
-    border-color: black;
-    /* margin-right: 50px; */
-    width: 70%;
-    margin-left: 0px;
-    border-top:solid 1px;
-}
-.padding-top {
-	padding-top:10px;
-}
-
-div.album-list {
-	overflow-y:scroll;
-	border-top: solid 1px #999;
-	border-bottom: solid 1px #999;
-}
-</style>
 </head>
 <body onresize="calcSize()" >
 	<!-- mainbody is the content part except footer of website infomation -->
@@ -295,22 +74,21 @@ div.album-list {
 					<li><a href="group">Group</a></li>
 					<li><a href="upload">Upload</a></li>
 				</ul>
-				<form class="navbar-form navbar-left" role="search">
+<!-- 				<form class="navbar-form navbar-left" role="search">
 					<div class="form-group">
 						<input type="text" class="form-control" placeholder="Search your pictures">
 					</div>
 					<button type="submit" class="btn btn-default " style="font-size: 1.45em; text-shadow: #aaa 1px 2px 3px;">
 						<span class="glyphicon glyphicon-search" style="color: #999"></span>
 					</button>
-				</form>
+				</form> -->
 				<ul class="nav navbar-nav navbar-right" style="padding-right: 5%">
-					<li><img class="navbar-form" src="${Avatar}"
-						alt="avatar" width="32" height="32"></li>
+					<li><img class="navbar-form" src="${Avatar}" alt="avatar" width="32" height="32" style="width:62px;"></li>
 					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">${sessionScope.username} <b
 							class="caret"></b>
 					</a>
 						<ul class="dropdown-menu">
-							<li><a href="account.jsp">Account</a></li>
+							<li><a href="setting">Account</a></li>
 							<li class="divider"></li>
 							<li><a href="logout">Logout</a></li>
 						</ul></li>
@@ -322,7 +100,7 @@ div.album-list {
 		<div class="operation-content"> 
 			<!-- Image -->
 			<div class="row">
-				<img alt="123" src="/Souvenirs/res/image/impression.png" style="width:100%;margin-top:-100px;display:block;">
+				<img alt="123" src="/Souvenirs/res/image/biye.png" style="width:100%;margin-top:-20px;display:block;">
 			</div>
 			<!-- Information and operation content -->
 			<div class="row" >
@@ -341,8 +119,8 @@ div.album-list {
 							        <h4 class="media-heading">${sessionScope.username}</h4>
 							        UID: ${sessionScope.user_id}
 							        <div >
-							        	<button class="btn btn-default btn-sm"><span class="glyphicon glyphicon-cog"></span> Setting</button>
-							        	<button class="btn btn-default btn-sm"><span class="glyphicon glyphicon-log-out"></span> Logout</button>
+							        	<a href="/Souvenirs/setting"><button class="btn btn-default btn-sm" ><span class="glyphicon glyphicon-cog"></span> Setting</button></a>
+							        	<a href="/Souvenirs/logout"><button class="btn btn-default btn-sm"><span class="glyphicon glyphicon-log-out"></span> Logout</button></a>
 							        </div>
 							    </div>
 							</div>
@@ -365,7 +143,7 @@ div.album-list {
 
 								<script>
 									pAlbum_item_json = '${picture_item}';
-									idx = ${	idx.count};
+									idx = ${idx.count};
 									pAlbum_item_obj = JSON.parse(pAlbum_item_json);
 									document.getElementById("picture_item_img_" + idx).src = pAlbum_item_obj.Addr;
 									document.getElementById("picture_item_img_" + idx).alt = pAlbum_item_obj.Filename;

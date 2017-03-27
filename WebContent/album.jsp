@@ -16,7 +16,10 @@
 <script src="/Souvenirs/res/bootstrap/js/bootstrap.min.js"></script>
 
 <script src="/Souvenirs/res/js/jquery.bootstrap-growl.min.js"></script>
+<script src="/Souvenirs/res/js/ajax.js"></script>
+<script src="/Souvenirs/res/js/album.js"></script>
 <link href="/Souvenirs/res/css/website.css" rel="stylesheet" type="text/css">
+<link href="/Souvenirs/res/css/album.css" rel="stylesheet" type="text/css">
 <title>Manage Album</title>
 <script type="text/javascript">
 	var original_album_name = '${Album_name}';
@@ -24,6 +27,9 @@
 	var mouse_over_idx = 0;
 	var MSG_OFFSET = 50;
 	var default_img_height = 180;
+	var is_personal = ${Is_personal?true:false};
+	var group_id = "${Group_id}";
+	
 	window.onload = function() {
 		if ($("#album_show").innerHeight() < $("#album_info").innerHeight()){
 			document.getElementById("album_show").className = "col-sm-9";
@@ -38,189 +44,8 @@
 		default_img_height = $('#img_1').outerHeight();
 	}
 	
-	function activate(idx) {
-		if (mouse_over_idx>0){
-			<c:if test="${Is_personal}">
-				document.getElementById("img_edit_btn_"+mouse_over_idx).style.display = "none";
-				document.getElementById("img_delete_btn_"+mouse_over_idx).style.display = "none";
-			</c:if>
-			<c:if test="${not Is_personal}">
-				document.getElementById("img_details_btn_"+mouse_over_idx).style.display = "none";
-			</c:if>
-		}
-		var i=1;
-		while (document.getElementById("img_"+i)!=null) {
-			document.getElementById("img_"+i).style.height = "auto";
-			i++;
-		}
-		mouse_over_idx = idx;
 
-		<c:if test="${Is_personal}">
-			document.getElementById("img_edit_btn_"+idx).style.display = "inline";
-			document.getElementById("img_delete_btn_"+idx).style.display = "inline";
-		</c:if>
-		<c:if test="${not Is_personal}">
-			document.getElementById("img_details_btn_"+mouse_over_idx).style.display = "inline";
-		</c:if>
-		
-		var height = $('#img_'+idx).outerHeight();
-		//alert(height);
-		var i=1;
-		while (document.getElementById("img_"+i)!=null) {
-			document.getElementById("img_"+i).style.height = height+"px";
-			i++;
-		}
-	}
-	
-	function normalize() {
-		document.getElementById("img_edit_btn_"+mouse_over_idx).style.display = "none";
-		document.getElementById("img_delete_btn_"+mouse_over_idx).style.display = "none";
-	}
-	
-	function ajaxProcess(callback, URL)
-	{
-	  var xmlhttp;    
-	  if (window.XMLHttpRequest)
-	  {
-	    // IE7+, Firefox, Chrome, Opera, Safari 浏览器执行代码
-	    xmlhttp=new XMLHttpRequest();
-	  }
-	  else
-	  {
-	    // IE6, IE5 浏览器执行代码
-	    xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-	  }
-	  xmlhttp.onreadystatechange=function()
-	  {
-	    if (xmlhttp.readyState==4 && xmlhttp.status==200)
-	    {
-	      callback(xmlhttp.responseText);
-	    }
-	  }
-	  xmlhttp.open("GET",URL, true);
-	  xmlhttp.send();
-	}
-	
-	function saveAlbumName() {
-		var new_album_name = document.getElementById("album_name").value;
-		ajaxProcess(saveAlbumNameCallback, "/Souvenirs/updateAlbumName?old_name="+encodeURIComponent(original_album_name)+
-				"&new_name="+encodeURIComponent(new_album_name)+"&is_personal=${Is_personal?'true':'false'}&group_id="+'${Group_id}');
-	}
-	
-	function saveAlbumNameCallback(result){
-		//alert(result);
-		if (result.indexOf('true')>-1) {
-//			$.bootstrapGrowl("Success.", { type: 'success' , offset: {from: 'top', amount: 50}});
-			<c:if test="${Is_personal}">
-				location.href="/Souvenirs/album?album_name="+encodeURIComponent(document.getElementById("album_name").value)+"&update=true";
-			</c:if>
-			<c:if test="${not Is_personal}">
-				location.href="/Souvenirs/sharedAlbum?group_id=${Group_id}&update=true";
-			</c:if>
-		}
-		else
-			$.bootstrapGrowl("Failed. Error:"+result, { type: 'danger' , offset: {from: 'top', amount: MSG_OFFSET}});
-	}
-	
-	function saveDescription() {
-		var new_description =  document.getElementById("description").value;
-		ajaxProcess(saveDescriptionCallback, "/Souvenirs/updateDescription?album_name="+encodeURIComponent(original_album_name)+
-				"&new_description="+encodeURIComponent(new_description)+"&is_personal=${Is_personal?'true':'false'}&group_id="+'${Group_id}');
-	}
-	
-	function saveDescriptionCallback(result){
-		//alert(result);
-		if (result.indexOf('true')>-1) {
-			$.bootstrapGrowl("Success.", { type: 'success' , offset: {from: 'top', amount: MSG_OFFSET}});
-		}
-		else
-			$.bootstrapGrowl("Failed. Error:"+result, { type: 'danger' , offset: {from: 'top', amount: MSG_OFFSET}});
-	}
-	
-	function deletePicture(idx) {
-		var filename =  document.getElementById("image_item_text_"+idx).innerHTML;
-		var msg = "Do you really want to delete this picture? Deleted one cannot be recovered!\n\nPlease comfirm!"; 
-		if (confirm(msg)==true){ 
-			ajaxProcess(deletePictureCallback, "/Souvenirs/deletePicture?album_name="+encodeURIComponent(original_album_name)+
-					"&filename="+encodeURIComponent(filename))+"&is_personal=${Is_personal}";
-		}else{ 
-			$.bootstrapGrowl("Deletion is aborted.", { type: 'info' , offset: {from: 'top', amount: MSG_OFFSET}});
-		} 
-		
-	}
-	
-	function deletePictureCallback(result) {
-		if (result.indexOf('true')>-1) {
-//			$.bootstrapGrowl("Success.", { type: 'success' , offset: {from: 'top', amount: 50}});
-			location.href="/Souvenirs/album?album_name="+encodeURIComponent(document.getElementById("album_name").value)+"&update=true";
-		}
-		else {
-			$.bootstrapGrowl("Failed. Error:"+result, { type: 'danger' , offset: {from: 'top', amount: MSG_OFFSET}});
-		}
-	}
-	
-	function confirmDelete() {
-		  var r=confirm("Are you sure to delete this album?\n\nAll pictures and related information will be deleted and cannot be recovered!\n\nPlease confirm!")
-		  if (r==true)
-		    {
-		    	ajaxProcess(deleteAlbumCallback, "/Souvenirs/deletePAlbum?album_name="+encodeURIComponent("${Album_name}"));
-		    }
-		  else
-		    {
-			  $.bootstrapGrowl("Deletion is canceled.", { type: 'info' , delay:3000, offset: {from: 'top', amount: MSG_OFFSET}});
-		    }
-	}
-	
-	function deleteAlbumCallback(result) {
-		if (result.trim()=="true") {
-			location.href="/Souvenirs/homepage?Upload_result=true";
-		} else {
-			$.bootstrapGrowl("Deletion failed. Error:"+result, { type: 'danger' , offset: {from: 'top', amount: MSG_OFFSET}});
-		}
-	}
 </script>
-<style type="text/css">
-.container {
-	width: 100%
-}
-
-.border-right {
-	border-right: solid;
-	border-width: 2px;
-	border-color: rgba(96, 96, 96, .8);
-}
-
-.border-left {
-	border-left: solid;
-	border-width: 2px;
-	border-color: rgba(96, 96, 96, 0.8);
-}
-
-div.album-cover {
-	margin: 0 auto;
-	width: 122px;
-}
-
-div.album-cover img {
-	border: solid;
-	border-width: 1px;
-	border-color: rgba(96, 96, 96, 0.8);
-	border-radius: 5px;
-}
-
-.operation-btn {
-	display: none;
-	margin-top: 2px;
-	margin-bottom: 2px;
-}
-
-.cover_selection {
-	border-top:solid;
-	border-bottom:solid;
-	border-width:1px;
-	border-color: #dbdbdb;
-}
-</style>
 </head>
 <body>
 	<div class="mainbody" id="mainbody">
@@ -232,28 +57,31 @@ div.album-cover img {
 			</div>
 			<div>
 				<ul class="nav navbar-nav">
-					<li class="active">
+					<li>
 						<a href="homepage">HomePage</a>
 					</li>
 					<li>
-						<a href="#">Group</a>
+						<a href="group">Group</a>
 					</li>
 					<li>
 						<a href="upload">Upload</a>
+					</li>
+					<li  class="active">
+						<a href="#">Album Management</a>
 					</li>
 				</ul>
 
 				<ul class="nav navbar-nav navbar-right" style="padding-right: 5%">
 					<li>
 						<img class="navbar-form" src="${empty Avatar?'':Avatar}" alt="avatar" width="32"
-							height="32">
+							height="32" style="width:62px;">
 					</li>
 					<li class="dropdown">
 						<a href="#" class="dropdown-toggle" data-toggle="dropdown">${sessionScope.username} <b class="caret"></b>
 						</a>
 						<ul class="dropdown-menu">
 							<li>
-								<a href="account.jsp">Account</a>
+								<a href="setting">Account</a>
 							</li>
 							<li class="divider"></li>
 							<li>
@@ -274,7 +102,16 @@ div.album-cover img {
 				<c:if test="${not Is_personal }">
 					Shared Album Management
 				</c:if>
-				<small>(Web Designer has gone home.....)</small>
+				<small>						
+<%-- 					<ol class="breadcrumb"
+							style="background-color: transparent; padding-bottom: 0px; margin-bottom: 0px; display: inline-block;">
+							<li>
+								<a href="homepage">${Owner_name }</a>
+							</li>
+							<li class="active">
+								<a href="album?album_name=${Album_name }">${Album_name }</a>
+							</li>
+						</ol> --%></small>
 			</h3>
 			<div class="row">
 				<div class="col-sm-9" id="album_show">
@@ -381,14 +218,14 @@ div.album-cover img {
 					<c:if test="${Is_personal }">
 						<a href="/Souvenirs/upload?album_name=${Album_name }"><button type="button" class="btn btn-default">Upload
 								Image</button></a>
-						<button type="button" class="btn btn-warning" onclick="confirmDelete()">Delete Album</button>
+						<button type="button" class="btn btn-warning" onclick="confirmDelete('${Album_name}')">Delete Album</button>
 					</c:if>
 					<c:if test="${not Is_personal }">
 						<a href="/Souvenirs/share?group_id=${Group_id }"><button type="button" class="btn btn-default">Share My Picture</button></a>
 					</c:if>
 				</div>
 			</div>
-			<div class="row">...</div>
+			<!-- <div class="row">...</div> -->
 		</div>
 
 	</div>
