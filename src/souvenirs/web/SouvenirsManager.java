@@ -198,8 +198,6 @@ public class SouvenirsManager {
 		result.put("SAlbum_count", rSAlbums.size());
 		// logger.debug("personal_album_json=<"+person_album_json_list+">");
 		result.put("DispatchURL", "homepage.jsp");
-		int rs = dao.setReloadTimesMax(user_id, 100);
-		logger.debug("test db object result "+rs);
 		return result;
 	}
 
@@ -612,12 +610,7 @@ public class SouvenirsManager {
 			Map<String, String> para = new HashMap<>();
 			para.put("login_user_id", user_id);
 			para.put("album_identifier", album_name_list.get(0));
-			para.put("range", "shared");
-			/*
-			 * JSONArray jArray = new JSONArray(getImageAddrInAlbum(para)); List<String> image_json_list = new
-			 * ArrayList<>(); for (int i = 0; i < jArray.length(); i++) {
-			 * image_json_list.add(jArray.getJSONObject(i).toString()); }
-			 */
+			para.put("range", "personal");
 			result.put("image_list_json", getImageAddrInAlbum(para));
 
 			result.put("Group_id", group_id);

@@ -545,7 +545,9 @@ public class SouvenirsAjaxManager {
 			result = jsonObject.toString();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Add new comment UNSUCCESSFULLY. Parameters: login user id=<"+login_user_id+">, "+
+					"comment content=<"+comment_content+">, Picture=<"+picture_user_id+"/"+album_name+"/"+filename+">, "+
+					"replied comment id = <"+reply_id+">");
 		}
 		logger.debug("result:"+result);
 		return result;
