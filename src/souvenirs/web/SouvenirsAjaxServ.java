@@ -3,12 +3,9 @@ package souvenirs.web;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -117,6 +114,9 @@ public class SouvenirsAjaxServ extends HttpServlet {
 				} else if (query_url.contentEquals("deletePAlbum")) {
 					
 					result = sm.deletePAlbum(para);
+				} else if (query_url.contentEquals("searchPictures")) {
+					
+					result = sm.searchPictures(para);
 				} else {
 					response.sendError(HttpServletResponse.SC_NOT_FOUND);
 					return;

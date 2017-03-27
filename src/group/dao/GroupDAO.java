@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import group.Group;
+import souvenirs.Picture;
 import tool.DB;
 
 public class GroupDAO {
@@ -132,4 +133,5 @@ public class GroupDAO {
 		}
 		return "";
 	}
+	
 }

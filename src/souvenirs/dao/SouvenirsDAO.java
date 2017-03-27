@@ -3,8 +3,6 @@ package souvenirs.dao;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-
 import org.apache.log4j.Logger;
 
 import group.Group;
@@ -599,5 +597,21 @@ public class SouvenirsDAO {
 		String sql = "update user set reload_times_max = ? where user_id = ?";
 		List<Object> parameter = Arrays.asList(new_value, user_id);
 		return DB.execSQLUpdateO(sql, parameter);
+	}
+	
+	public List<List<Object>> searchPictures(String user_id, String keyword) throws Exception {
+		String sql = "SELECT user_id, album_identifier, owner_album_name, owner_filename, owner_format, owner_description, owner_upload_timestamp "
+				+ "FROM souvenirs.query_available_image where user_id=? and (owner_filename like ? or owner_description like ?) and is_personal = ?";
+		keyword = "%"+keyword+"%";
+		List<String> para = Arrays.asList(user_id, keyword, keyword, "true");
+		List<List<Object>> presult = DB.execSQLQuery(sql, para);
+		para = Arrays.asList(user_id, keyword, keyword, "false");
+		List<List<Object>> sresult = DB.execSQLQuery(sql, para);
+		for (List<Object> picture : sresult) {
+			String album_name = getSAlbumInfo((String)picture.get(1)).getSharedAlbumName();//这里获得的的album_name实际上是album_identifier中的group_id，所以需要重新获取一下共享相册名
+			picture.set(1, album_name);
+		}
+		presult.addAll(sresult);
+		return presult;
 	}
 }

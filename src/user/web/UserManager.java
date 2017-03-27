@@ -1,10 +1,20 @@
 package user.web;
 
+import java.io.File;
 import java.util.*;
 
+import org.apache.commons.fileupload.FileItem;
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
+import souvenirs.PersonalAlbum;
+import souvenirs.dao.SouvenirsDAO;
+import tool.ImageLoader;
+import tool.PropertyOper;
 import tool.VerifyCode;
+import upload.dao.UploadDAO;
+import user.User;
 import user.dao.UserDAO;
 
 /**
@@ -17,6 +27,7 @@ public class UserManager {
 	private static Logger logger = Logger.getLogger(UserManager.class);
 	final int REGISTER_DEFAULT_PARA = 2;// login_username,login_password
 	final int LOGIN_DEFAULT_PARA = 2;// login_username, login_password
+	private final static int DEFAULT_AFFECTED_ROW = 1;
 
 	public UserManager() {
 		// TODO Auto-generated constructor stub
@@ -220,7 +231,7 @@ public class UserManager {
 		List<Object> query_result = null;
 		try {
 			query_result = dao.getLogin(para);
-			logger.debug("query_result:"+query_result);
+			//logger.debug("query_result:"+query_result);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			logger.error("", e);
@@ -393,5 +404,231 @@ public class UserManager {
 			// e.printStackTrace();
 			return "";
 		}
+	}
+	
+	public Map<String, Object> displaySetting(Map<String, String> parameters) {
+		checkValidDAO();
+		String user_id = parameters.get("login_user_id");
+		String password = parameters.get("login_password");
+		Map<String, Object> result = new HashMap<>();
+		try {
+			User user = dao.getUserInfoById(user_id, password);
+			result.put("User_id", user.getUserId());
+			result.put("Username", user.getUsername());
+			result.put("Avatar", ImageLoader.genAddrOfAvatar(user_id));
+			result.put("MRT", user.getReloadTimesMax());
+			result.put("LT", user.getLoadTimeout());
+			List<PersonalAlbum> pAlbum = SouvenirsDAO.getInstance().getAllPAlbumInfo(user_id, SouvenirsDAO.PERSONAL_ALBUM);
+			List<String> pAlbum_name = new ArrayList<>();
+			for (PersonalAlbum personalAlbum : pAlbum) {
+				pAlbum_name.add(personalAlbum.getAlbumName());
+			}
+			result.put("PAlbum", pAlbum_name);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			logger.warn("Fail to display user's setting page. Parameters: user_id=<"+user_id+">, passwrod=<"+password+">");
+		}
+		result.put("DispatchURL", "setting.jsp");
+		return result;
+	}
+	
+	public Map<String, Object> updateSettings(Map<String, String> parameters, FileItem file_handle) {
+		checkValidDAO();
+		String user_id = parameters.get("login_user_id");
+		String password = parameters.get("login_password");
+		String username = parameters.get("username");
+		String old_password = parameters.get("old_password");
+		String new_password = parameters.get("new_password");
+		String new_password_comfirm = parameters.get("new_pwd_confirm");
+		String pwd_checkbox = parameters.get("pwd_checkbox");
+		
+		//logger.debug("parameters: "+parameters);
+		JSONArray exec_result = new JSONArray();
+		Map<String, Object> result = new HashMap<>();
+		try {
+			User user = dao.getUserInfoById(user_id, password);
+			//logger.debug("before username");
+			if (!user.getUsername().contentEquals(username)) {
+				int rs = dao.updateUsername(user_id, username);
+				if (rs == DEFAULT_AFFECTED_ROW) {
+					JSONObject obj = new JSONObject();
+					obj.put("item", "user ID");
+					obj.put("result", "success");
+					exec_result.put(obj);
+					result.put("new_username", username);
+					logger.info("User updated its username: Parameters: user_id=<"+user_id+">, previous username=<"+user.getUsername()+">, "
+							+ "current username=<"+username+">");
+				} else {
+					JSONObject obj = new JSONObject();
+					obj.put("item", "user ID");
+					obj.put("result", "Invalid result set");
+					exec_result.put(obj);
+					logger.warn("User failed to update its username: Parameters: user_id=<"+user_id+">, previous username=<"+user.getUsername()+">, "
+							+ "current username=<"+username+">");					
+				}
+			}
+			//logger.debug("after username");
+			// 改密码部分
+			if (pwd_checkbox!=null && pwd_checkbox.contentEquals("on") && old_password.contentEquals(password) && new_password.contentEquals(new_password_comfirm)) {
+				int rs = dao.updatePassword(user_id, new_password);
+				if (rs == DEFAULT_AFFECTED_ROW) {
+					JSONObject obj = new JSONObject();
+					obj.put("item", "password");
+					obj.put("result", "success");
+					exec_result.put(obj);
+					result.put("new_password", new_password);
+					parameters.put("login_password", new_password);
+					logger.info("User updated its password: Parameters: user_id=<"+user_id+">, previous password=<"+password+">, "
+							+ "current password=<"+new_password+">");
+				} else {
+					JSONObject obj = new JSONObject();
+					obj.put("item", "password");
+					obj.put("result", "Invalid result set");
+					exec_result.put(obj);
+					logger.warn("User failed to update its password: Parameters: user_id=<"+user_id+">, previous password=<"+password+">, "
+							+ "current password=<"+new_password+">");					
+				}
+			}
+			//logger.debug("after password");
+			// 改MRT部分
+			if (parameters.get("MRT").matches("^[0-9]*[1-9][0-9]*")) {
+				int MRT = Integer.valueOf(parameters.get("MRT"));
+				
+				if (user.getReloadTimesMax() != MRT) {
+					int rs = dao.updateMRT(user_id, MRT);
+					if (rs == DEFAULT_AFFECTED_ROW) {
+						JSONObject obj = new JSONObject();
+						obj.put("item", "MRT");
+						obj.put("result", "success");
+						exec_result.put(obj);
+						logger.info("User updated its reload_times_max settings: Parameters: user_id=<"+user_id+">, previous MRT=<"+user.getReloadTimesMax()+">, "
+								+ "current MRT=<"+MRT+">");
+					} else {
+						JSONObject obj = new JSONObject();
+						obj.put("item", "MRT");
+						obj.put("result", "Invalid result set");
+						exec_result.put(obj);
+						logger.warn("User failed to update its  reload_times_max settings: Parameters: user_id=<"+user_id+">, previous MRT=<"+user.getReloadTimesMax()+">, "
+								+ "current MRT=<"+MRT+">");					
+					}
+				}
+			} else {
+				JSONObject obj = new JSONObject();
+				obj.put("item", "MRT");
+				obj.put("result", "Invalid result set");
+				exec_result.put(obj);
+				logger.info("User failed to update its  reload_times_max settings since invalid MRT format: "
+						+ "Parameters: user_id=<"+user_id+">, MRT=<"+parameters.get("MRT")+">");	
+			}
+			// 改LT部分
+			if (parameters.get("LT").matches("^[0-9]*[1-9][0-9]*")) {
+				int LT =  Integer.valueOf(parameters.get("LT"));
+				
+				if (user.getLoadTimeout() != LT) {
+					int rs = dao.updateLT(user_id, LT);
+					if (rs == DEFAULT_AFFECTED_ROW) {
+						JSONObject obj = new JSONObject();
+						obj.put("item", "LT");
+						obj.put("result", "success");
+						exec_result.put(obj);
+						logger.info("User updated its load_timeout settings: Parameters: user_id=<"+user_id+">, previous LT=<"+user.getLoadTimeout()+">, "
+								+ "current LT=<"+LT+">");
+					} else {
+						JSONObject obj = new JSONObject();
+						obj.put("item", "LT");
+						obj.put("result", "Invalid result set");
+						exec_result.put(obj);
+						logger.warn("User failed to update its  load_timeout settings: Parameters: user_id=<"+user_id+">, previous LT=<"+user.getLoadTimeout()+">, "
+								+ "current LT=<"+LT+">");					
+					}
+				}
+			} else {
+				JSONObject obj = new JSONObject();
+				obj.put("item", "LT");
+				obj.put("result", "Invalid result set");
+				exec_result.put(obj);
+				logger.info("User failed to update its  load_timeout settings since invalid LT format: "
+						+ "Parameters: user_id=<"+user_id+">, LT=<"+parameters.get("LT")+">");	
+			}
+			//logger.debug("after lt "+file_handle.getSize());
+			// Write file into disk
+			if (file_handle.getSize() != 0){
+				String album_name = parameters.get("album_name");
+				String filename = parameters.get("filename");
+				// Form absolute file path
+				String uploadPath = PropertyOper.GetValueByKey("souvenirs.properties", "data_path") + File.separator
+						+ user_id + File.separator + album_name;
+	
+				// Create path if it does not exist
+				File uploadDir = new File(uploadPath);
+				logger.debug("upload_path:" + uploadDir.getPath() + " " + uploadDir.exists());
+				if (!uploadDir.exists()) {
+					logger.debug(uploadDir.mkdirs());
+				}
+	
+				// Create new file
+				File storeFile = new File(uploadPath + File.separator +filename);
+				logger.debug(uploadPath);
+				
+				// Save image to disk
+				try {
+					file_handle.write(storeFile);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					JSONObject obj = new JSONObject();
+					obj.put("item", "profile picture");
+					obj.put("result", e.getMessage());
+					exec_result.put(obj);
+					throw new Exception("Cannot write profile picture since "+e.getMessage());
+				}
+				// 到这里说明文件修改成功
+				UploadDAO udao = UploadDAO.getInstance();
+				Map<String, String> para = new HashMap<>();
+				para.put("user_id", user_id);
+				para.put("album_name", album_name);
+				para.put("filename", filename);
+				para.put("format", filename.substring(filename.lastIndexOf(".")+1));
+				para.put("img_description", "This is user&apos;s profile picture");
+				int rs = udao.addPicture(para);
+				if (rs == DEFAULT_AFFECTED_ROW) {
+					String avatar = File.separator + user_id + File.separator + album_name + File.separator + filename;
+					avatar.replaceAll("\\\\", "\\\\\\\\");
+					logger.debug("avatar: "+avatar);
+					int rs2 = dao.updateAvatar(user_id, avatar);
+					if (rs2 == DEFAULT_AFFECTED_ROW) { 
+						JSONObject obj = new JSONObject();
+						obj.put("item", "profile picture");
+						obj.put("result", "success");
+						exec_result.put(obj);
+						logger.info("User changed its avatar. parameters: user_id=<"+user_id+">, previous avatar=<"+user.getAvatar()+">, current avatar=<"+avatar+">");
+						
+					}else {
+						JSONObject obj = new JSONObject();
+						obj.put("item", "profile picture");
+						obj.put("result", "Cannot update database record.");
+						exec_result.put(obj);
+						logger.info("User failed to change its avatar. parameters: user_id=<"+user_id+">, previous avatar=<"+user.getAvatar()+">, current avatar=<"+avatar+">");
+					}
+				} else {
+					JSONObject obj = new JSONObject();
+					obj.put("item", "profile picture");
+					obj.put("result", "Cannot add profile picture as a new picture.");
+					exec_result.put(obj);
+					logger.info("User failed to add avatar as new picture. parameters: user_id=<"+user_id+">, previous avatar=<"+user.getAvatar()+">, "
+							+ "album=<"+album_name+"> filename=<"+filename+">");
+
+				}
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			JSONObject obj = new JSONObject();
+			obj.put("item", "update");
+			obj.put("result", e.getMessage());
+			exec_result.put(obj);
+			logger.warn("User failed to update its information since "+e.getMessage()+". Parameters: "+parameters);
+		}
+		result.putAll(displaySetting(parameters));
+		result.put("result", result.toString());
+		return result;
 	}
 }

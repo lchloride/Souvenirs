@@ -17,97 +17,22 @@
 <script src="/Souvenirs/res/bootstrap/js/bootstrap.min.js"></script>
 <script src="/Souvenirs/res/js/jquery.bootstrap-growl.min.js"></script>
 <link href="/Souvenirs/res/css/website.css" rel="stylesheet" type="text/css">
+<link href="/Souvenirs/res/css/picture.css" rel="stylesheet" type="text/css">
+
+<script src="/Souvenirs/res/js/ajax.js"></script>
+<script src="/Souvenirs/res/js/picture.js"></script>
 
 <title>Picture Information</title>
-<style type="text/css">
-.picture-management {
-	padding-left: 10px;
-	padding-right: 10px;
-}
-
-.info-content {
-	margin-top: 25px;
-	padding-top: 5px;
-	background-color: rgba(248, 248, 255, 0.5);
-	margin-left: -10px;
-	margin-right: -10px;
-	padding-left: 10px;
-	padding-right: 10px;
-	background-color: rgba(248, 248, 255, 0.5);
-}
-
-div.information {
-	border-left: solid;
-	border-right: solid;
-	border-width: 1px;
-	border-color: rgba(192, 192, 192, 0.8);
-}
-
-div.comments-display {
-	margin-top: 15px;
-}
-
-div.comment-item {
-	background: #ffeeff;
-	margin-top: 15px;
-	clear: both;
-}
-
-div.user-avatar {
-	display: inline;
-	float: left;
-}
-
-img.user-avatar-img {
-	border-style: solid;
-	border-width: 1px;
-	border-radius: 5px;
-	border-color: #6495ED;
-	width: 46px;
-	height: 46px;
-	padding: 0px;
-	/*margin-left: 10px;*/
-	/*margin-right: 10px;*/
-}
-
-img.reply_user-avatar-img {
-	border-style: solid;
-	border-width: 1px;
-	border-radius: 5px;
-	border-color: #6495ED;
-	width: 40px;
-	height: 40px;
-	padding: 0px;	
-}
-
-div.reply {
-	background-color: #e0ecff;
-	margin-top:5px;
-	padding-top:5px;
-	padding-bottom:5px;
-}
-
-div.comment {
-	border-top: solid;
-	border-width:1px;
-	border-color: #e0e0f0;
-	padding-top:5px;
-}
-
-.error-form {
-	border-color:#b3414c;
-	background-color: hsl(0, 70%, 90%);
-}
-</style>
 <script >
 	<c:if test="${Is_personal}">
-	var salbum_obj = new Array();//<%=((List<String>) request.getAttribute("SAlbum_own_pic_json_list")).size()%>
+	var salbum_obj = new Array();
 	</c:if>
 	var liking_person_json = '${Liking_person_json}';
 	var MSG_OFFSET = 50;
 	var comment_list_obj = new Array();
 	var reply_idx = -1;//对应comment——list——obj的下标，有效值从0开始，无效值为-1
 	var report_idx = 0;//对应id="optionsRadios"+i的i，有效值从1开始，无效值为0
+	var Username = "${Username}";
 	
 	$(document).ready(function() {
 		displayLikingPersons();
@@ -143,248 +68,7 @@ div.comment {
 		</c:if>
 	});
 
-	function displayLikingPersons() {
-		liking_person_obj = JSON.parse(liking_person_json);
-		display_str = "";
-		if (liking_person_obj.length == 0) {
-			;//document.getElementById("liking_persons").style.display = "none";
-		} else {
-			//document.getElementById("liking_persons").style.display = "block";
-			for (i = 0; i < liking_person_obj.length - 1; i++) {
-				display_str += liking_person_obj[i] + ", ";
-			}
-			display_str += liking_person_obj[liking_person_obj.length - 1];
-		}
-		document.getElementById("liking_persons_name").innerHTML = display_str;
-		if (display_str.indexOf('${Username}') >= 0)
-			$('.glyphicon-thumbs-up').css("color", "#cd201d");
-		else
-			$('.glyphicon-thumbs-up').css("color", "#286090");
-	}
-	
-	function changeShareStatus(s) {
-		//alert(s);
-		if (salbum_obj[s].is_shared)
-			document.getElementById("onoffswitch").checked = "checked";
-		else
-			document.getElementById("onoffswitch").checked = "";
-	}
-	
-	function resetSAlbumJSON() {
-		var original_json = $('#salbum_json').val();
-		salbum_obj = JSON.parse(original_json);
-/* 		if (salbum_obj.length > 0 && $("#onoffswitch").is(':checked') != salbum_obj[0].is_shared) {
-			alert($("#onoffswitch").is(':checked')+" "+salbum_obj[0].is_shared);
-			//$("#onoffswitch").click();
-			$("#onoffswitch").is(':checked');
-		} */
-		if (salbum_obj.length > 0) {
-			if (salbum_obj[0].is_shared)
-				$("#onoffswitch").attr("checked", "checked");
-			else
-				$("#onoffswitch").removeAttr("checked");
-		}
-	}
-	
-	function prepareSubmit() {
-		$('#salbum_json').attr("value", JSON.stringify(salbum_obj));
-	}
-	
-	function ajaxProcess(callback, URL, send)
-	{
 
-	var xmlhttp;
-		if (window.XMLHttpRequest) {
-			// IE7+, Firefox, Chrome, Opera, Safari 浏览器执行代码
-			xmlhttp = new XMLHttpRequest();
-		} else {
-			// IE6, IE5 浏览器执行代码
-			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-		}
-		xmlhttp.onreadystatechange = function() {
-			if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-				callback(xmlhttp.responseText);
-			}
-		}
-		if (send == undefined || send == "") {
-			xmlhttp.open("GET", URL, true);
-			xmlhttp.send();
-		} else {
-			xmlhttp.open("POST", URL, true);
-			xmlhttp.setRequestHeader("Content-type",
-					"application/x-www-form-urlencoded");
-			xmlhttp.send(send);
-		}
-	}
-
-	function checkLikeOrDislike() {
-		like_flag = false;
-		for (var i = 0; i < liking_person_obj.length; i++) {
-			if (liking_person_obj[i] == '${Username}') {
-				like_flag = true;
-				break;
-			}
-		}
-		return like_flag;
-	}
-	
-	function clickLike() {
-		if (checkLikeOrDislike())
-			ajaxProcess(clickLikeCallback,"/Souvenirs/dislikePicture?like_user_id="+encodeURIComponent('${Login_user_id}')+
-							"&picture_user_id="+encodeURIComponent("${Picture_user_id}")+
-							"&album_name="+encodeURIComponent("${Album_name}")+
-							"&picture_name="+encodeURIComponent("${Picture_name}.${Format}"));
-		else
-			ajaxProcess(clickLikeCallback,"/Souvenirs/likePicture?like_user_id="+encodeURIComponent('${Login_user_id}')+
-					"&picture_user_id="+encodeURIComponent("${Picture_user_id}")+
-					"&album_name="+encodeURIComponent("${Album_name}")+
-					"&picture_name="+encodeURIComponent("${Picture_name}.${Format}"));
-	}
-	
-	function clickLikeCallback(result) {
-		like_flag = checkLikeOrDislike();
-		if (like_flag)
-			oper_text = "Dislike";
-		else
-			oper_text = "Like";
-		
-		if (result.indexOf('[')==0) {
-			$.bootstrapGrowl(oper_text+" it successfully.", { type: 'success' , delay:2000, offset: {from: 'top', amount: MSG_OFFSET}});
-			liking_person_json = result;
-			displayLikingPersons();
-		} else
-			$.bootstrapGrowl(oper_text+" it unsuccessfully.", { type: 'danger' , delay:4000, offset: {from: 'top', amount: MSG_OFFSET}});
-	}
-	
-	function reply(idx) {
-		if (reply_idx > -1)
-			$('#reply_btn_'+reply_idx).css('font-weight', "normal");
-		reply_idx = idx;
-		$('#reply_msg').css("display", "block");
-		$('#reply_text').text("Reply "+comment_list_obj[reply_idx].comment_username+" (Comment ID: "+(reply_idx+1)+")");
-		$('#reply_btn_'+reply_idx).css('font-weight', "bold");
-	}
-	
-	function discardReply() {
-		if (reply_idx > -1)
-			$('#reply_btn_'+reply_idx).css('font-weight', "normal");
-		$('#reply_msg').css("display", "none");
-		reply_idx = -1;
-	}
-	
-	function sendComment() {
-		var text = document.getElementById("comment").value;
-		ajaxProcess(sendCommentCallback, "/Souvenirs/addComment?comment="+encodeURIComponent(text)+
-				"&reply_comment_id="+(reply_idx+1)+
-				"&picture_user_id="+encodeURIComponent("${Picture_user_id}")+
-				"&album_name="+encodeURIComponent("${Album_name}")+
-				"&picture_name="+encodeURIComponent("${Picture_name}.${Format}"));
-		discardReply();
-	}
-	
-	function sendCommentCallback(result) {
-		//result = decodeURIComponent(result); 
-		alert(result);
-		if (result.indexOf('{') == 0) {
-			var cobj = JSON.parse(result);
-			comment_list_obj.push(cobj);
-			var idx = comment_list_obj.length;
-			var html = '<div class="media comment">'+
-			'<a class="pull-left" href="#">'+
-				'<img class="media-object user-avatar-img" id="comment_user_avatar_'+idx+'" src="'+cobj.comment_user_avatar+'" alt="'+cobj.comment_username+'" width="40" height="40">'+
-			'</a>'+
-			'<div class="media-body">'+
-				'<h5 class="media-heading" id="comment_username_'+idx+'" style="font-weight:bold;">'+cobj.comment_username+'</h5>'+
-				'<small id="comment_time_'+idx+'" style="color:#999">'+cobj.comment_time+'</small>'+
-				'<div id="comment_content_'+idx+'">'+cobj.comment_content+'</div>';
-			if (cobj.replied_comment_id > 0) {
-				var reply_id = cobj.replied_comment_id-1;
-				alert(reply_id+" "+cobj.replied_comment_id);
-				html += '<div class="media reply" id="reply_'+idx+'" style="display:block">'+
-					'<a class="pull-left" href="#">'+
-						'<img class="media-object user-avatar-img" id="replied_avatar_'+idx+'"src="'+comment_list_obj[reply_id].comment_user_avatar+'" alt="'+comment_list_obj[reply_id].comment_username+'" width="40" height="40">'+
-					'</a>'+
-					'<div class="media-body">'+
-						'<h5 class="media-heading" id="replied_username_'+idx+'"style="font-weight:bold;"><span style="color:#337ab7">@'+comment_list_obj[reply_id].comment_username+'</span></h5>'+
-						'<div id="replied_content_'+idx+'">'+comment_list_obj[reply_id].comment_content+'</div>'+
-					'</div>'+
-				'</div>';
-			}
-			html +='</div></div>';
-			document.getElementById("comments_display").innerHTML += html;
-			if (cobj.replied_comment_id > 0) {
-				replied_comment_obj = comment_list_obj[cobj.replied_comment_id-1];
-				document.getElementById("comment_username_"+ idx).innerHTML += 
-					"<span style='font-weight:normal'> Reply "+
-					"<span style='color:#337ab7'>@"	+ replied_comment_obj.comment_username+'</span></span>';
-			}
-			document.getElementById("comment_username_"+ idx).innerHTML += 
-				"<span style='font-weight:normal;float:right;'>"+
-				"<button class='btn btn-link' id='reply_btn_"+(idx-1)+"' style='padding:0px;' onclick='reply("+(idx-1)+")'>Reply</button> | "+
-				"<button class='btn btn-link' style='padding:0px;' data-toggle='modal' data-target='#myModal' onclick='report_idx="+idx+"'>Report</button></span>";
-			$('#comments_count').text(comment_list_obj.length);
-			$.bootstrapGrowl("Comment successfully.", { type: 'success' , delay:2000, offset: {from: 'top', amount: MSG_OFFSET}});
-		}else
-			$.bootstrapGrowl("Comment unsuccessfully. Error Description: "+result, { type: 'danger' , delay:4000, offset: {from: 'top', amount: MSG_OFFSET}});
-	} 
-		
-	function checkCommentContent() {
-		text = $('#comment').val();
-		if (text.length == 0)
-			$('#send_btn').attr("disabled","disabled");
-		else
-			$('#send_btn').removeAttr("disabled");
-	}
-	
-	function reportComment(radio_count) {
-		for (var i=1; i<=radio_count; i++) {
-			if (document.getElementById("optionsRadios"+i).checked) {
-				reason_idx = i;
-				break;
-			}
-		}
-		var report_label = (reason_idx != 6 ?$('#optionsRadios'+reason_idx).val():$('#optionsRadios'+reason_idx).val()+":"+$("#other_reason_text").val());
-		ajaxProcess(reportCommentCallback, "/Souvenirs/reportComment?report_content="+encodeURIComponent($("#report_content").val())+
-				"&comment_id="+(report_idx)+
-				"&picture_uid="+encodeURIComponent("${Picture_user_id}")+
-				"&album_name="+encodeURIComponent("${Album_name}")+
-				"&picture_name="+encodeURIComponent("${Picture_name}.${Format}")+
-				"&report_label="+encodeURIComponent(report_label));		
-	}
-	
-	function reportCommentCallback(result) {
-		if (result.trim() == "true")
-			$.bootstrapGrowl("Report it successfully.", { type: 'success' , delay:2000, offset: {from: 'top', amount: MSG_OFFSET}});
-		else
-			$.bootstrapGrowl("Report failed. Error:"+result, { type: 'danger' , delay:4000, offset: {from: 'top', amount: MSG_OFFSET}});
-	}
-	
-	function checkOtherReasonText() {
-		var count = $('#other_reason_text').val().length;
-		if (count > 30) {
-			$('#other_reason_text').addClass("error-form");
-			$('#other_reason_text_too_long_msg').css('display', 'inline');
-			$('#report_btn').attr('disabled', 'disabled');
-		} else {
-			$('#other_reason_text').removeClass("error-form");
-			$('#other_reason_text_too_long_msg').css('display', 'none');
-			$('#report_btn').removeAttr('disabled');
-		}
-	}
-	
-	function checkReportContent() {
-		var count = $('#report_content').val().length;
-		$('#word_count').text(count);
-		if (count > 300) {
-			$('#report_content').addClass('error-form');
-			$('#word_count').css('color', '#b3414c');
-			$('#report_btn').attr('disabled', 'disabled');
-		} else {
-			$('#report_content').removeClass('error-form');
-			$('#word_count').css('color', '#000');
-			$('#report_btn').removeAttr('disabled');
-		}
-	}
 </script>
 </head>
 <body>
@@ -397,28 +81,30 @@ div.comment {
 			</div>
 			<div>
 				<ul class="nav navbar-nav">
-					<li class="active">
+					<li >
 						<a href="homepage">HomePage</a>
 					</li>
 					<li>
-						<a href="#">Group</a>
+						<a href="group">Group</a>
 					</li>
 					<li>
 						<a href="upload">Upload</a>
+					</li>
+					<li class="active">
+						<a href="#">Picture Management</a>
 					</li>
 				</ul>
 
 				<ul class="nav navbar-nav navbar-right" style="padding-right: 5%">
 					<li>
-						<img class="navbar-form" src="${empty Avatar?'':Avatar}" alt="avatar" width="32"
-							height="32">
+						<img class="navbar-form" src="${empty Avatar?'':Avatar}" alt="avatar" width="32"	height="32"  style="width:62px;">
 					</li>
 					<li class="dropdown">
 						<a href="#" class="dropdown-toggle" data-toggle="dropdown">${sessionScope.username} <b class="caret"></b>
 						</a>
 						<ul class="dropdown-menu">
 							<li>
-								<a href="account.jsp">Account</a>
+								<a href="setting">Account</a>
 							</li>
 							<li class="divider"></li>
 							<li>
@@ -484,7 +170,7 @@ div.comment {
 							</div>
 
 							<div id="liking_persons">
-								<span class="glyphicon glyphicon-thumbs-up" style="font-size:1.4em;cursor:pointer" onclick="clickLike()"></span>
+								<span class="glyphicon glyphicon-thumbs-up" style="font-size:1.4em;cursor:pointer" onclick="clickLike('${Login_user_id}', '${Picture_user_id}', '${Album_name}', '${Picture_name}', '${Format}', '${Username}')"></span>
 								 <span id="liking_persons_name"></span>
 							</div>
 						</div>
@@ -574,7 +260,7 @@ div.comment {
 									width="40" height="40" style="float: left" />
 								<textarea id="comment" class="form-control" style="width: auto; display: inline;vertical-align:bottom;margin-left:10px;height:46px" rows="2"
 									placeholder="Write your comment." onkeyup="checkCommentContent()"></textarea>
-								<button class="btn btn-info btn-lg" id="send_btn"style="width: 74px;"onclick="sendComment()"disabled>Send</button>
+								<button class="btn btn-info btn-lg" id="send_btn"style="width: 74px;"onclick="sendComment('${Picture_user_id}', '${Album_name}', '${Picture_name}', '${Format}')"disabled>Send</button>
 							</div>
 							<!-- Replying comment message box -->
 							<div class="alert alert-info alert-dismissable" id="reply_msg" style="display:none;padding-top:10px;padding-bottom:10px;margin-top:5px;">
@@ -702,7 +388,7 @@ div.comment {
 	            <!-- Modal body END -->
 	            <div class="modal-footer">
 	                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="report_idx=0">Cancel</button>
-	                <button type="button" class="btn btn-primary" id="report_btn" onclick="reportComment(6)">Report</button>
+	                <button type="button" class="btn btn-primary" id="report_btn" onclick="reportComment(6, '${Picture_user_id}', '${Album_name}', '${Picture_name}', '${Format}')">Report</button>
 	            </div>
 	        </div><!-- /.modal-content -->
 	    </div><!-- /.modal -->

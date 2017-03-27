@@ -80,6 +80,7 @@ public class SouvenirsServ extends HttpServlet {
 		// TODO Auto-generated method stub
 		HttpSession session = request.getSession(true);
 		User login_user = (User) session.getAttribute("user");
+		logger.debug("session: "+login_user+", "+(login_user!=null?login_user.getUserId():"")+","+session.getAttribute("password"));
 		// If login information is wrong, redirect to index.jsp in order to login in again
 		if (login_user == null || !UserManager.checkLogin(login_user.getUserId(), login_user.getUsername(), session.getAttribute("password"))) {
 			if (login_user!=null&&!session.isNew() )

@@ -91,6 +91,14 @@
     <url-pattern>/logout</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
+    <servlet-name>UserServ</servlet-name>
+    <url-pattern>/setting</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>UserServ</servlet-name>
+    <url-pattern>/updateSettings</url-pattern>
+  </servlet-mapping>  
+    <servlet-mapping>
     <servlet-name>ImageLoader</servlet-name>
     <url-pattern>/image</url-pattern>
   </servlet-mapping>
@@ -198,6 +206,11 @@
     <servlet-name>SouvenirsAjax</servlet-name>
     <url-pattern>/deletePAlbum</url-pattern>
   </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>SouvenirsAjax</servlet-name>
+    <url-pattern>/searchPictures</url-pattern>
+  </servlet-mapping>
+  
   <servlet-mapping>
     <servlet-name>GroupServ</servlet-name>
     <url-pattern>/group</url-pattern>

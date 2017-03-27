@@ -17,6 +17,9 @@
 <!-- Text Color Picker -->
 <script src="/Souvenirs/res/js/iColorPicker.js" type="text/javascript"></script>
 <script src="/Souvenirs/res/js/jquery.bootstrap-growl.min.js"></script>
+<script src="/Souvenirs/res/js/pagination.js"></script>
+<script src="/Souvenirs/res/js/ajax.js"></script>
+<script src="/Souvenirs/res/js/group.js"></script>
 
 <link href="/Souvenirs/res/css/website.css" rel="stylesheet" type="text/css">
 <script type="text/javascript">
@@ -53,243 +56,7 @@
 		</c:if>
 	}
 	
-	function pagination(id, active_idx, total_page) {
-		for (var i=0; i<7; i++) {
-			$('#'+id+' li:eq('+i+') a').text(i+1);
-			$('#'+id+' li:eq('+i+')').removeClass('active');
-			$('#'+id+' li:eq('+i+')').removeClass('disabled');
-			$('#'+id+' li:eq('+i+')').removeClass('active');
-			$('#'+id+' li:eq('+i+')').css('display', 'inline');
-			$('#'+id+' li:eq('+i+') a').css('border-top-right-radius','0px');
-			$('#'+id+' li:eq('+i+') a').css('border-bottom-right-radius','0px');
-		}
-		if (total_page <= 7) {
-			for (var i=0; i<total_page; i++) {
-				$('#'+id+' li:eq('+i+') a').text(i+1);
-			}
-			for (var i=total_page; i<7; i++) {
-				$('#'+id+' li:eq('+i+')').css('display', 'none');
-			}
-			$('#'+id+' li:eq('+(total_page-1)+') a').css('border-top-right-radius','4px');
-			$('#'+id+' li:eq('+(total_page-1)+') a').css('border-bottom-right-radius','4px');
-			$('#'+id+' li:eq('+(active_idx-1)+')').addClass('active');
-		} else {
-			if (active_idx >=1 && active_idx <= 4) {
-				$('#'+id+' li:eq(0) a').text('1');
-				$('#'+id+' li:eq(1) a').text('2');
-				$('#'+id+' li:eq(2) a').text('3');
-				$('#'+id+' li:eq(3) a').text('4');
-				$('#'+id+' li:eq(4) a').text('5');
-				$('#'+id+' li:eq(5) a').text('...');
-				$('#'+id+' li:eq(5) a').addClass('disabled');
-				$('#'+id+' li:eq(6) a').text(total_page);
-				$('#'+id+' li:eq('+(active_idx-1)+')').addClass('active');
-			} else if (active_idx >=total_page-3 && active_idx <= total_page) {
-				$('#'+id+' li:eq(0) a').text('1');
-				$('#'+id+' li:eq(1) a').text('...');
-				$('#'+id+' li:eq(1) a').addClass('disabled');
-				$('#'+id+' li:eq(2) a').text(total_page-4);
-				$('#'+id+' li:eq(3) a').text(total_page-3);
-				$('#'+id+' li:eq(4) a').text(total_page-2);
-				$('#'+id+' li:eq(5) a').text(total_page-1);
-				$('#'+id+' li:eq(6) a').text(total_page);
-				$('#'+id+' li:eq('+(6-total_page+active_idx)+')').addClass('active');
-			} else {
-				$('#'+id+' li:eq(0) a').text('1');
-				$('#'+id+' li:eq(1) a').text('...');
-				$('#'+id+' li:eq(1) a').addClass('disabled');
-				$('#'+id+' li:eq(2) a').text(active_idx-1);
-				$('#'+id+' li:eq(3) a').text(active_idx);
-				$('#'+id+' li:eq(4) a').text(active_idx+1);
-				$('#'+id+' li:eq(5) a').text('...');
-				$('#'+id+' li:eq(5) a').addClass('disabled');
-				$('#'+id+' li:eq(6) a').text(total_page);
-				$('#'+id+' li:eq(3)').addClass('active');
-			}
-			
-			$('#'+id+' li:eq(6) a').css('border-top-right-radius','4px');
-			$('#'+id+' li:eq(6) a').css('border-bottom-right-radius','4px');
-		}
-	}
 	
-	function displayMyGroupTable(json) {
-		var str="";
-		var my_group_list_json = json;
-		my_group_list_obj = JSON.parse(my_group_list_json);
-		var line = "";
-		for (var i=0; i<my_group_list_obj.length; i++) {
-			line = '<tr><td>'+my_group_list_obj[i].group_id+'</td><td>'+my_group_list_obj[i].group_name+'</td><td>'+my_group_list_obj[i].intro+'</td>'+
-			'<td><button type="button" class="btn btn-link " style="padding: 0px" onclick="editGroup('+i+')">Edit</button> | '+
-			'<button type="button" class="btn btn-link " style="padding: 0px" onclick="leaveGroup('+i+')">Leave</button> | '+
-			'<button type="button" class="btn btn-link " style="padding: 0px" ><a href="/Souvenirs/sharedAlbum?group_id='+my_group_list_obj[i].group_id+'">Show Attached Album<a></button>'+
-			'</td>	</tr>';
-			str += line;
-		}
-		$('#my_group_table_body').html(str);
-		
-	}
-	function ajaxProcess(callback, URL)
-	{
-	  var xmlhttp;    
-	  if (window.XMLHttpRequest)
-	  {
-	    // IE7+, Firefox, Chrome, Opera, Safari 浏览器执行代码
-	    xmlhttp=new XMLHttpRequest();
-	  }
-	  else
-	  {
-	    // IE6, IE5 浏览器执行代码
-	    xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-	  }
-	  xmlhttp.onreadystatechange=function()
-	  {
-	    if (xmlhttp.readyState==4 && xmlhttp.status==200)
-	    {
-	      callback(xmlhttp.responseText);
-	    }
-	  }
-	  xmlhttp.open("GET",URL, true);
-	  xmlhttp.send();
-	}
-	
-	function changeMGContentLength(length) {
-		ajaxProcess(changeMGContentLengthCallback, "/Souvenirs/showMyGroup?page_number="+my_group_active_page+"&content_length="+length);
-	}
-	
-	function changeMGContentLengthCallback(result) {
-		displayMyGroupTable(result);
-		var current_length = document.getElementById("MG_content_length").value;
-		my_group_active_page = Math.round((my_group_active_page-1) * previous_length / current_length)+1; 
-		my_group_total_page = Math.ceil(my_group_total_items / current_length);
-		previous_length = current_length;
-		pagination('my_group_pagination', my_group_active_page, my_group_total_page);
-	}
-	
-	function changeMGPage(page) {
-		my_group_active_page = page;
-		ajaxProcess(changeMGPageCallback, "/Souvenirs/showMyGroup?page_number="+page+"&content_length="+document.getElementById("MG_content_length").value);
-	}
-	
-	function changeMGPageCallback(result) {
-		displayMyGroupTable(result);
-		var current_length = document.getElementById("MG_content_length").value;
-		my_group_total_page = Math.ceil(my_group_total_items / current_length);
-		pagination('my_group_pagination', my_group_active_page, my_group_total_page);
-	}
-	
-	function editGroup(idx) {
-		$('#edit_group_id').val(my_group_list_obj[idx].group_id );
-		$('#edit_group_name').val(my_group_list_obj[idx].group_name.replace(/&apos;/g, "'"));
-		$('#edit_intro').html(my_group_list_obj[idx].intro);
-		$('#editModal').modal('show');
-	}
-	
-	function submitEdit() {
-		var group_id = encodeURIComponent($("#edit_group_id").val());
-		var group_name = encodeURIComponent($("#edit_group_name").val());
-		var intro = encodeURIComponent($("#edit_intro").val());
-		ajaxProcess(editCallback, "/Souvenirs/updateGroup?group_id="+group_id+"&group_name="+group_name+"&intro="+intro)		
-	}
-	
-	function editCallback(result) {
-		$('#editModal').modal('toggle');
-		var result_obj = JSON.parse(result);
-		if (result_obj.length == 1) {
-			if (result_obj[0].result == "no item changed") 
-				$.bootstrapGrowl("No item changed.", { type: 'info' , offset: {from: 'top', amount: 50}});
-			else
-				$.bootstrapGrowl("Error: "+result_obj[i].item+", "+result_obj[i].result, { type: 'danger' , offset: {from: 'top', amount: 50}});
-		}else {
-			for (var i=0; i<result_obj.length-1; i++) {
-				if (result_obj[i].result == "true") {
-					$.bootstrapGrowl("Update "+result_obj[i].item+" succeeded.", { type: 'success' , offset: {from: 'top', amount: 50}});
-				} else {
-					$.bootstrapGrowl("Error: "+result_obj[i].item+", "+result_obj[i].result, { type: 'danger' , offset: {from: 'top', amount: 50}});
-				}
-			}
-			displayMyGroupTable(result_obj[result_obj.length-1]);
-		}
-	}
-	
-	function leaveGroup(idx) {
-		var r=confirm("Are you sure to leave this group? You will not be able to see any shared pictures after leaving.");
-		if (r==true)
-		{
-			var group_id = encodeURIComponent(my_group_list_obj[idx].group_id);
-			ajaxProcess(leaveGroupCallback, "/Souvenirs/leaveGroup?group_id="+group_id);
-		}else
-		{
-			$.bootstrapGrowl("Operation canceled.", { type: 'info' , offset: {from: 'top', amount: 50}});
-		}
-	}
-	
-	function leaveGroupCallback(result) {
-		if (result.trim() == "true") {
-			ajaxProcess(changeMGPageCallback, "/Souvenirs/showMyGroup");
-			$.bootstrapGrowl("Success.", { type: 'success' , offset: {from: 'top', amount: 50}});
-		}else
-			$.bootstrapGrowl("Error: "+result, { type: 'danger' , offset: {from: 'top', amount: 50}});	
-	}
-	
-	function searchGroup() {
-		var keyword = $('#search_id').val();
-		var method = $('#search_method').val()=="Fuzzy Search"?"true":"false";
-		ajaxProcess(searchGroupCallback, "/Souvenirs/searchGroup?keyword="+keyword+"&is_fuzzy="+method);
-	}
-	
-	function searchGroupCallback(result)  {
-		displaySearchResult(result);
-	}
-	
-	function displaySearchResult(json) {
-		search_result_obj = JSON.parse(json);
-		if (search_result_obj.length == 0)
-			$('#search_table_body').html("No matched group is found.");
-		else {
-			var str = "";
-			var line = "";
-			for (var i=0; i<search_result_obj.length; i++) {
-				line = '<tr><td>'+search_result_obj[i].group_id+'</td><td>'+search_result_obj[i].group_name+'</td><td>'+search_result_obj[i].intro+'</td>'+
-				'<td><button type="button" class="btn btn-link " style="padding: 0px" onclick="joininGroup('+i+')">Join in</button> '+
-				'</td>	</tr>';
-				str += line;
-			}
-			$('#search_table_body').html(str);
-		}
-	}
-	
-	function joininGroup(idx) {
-		ajaxProcess(joininGroupCallback, "/Souvenirs/joininGroup?group_id="+search_result_obj[idx].group_id);
-	}
-	
-	function joininGroupCallback(result) {
-		if (result.trim() == "true") {
-			$.bootstrapGrowl("Join In Success.", { type: 'success' , offset: {from: 'top', amount: 50}});
-		} else {
-			$.bootstrapGrowl(result, { type: 'danger' , offset: {from: 'top', amount: 50}});
-		}
-			
-	}
-	
-	function createGroup() {
-		$('#create_form').submit();		
-	}
-	
-	function useDefaultCover() {
-		if ($('#default_cover').is(':checked')) {
-			$('#upload_file').attr('disabled', 'disbaled');
-			$('#upload_file_btn').addClass('disabled');
-		} else {
-			$('#upload_file').removeAttr('disabled');
-			$('#upload_file_btn').removeClass('disabled');
-		}
-	}
-	
-	function displayFilename() {
-		var filepath = $('#upload_file').val();
-		$('#filename_display').val(filepath.substring(filepath.lastIndexOf('\\') + 1));
-		$('#filename').val(filepath.substring(filepath.lastIndexOf('\\') + 1));
-	}
 </script>
 <style type="text/css">
 </style>
@@ -309,21 +76,13 @@
 					<li class="active"><a href="#">Group</a></li>
 					<li><a href="upload">Upload</a></li>
 				</ul>
-				<form class="navbar-form navbar-left" role="search">
-					<div class="form-group">
-						<input type="text" class="form-control" placeholder="Search your pictures">
-					</div>
-					<button type="submit" class="btn btn-default " style="font-size: 1.45em; text-shadow: #aaa 1px 2px 3px;">
-						<span class="glyphicon glyphicon-search" style="color: #999"></span>
-					</button>
-				</form>
 				<ul class="nav navbar-nav navbar-right" style="padding-right: 5%">
-					<li><img class="navbar-form" src="${empty Avatar?'':Avatar}" alt="avatar" width="32" height="32"></li>
+					<li><img class="navbar-form" src="${empty Avatar?'':Avatar}" alt="avatar" width="32" height="32" style="width:62px;"></li>
 					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">${sessionScope.username} <b
 							class="caret"></b>
 					</a>
 						<ul class="dropdown-menu">
-							<li><a href="account.jsp">Account</a></li>
+							<li><a href="setting">Account</a></li>
 							<li class="divider"></li>
 							<li><a href="logout">Logout</a></li>
 						</ul></li>
@@ -336,7 +95,7 @@
 		<div style="clear: both; padding-top: 20px;">
 			<div class="album-manage">
 				<div class="album-manage-title">
-					<h4>Available Albums</h4>
+					<h4>Group Management</h4>
 				</div>
 
 				<div class="row" style="background-color:hsla(200, 25%, 95%, .9);margin-left:0px;margin-right:0px">
@@ -375,15 +134,15 @@
 										<li><a style="" onclick="changeMGPage(this.innerHTML)">5</a></li>
 										<li class="disabled">
 											<a style="margin-left:5px;border-right-color:transparent;padding-right:0px;border-top-left-radius: 4px;border-bottom-left-radius: 4px;">
-												Page <input type="text" style="width:30px;height:18px;"> 
+												Page <input id="jump_MGpage" type="text" style="width:30px;height:18px;"> 
 											</a>
 										</li>
-										<li ><a style="border-left-color:transparent;text-decoration:underline;cursor:pointer;margin-left:0px;">Jump</a></li>
+										<li onclick="jumpMGPage()"><a style="border-left-color:transparent;text-decoration:underline;cursor:pointer;margin-left:0px;">Jump</a></li>
 										<li><a style="height:33px;">
 											<select id="MG_content_length" style="height:18px;" onchange="changeMGContentLength(this.value)">
 												<option>10</option>
 												<option>20</option>
-												<option>1</option>
+												<option>50</option>
 											</select>
 											records per page
 										</a></li>
@@ -535,8 +294,8 @@
 					</form>
 	            </div>
 	            <div class="modal-footer">
-	                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-	                <button type="button" class="btn btn-primary" onclick="submitEdit()">提交更改</button>
+	                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+	                <button type="button" class="btn btn-primary" onclick="submitEdit()">Save</button>
 	            </div>
 	        </div><!-- /.modal-content -->
 	    </div><!-- /.modal-dialog -->

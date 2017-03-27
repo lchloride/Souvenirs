@@ -1,11 +1,12 @@
 package user;
 
 import java.sql.Timestamp;
-
+import java.io.*;
 /**
  * 用户信息Bean类
  */
-public class User {
+public class User implements Serializable{
+	private static final long serialVersionUID = 1L;
 	private String user_id;
 	//private String password;
 	private String username;
@@ -108,5 +109,5 @@ public class User {
 	public void setCreateTimestamp(Timestamp create_timestamp) {
 		this.create_timestamp = create_timestamp;
 	}
-
+	
 }

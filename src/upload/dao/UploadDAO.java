@@ -66,10 +66,10 @@ public class UploadDAO {
 		String sql = "INSERT INTO picture(user_id, album_name, filename, format, description) VALUES(?, ?, ?, ?, ?)";
 		List<String> parameter = new ArrayList<>();
 		parameter.add(para.get("user_id"));
-		parameter.add(para.get("album_name"));
-		parameter.add(para.get("filename"));
+		parameter.add(para.get("album_name").replaceAll("'", "&apos;"));
+		parameter.add(para.get("filename").replaceAll("'", "&apos;"));
 		parameter.add(para.get("format"));
-		parameter.add(para.get("img_description"));
+		parameter.add(para.get("img_description").replaceAll("'", "&apos;"));
 		return DB.execSQLUpdate(sql, parameter);
 	}
 }
